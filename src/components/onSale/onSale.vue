@@ -1,30 +1,35 @@
 <template>
-  <div @keydown="keyLogin()">
-    <div style="margin-bottom:15px;">
-      <el-radio v-model="self" label="0">查看所有人发布的商品</el-radio>
-      <el-radio v-model="self" label="1">仅查看自己发布的商品</el-radio>
+  <div @keydown="keyLogin()" class="onsale-container">
+    <div class="onsale-top">
+      <el-radio-group v-model="self">
+        <el-radio :label="0" class="onsale-top-radio">查看所有人发布的商品</el-radio>
+        <el-radio :label="1" class="onsale-top-radio">仅查看自己发布的商品</el-radio>
+      </el-radio-group>
       <input placeholder="输入包款,大小,材质,色号,货号可搜索,如:H000001、000001、1" class="el-input__inner" v-model="searchKey"
         @blur="searchProducts" />
     </div>
-    <table border="0" cellspacing="0" cellpadding="0">
+    <table border="0" cellspacing="0" cellpadding="0" width="84%">
       <tr align="center">
-        <!-- <th width="100"><input @click="thSelected" type="checkbox" />全选</th> -->
-        <th width="100">货号</th>
-        <th width="100">图片</th>
-        <th width="100">成本价</th>
-        <th width="100">同行价</th>
-        <th width="100">散客价</th>
-        <th width="100">货物名称</th>
-        <th width="100">收藏人数</th>
-        <th width="100">入库时间</th>
-        <th width="100">在库时长</th>
-        <th width="100">操作</th>
+        <th class="th-style">货号</th>
+        <th class="th-style">图片</th>
+        <th class="th-style">成本价</th>
+        <th class="th-style">同行价</th>
+        <th class="th-style">散客价</th>
+        <th class="th-style">货物名称</th>
+        <th class="th-style">收藏人数</th>
+        <th class="th-style">入库时间</th>
+        <th class="th-style">在库时长</th>
+        <th class="th-style">操作</th>
+      </tr>
+      <tr v-show="onSaleProducts.length==0">
+        <div style="width:100%;margin:100px 315%;font-size:20px;color:#ddd;">没有数据要展示哦~</div>
       </tr>
       <tr v-for="(item,index) in onSaleProducts" :key="index" align="center">
-        <!-- <td><input @click="tdSelected(item.id)" type="checkbox" /></td> -->
         <td>H{{PrefixInteger(item.id)}}</td>
         <td>
-          <img :src="item.pics.split('|')[0]" style="width:100px;height:100px;border-radius:5px;" />
+          <div>
+            <img :src="item.pics.split('|')[0]" style="width:100px;height:100px;object-fit:cover;" />
+          </div>
         </td>
         <td>{{moneys(item.currencyId)+item.cost}}</td>
         <td>{{moneys(item.currencyId)+item.pricePeer}}</td>
@@ -34,68 +39,70 @@
         <td>{{item.createTime}}</td>
         <td>{{timeLong(item.createTime)}}天</td>
         <td>
-          <div style="display:flex;padding-left:25px;">
+          <div style="width:130px;display:flex;text-align:center;">
             <div style="margin-right:10px;">
-              <el-button type="text" @click="centerDialogVisible = true">删除</el-button>
+              <el-button type="text" @click="del(item.id)" class="handle-button">删除</el-button>
               <el-dialog title="提示" :visible.sync="centerDialogVisible" width="30%" center>
                 <div style="text-align:center;">
-                  <span>是否删除该商品，删除后不能回复</span>
+                  <span>是否删除该商品，删除后不能恢复</span>
                 </div>
                 <span slot="footer" class="dialog-footer">
-                  <el-button @click="centerDialogVisible = false">取 消</el-button>
-                  <el-button type="primary" @click="deleteSure(item.id)">确 定</el-button>
+                  <el-button @click="centerDialogVisible = false" style="width:100px;color:#9695f3;margin-right:10px;">取
+                    消</el-button>
+                  <el-button @click="deleteSure" class="sure-button" style="background:#9695f3;color:#fff;">确 定
+                  </el-button>
                 </span>
               </el-dialog>
             </div>
             <div style="margin-right:10px;">
-              <el-button type="text" @click="editProduct(item.id)">编辑</el-button>
+              <el-button type="text" @click="editProduct(item.id)" class="handle-button">编辑</el-button>
               <el-dialog title="编辑商品" :visible.sync="dialogVisible" width="50%" style="margin-top:-10vh;">
                 <div>
                   <div>
-                    <div style="text-align:left;">
-                      <div><span>最多上传9张图片</span></div>
+                    <div style="text-align:left;margin-bottom:10px;">
+                      <div style="margin-bottom:15px;"><span style="font-size:15px;">最多上传9张图片</span></div>
                       <div style="display:flex;">
                         <div class="upload-imgs">
                           <div class="add">
                             <div id="previewImg">
                               <form id="formUpload" enctype="multipart/form-data">
                                 <input @change="inputChange($event)" type="file" name="upload-images" accept='image/*'
-                                  id="picture" class="inputUpload" multiple="multiple" />
+                                  class="inputUpload" multiple="multiple" />
                                 <i class="el-icon-plus addIcon"></i>
                               </form>
                             </div>
-                            <div class="previewImg" id="previewImg1"> </div>
-                            <div style="display:flex;" id="delImg">
+                            <div style="display:flex;white-space:normal" id="delImg">
                               <div v-for="(item,index) of imgSrc" :key="index"
                                 style="margin-left:10px;position:relative;">
-                                <span class="spanStyle" @click="delImage($event)">x</span>
-                                <img :src="item" width="100px" height="100px" style="border-radius:5px;">
+                                <span class="spanStyle" @click="delImage(item,index)">x</span>
+                                <img :src="item" width="100px" height="100px" style="border-radius:5px;object-fit:cover;">
                               </div>
                             </div>
+                            <div class="previewImg" id="previewImg1"> </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                    <div>
-                      <el-form ref="form" label-width="135px">
+                    <div style="margin-bottom:-80px;">
+                      <el-form ref="form" label-width="80px">
                         <el-form-item label="入库时间" required>
-                          <el-col :span="11">
+                          <el-col :span="11" style="margin-left:15.5%;">
                             <el-form-item>
                               <el-date-picker type="datetime" placeholder="请选择日期时间" v-model="createTime"
-                                style="width: 100%;">
+                                style="width: 163%;">
                               </el-date-picker>
                             </el-form-item>
                           </el-col>
                         </el-form-item>
-                        <el-form-item label="价格">
-                          <el-form-item label="价格币种" required>
+                        <el-form-item label="价格" label-width="45px">
+                          <el-form-item label="价格币种" style="margin-left:0;" required>
                             <el-select v-model="currencyId" placeholder="请选择" clearable style="width:80%;">
                               <el-option v-for="item in currencyIds" :key="item.value" :label="item.label"
                                 :value="item.value">
                               </el-option>
                             </el-select>
                           </el-form-item>
-                          <el-form-item label="成本价" required>
+                          <el-form-item label="成本价" style="margin-left:0;" required>
                             <el-input style="width:80%;" type="text" placeholder="请输入成本价" v-model="cost" clearable>
                             </el-input>
                           </el-form-item>
@@ -116,18 +123,17 @@
                             </el-select>
                           </el-form-item>
                         </el-form-item>
-                        <el-form-item label="属性">
+                        <el-form-item label="属性" label-width="45px">
                           <el-form-item label="包款" required>
-                            <el-select v-model="model" placeholder="请选择" clearable style="width:80%;">
-                              <el-option v-for="item in models" :key="item.value" :label="item.label"
-                                :value="item.value">
+                            <el-select v-model="model" placeholder="请选择" clearable @change="sizeSel" style="width:80%;">
+                              <el-option v-for="item in modelSize" :key="item.name" :label="item.name"
+                                :value="item.name">
                               </el-option>
                             </el-select>
                           </el-form-item>
                           <el-form-item label="大小" required>
                             <el-select v-model="size" placeholder="请选择" clearable style="width:80%;">
-                              <el-option v-for="item in sizes" :key="item.value" :label="item.label"
-                                :value="item.value">
+                              <el-option v-for="items in sizes" :key="items" :label="items" :value="items">
                               </el-option>
                             </el-select>
                           </el-form-item>
@@ -168,14 +174,16 @@
                     </div>
                   </div>
                 </div>
-                <div slot="footer">
-                  <el-button @click="dialogVisible = false">取 消</el-button>
-                  <el-button type="primary" @click="updateSure">确认修改</el-button>
-                </div>
+                <span slot="footer" class="dialog-footer">
+                  <el-button @click="dialogVisible = false" style="width:100px;color:#9695f3;margin-right:20px;">取 消
+                  </el-button>
+                  <el-button @click="updateSure" class="update-sure-button" style="background:#9695f3;color:#fff;">确 定
+                  </el-button>
+                </span>
               </el-dialog>
             </div>
             <div>
-              <el-button type="text" @click="sellVisible = true">出库</el-button>
+              <el-button type="text" @click="soldPro(item.id,item.bill)" class="handle-button">出库</el-button>
               <el-dialog title="商品出库" :visible.sync="sellVisible" width="30%" center>
                 <div style="text-align:center;">
                   <el-form ref="form" label-width="80px">
@@ -193,24 +201,22 @@
                   </el-form>
                 </div>
                 <span slot="footer" class="dialog-footer">
-                  <el-button @click="sellVisible = false">取 消</el-button>
-                  <el-button type="primary" @click="sellSure(item)">确 定</el-button>
+                  <el-button @click="sellVisible = false" style="width:100px;color:#9695f3;margin-right:20px;">取 消
+                  </el-button>
+                  <el-button @click="sellSure" class="sell-sure-button" style="background:#9695f3;color:#fff;">确 定
+                  </el-button>
                 </span>
               </el-dialog>
             </div>
           </div>
         </td>
       </tr>
-      <!-- <tr>
-        <td><button @click="selectedDel">删除选定</button></td>
-      </tr> -->
     </table>
     <div style="margin:15px 0;position:absolute;right:20%;">
       <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="page"
         layout="total, prev, pager, next, jumper" :total="total">
       </el-pagination>
     </div>
-
   </div>
 </template>
 
@@ -218,8 +224,100 @@
   export default {
     data() {
       return {
+        modelSize: [{
+            id: 1,
+            name: "Kelly 凯莉包",
+            size: ["Kelly Mini", "Kelly Mini 2", "Kelly 25", "Kelly 28", "Kelly 32", "Kelly 35", "Kelly 40",
+              "Kelly 50"
+            ]
+          },
+          {
+            id: 2,
+            name: "Birkin 铂金包",
+            size: ["Birkin Mini", "Birkin 25", "Birkin 30", "Birkin 35", "Birkin 40", "Birkin 45", "Birkin 50"]
+          },
+          {
+            id: 3,
+            name: "Constance 康康包",
+            size: ["Constance 14", "Constance 18", "Constance 23", "Constance 24"]
+          },
+          {
+            id: 4,
+            name: "Lindy 枕头包",
+            size: ["Lindy Mini", "Lindy 26", "Lindy 30", "Lindy 34", "Lindy 45"]
+          },
+          {
+            id: 5,
+            name: "Roulis 猪鼻包",
+            size: ["Roulis Mini", "Roulis S"]
+          },
+          {
+            id: 6,
+            name: "Verrou 手枪包",
+            size: ["Verrou 17", "Verrou 21"]
+          },
+          {
+            id: 7,
+            name: "Picotin 菜篮子",
+            size: ["Picotin PM", "Picotin MM", "Picotin GM"]
+          },
+          {
+            id: 8,
+            name: "Evelyne 伊夫林",
+            size: ["Evelyne TPM", "Evelyne PM", "Evelyne GM", "Evelyne TGM"]
+          },
+          {
+            id: 9,
+            name: "Garden Party 空中花园",
+            size: ["Garden Party TTPM", "Garden Party TPM", "Garden Party PM", "Garden Party MM", "Garden Party GM"]
+          },
+          {
+            id: 10,
+            name: "Jypsiere 吉普赛包",
+            size: ["Jypsiere 28", "Jypsiere 31", "Jypsiere 34", "Jypsiere 37"]
+          },
+          {
+            id: 11,
+            name: "Bolide",
+            size: ["Bolide 15", "Bolide 21", "Bolide 27", "Bolide 31", "Bolide 37", "Bolide 47"]
+          },
+          {
+            id: 12,
+            name: "Toolbox",
+            size: ["Toolbox 20", "Toolbox 26", "Toolbox 33"]
+          },
+          {
+            id: 13,
+            name: "Passe Guide",
+            size: ["Passe Guide 28"]
+          },
+          {
+            id: 14,
+            name: "Double Sens",
+            size: ["Double Sens 36", "Double Sens 45"]
+          },
+          {
+            id: 15,
+            name: "Victoria",
+            size: ["Victoria II 35", "Victoria II 40"]
+          },
+          {
+            id: 16,
+            name: "Cabag",
+            size: ["Cabag 32", "Cabag 39", "Cabag 42"]
+          },
+          {
+            id: 17,
+            name: "Herbag",
+            size: ["Herbag TPM", "Herbag PM", "Herbag MM", "Herbag GM"]
+          }
+        ],
         msg: '我是在售商品页',
         id: 0,
+        delId: 0,
+        uploadId: 0,
+        soldId: 0,
+        soldBill: '',
         imgSrc: [],
         searchKey: '',
         self: 1,
@@ -264,6 +362,7 @@
         imgsUpload: '', //上传图片
         dialogImageUrl: '',
         dialogVisible: false,
+        sold: 0,
 
         currencyIds: [{
             value: '1',
@@ -303,110 +402,7 @@
             label: '海外'
           }
         ],
-
-        models: [{
-            value: 'Kelly 凯莉包',
-            label: 'Kelly 凯莉包'
-          },
-          {
-            value: 'Birkin 铂金包',
-            label: 'Birkin 铂金包'
-          },
-          {
-            value: 'Constance 康康包',
-            label: 'Constance 康康包'
-          },
-          {
-            value: 'Lindy 枕头包',
-            label: 'Lindy 枕头包'
-          },
-          {
-            value: 'Roulis 猪鼻包',
-            label: 'Roulis 猪鼻包'
-          },
-          {
-            value: 'Verrou 手枪包',
-            label: 'Verrou 手枪包'
-          },
-          {
-            value: 'Picotin 菜篮子',
-            label: 'Picotin 菜篮子'
-          },
-          {
-            value: 'Evelyne 伊夫林',
-            label: 'Evelyne 伊夫林'
-          },
-          {
-            value: 'Garden Party 空中花园',
-            label: 'Garden Party 空中花园'
-          },
-          {
-            value: 'Jypsiere 吉普赛包',
-            label: 'Jypsiere 吉普赛包'
-          },
-          {
-            value: 'Bolide',
-            label: 'Bolide'
-          },
-          {
-            value: 'Toolbox',
-            label: 'Toolbox'
-          },
-          {
-            value: 'Passe Guide',
-            label: 'Passe Guide'
-          },
-          {
-            value: 'Double Sens',
-            label: 'Double Sens'
-          },
-          {
-            value: 'Victoria',
-            label: 'Victoria'
-          },
-          {
-            value: 'Cabag',
-            label: 'Cabag'
-          },
-          {
-            value: 'Herbag',
-            label: 'Herbag'
-          }
-        ],
-
-        sizes: [{
-            value: 'Kelly Mini',
-            label: 'Kelly Mini'
-          },
-          {
-            value: 'Kelly Mini 2',
-            label: 'Kelly Mini 2'
-          },
-          {
-            value: 'Kelly 25',
-            label: 'Kelly 25'
-          },
-          {
-            value: 'Kelly 28',
-            label: 'Kelly 28'
-          },
-          {
-            value: 'Kelly 32',
-            label: 'Kelly 32'
-          },
-          {
-            value: 'Kelly 35',
-            label: 'Kelly 35'
-          },
-          {
-            value: 'Kelly 40',
-            label: 'Kelly 40'
-          },
-          {
-            value: 'Kelly 50',
-            label: 'Kelly 50'
-          }
-        ],
+        sizes: [],
 
         leathers: [{
             value: '鳄鱼皮',
@@ -1440,13 +1436,23 @@
 
         stockStats: ['全新', '9.9成新', '齐膜', '有轻微划痕', '有压痕', '发票', '鳄鱼皮证书', '说明书', '锁扣', '肩带', '盒子', '绒布', '雨衣'],
         colorList: [],
-        imgs: ''
+        imgs: '',
+        delList: []
       }
     },
     created() {
       this.handleList();
     },
     methods: {
+      // 包款与大小的关联
+      sizeSel() {
+        for (let i = 0; i < this.modelSize.length; i++) {
+          if (this.model == this.modelSize[i].name) {
+            this.sizes = this.modelSize[i].size;
+          }
+        }
+      },
+      // 分页
       handleSizeChange(val) {
         console.log(`每页 ${val} 条`);
       },
@@ -1455,19 +1461,22 @@
         this.page = val;
         console.log(this.page);
         this.handleList();
+        (function smoothscroll() {
+          var currentScroll = document.documentElement.scrollTop || document.body.scrollTop;
+          if (currentScroll > 0) {
+            window.requestAnimationFrame(smoothscroll);
+            window.scrollTo(0, currentScroll - (currentScroll / 5));
+          }
+        })()
       },
+      // 获取展示数据
       handleList() {
         console.log('mmmm' + this.page);
         this.$axios.get(this.$store.state.baseUrl + '/unsold?self=' + this.self + '&page=' + this.page).then((res) => {
-          // console.log(res.data.list);
-          // let a = res.data.list;
-          // console.log(a);
           this.onSaleProducts = res.data.list;
+          console.log(this.onSaleProducts);
           this.total = res.data.total;
           this.myList = res.data.list;
-          // console.log(this.onSaleProducts);
-          // console.log(this.onSaleProducts[0].bill);
-          // console.log(this.onSaleProducts[0].currencyId);
         }).catch(err => {
           console.log(err);
         })
@@ -1542,13 +1551,7 @@
           this.onSaleProducts = this.myList;
         }
       },
-      handleRemove(file, fileList) {
-        console.log(file, fileList);
-      },
-      handlePictureCardPreview(file) {
-        this.dialogImageUrl = file.url;
-        this.dialogVisible = true;
-      },
+      // 色号
       handleChange(value) {
         console.log(value);
         this.leather = value[1];
@@ -1603,35 +1606,61 @@
           return y + "-" + m + "-" + d + " " + h + ":" + m1 + ":" + s;
         }
       },
+      // 删除
+      del(id) {
+        if (this.self == 1) {
+          this.centerDialogVisible = true;
+        } else {
+          this.centerDialogVisible = false;
+          this.$message.success({
+            message: '这个商品不是您发布的，不能删除哦',
+            showClose: true,
+            duration: 2000
+          });
+        }
+        console.log(id);
+        this.delId = id;
+      },
       // 删除指定商品
-      deleteSure(id) {
-        // console.log(id);
-        this.$axios.delete(this.$store.state.baseUrl + '/delete?id=' + id).then((res) => {
-          console.log('9999999'+res);
-          if (res.status == 'success') {
-            this.$message.success({
-              message: '删除成功',
-              showClose: true,
-              duration: 1500
-            })
-            this.centerDialogVisible = false;
-            location.reload();
-          }
+      deleteSure() {
+        console.log('111' + this.delId);
+        this.$axios.delete(this.$store.state.baseUrl + '/delete?id=' + this.delId).then((res) => {
+          console.log(res);
+          this.centerDialogVisible = false;
+          location.reload();
+          this.$message.success({
+            message: '删除成功',
+            showClose: true,
+            duration: 1500
+          })
         }).catch((err) => {
           console.log(err);
         })
       },
       // 编辑
-      editProduct(item) {
+      editProduct(id) {
         console.log('2222222222');
-        console.log(item);
-        this.$axios.get(this.$store.state.baseUrl + '/detail?id=' + item).then((res) => {
+        console.log(id);
+        if (this.self == 1) {
+          this.dialogVisible = true;
+        } else {
+          this.dialogVisible = false;
+          this.$message.success({
+            message: '这个商品不是您发布的，不能修改哦',
+            showClose: true,
+            duration: 2000
+          });
+        }
+        this.$store.state.imgUrl = "";
+        console.log('ggggggg' + this.$store.state.imgUrl);
+        this.$axios.get(this.$store.state.baseUrl + '/detail?id=' + id).then((res) => {
           console.log(res.data.pics.split("|"));
           this.id = res.data.id;
           this.pics = res.data.pics;
-          this.$store.state.imgUrl = res.data.pics;
+          this.$store.state.imgUrl = this.pics;
           console.log(this.$store.state.imgUrl);
           let p = res.data.pics.split("|");
+          this.imgSrc = [];
           for (let i = 0; i < p.length - 1; i++) {
             this.imgSrc.push(p[i]);
           }
@@ -1652,41 +1681,36 @@
           this.letter = res.data.letter;
           this.stockStat = res.data.stockStat;
           this.stock = res.data.stockStat.split("|");
+          this.sold = res.data.sold;
+          console.log('222' + this.sold);
           console.log(this.imgSrc);
-          if (this.self == 1) {
-            this.dialogVisible = true;
-          } else {
-            this.dialogVisible = false;
-            this.$message.success({
-              message: '这个商品不是您发布的，不能修改哦',
-              showClose: true,
-              duration: 2000
-            });
-          }
         })
-        item = 0;
       },
       // 删除图片
-      delImage(e) {
+      delImage(item, index) {
+        console.log(index);
         let delImg = document.getElementById("delImg");
-        console.log(e);
-        console.log(e.target);
-        let b = e.target.nextElementSibling.src + "|";
-        console.log(b);
+        let child = delImg.children;
+        console.log(child);
+        for (let i = 0; i < child.length; i++) {
+          this.delList.push(child[i]);
+        }
+        console.log(this.delList);
+        this.delList.splice(index, 1);
+        this.imgSrc.splice(index, 1);
+        let b = item + "|";
         this.$store.state.imgUrl = this.$store.state.imgUrl.replace(b, "");
         console.log(this.$store.state.imgUrl);
-        console.log(e.target.parentElement);
-        delImg.removeChild(e.target.parentElement);
       },
       // 上传图片
       inputChange(file) {
         let formUpload = document.getElementById('formUpload');
-        let formData = new FormData(formUpload);
+        let formdata = new FormData(formUpload);
         console.log(file);
         let imgFiles = file.target.files;
         console.log(imgFiles);
-        formData.append('upload-images', imgFiles);
-        console.log('---' + formData.get('upload-imgs'));
+        formdata.append('upload-images', imgFiles);
+        console.log('---' + formdata.get('upload-imgs'));
         for (let i = 0; i < imgFiles.length; i++) {
           let filePath = imgFiles[i].name;
           let fileFormat = filePath.split('.')[1].toLowerCase();
@@ -1695,13 +1719,14 @@
             return
           };
         }
-        this.uploadImg(formData);
+        this.uploadImg(formdata);
       },
-      uploadImg(formData) {
-        console.log(formData);
-        formData.append('state', 0);
-        formData.append('type', 0);
-        this.$axios.post(this.$store.state.baseUrl + '/upload', formData).then((res) => {
+      uploadImg(formdata) {
+        console.log(formdata);
+        formdata.append('state', 0);
+        formdata.append('type', 0);
+        console.log('11111');
+        this.$axios.post(this.$store.state.baseUrl + '/upload', formdata).then((res) => {
           if (res.status == 200) {
             this.$message.success({
               message: '图片上传成功',
@@ -1715,34 +1740,22 @@
           let preview1 = document.getElementById("previewImg1");
           console.log(this.$store.state.imgUrl);
           for (let i = 0; i < this.imgurls.length - 1; i++) {
-            console.log('https://hk.wistechx.cn:8081/stock/file/' + this.imgurls[i]);
-            this.$store.state.imgUrl += 'https://hk.wistechx.cn:8081/stock/file/' + this.imgurls[i] + '|';
+            console.log('http://192.168.0.106:8080/stock/file/' + this.imgurls[i]);
+            this.$store.state.imgUrl += 'http://192.168.0.106:8080/stock/file/' + this.imgurls[i] + ' | ';
             let preview = document.createElement('div');
             preview.style.position = 'relative';
             preview.className = 'previewImg2';
             let span = document.createElement('span');
             span.innerHTML = 'x';
             span.className = 'spanStyle';
-            span.style.width = '15px';
-            span.style.height = '15px';
-            span.style.position = 'absolute';
-            span.style.top = '1px';
-            span.style.right = '1px';
-            span.style.backgroundColor = '#ddd';
-            span.style.border = '1px solid #ddd';
-            span.style.borderRadius = '50%';
-            span.style.color = '#fff';
-            span.style.cursor = 'default';
-            span.style.textAlign = 'center';
-            span.style.lineHeight = 1;
-            span.style.zIndex = 999;
             let img = document.createElement("img");
             img.width = 100;
             img.height = 100;
+            img.style.objectFit = 'cover';
             img.style.borderRadius = '5px';
             img.style.marginLeft = '10px';
             img.style.zIndex = 1;
-            img.src = 'https://hk.wistechx.cn:8081/stock/file/' + this.imgurls[i];
+            img.src = 'http://192.168.0.106:8080/stock/file/' + this.imgurls[i];
             preview.appendChild(span);
             preview.appendChild(img);
             preview1.appendChild(preview);
@@ -1759,10 +1772,14 @@
           console.log(err);
         })
       },
-      // 确认修改
+      // 确认编辑
       updateSure() {
         console.log(this.id);
         console.log(this.$store.state.imgUrl);
+        this.stockStat = "";
+        for (let item of this.stock) {
+          this.stockStat += item + '|';
+        }
         this.$axios.put(this.$store.state.baseUrl + '/update', {
           id: this.id,
           pics: this.$store.state.imgUrl,
@@ -1781,11 +1798,12 @@
           color: this.color,
           letter: this.letter,
           stockStat: this.stockStat,
-          name: this.model + ' ' + this.size + ' ' + this.colorId + ' ' + this.color + ' ' + this.leather + ' ' +
+          name: this.model + ' ' + this.size + ' ' + this.colorId + ' ' + this.color + ' ' + this.leather +
+            ' ' +
             this.metal,
           colorSeries: this.colorSeries,
           saleStat: "出售中",
-          sold: 0,
+          sold: this.sold,
           createAccount: this.$store.state.currentRole
         }).then((res) => {
           console.log(res);
@@ -1796,19 +1814,25 @@
               duration: 2000
             })
             this.dialogVisible = false;
-            location.reload();
+            // location.reload();
           }
         }).catch((err) => {
           console.log(err);
         })
       },
+      // 出库
+      soldPro(id, bill) {
+        this.soldId = id;
+        this.soldBill = bill;
+        this.sellVisible = true;
+      },
       // 确认出库
-      sellSure(item) {
+      sellSure() {
         // this.id = item.id;
         // this.bill = item.bill;
         this.$axios.post(this.$store.state.baseUrl + '/sell', {
-          id: item.id,
-          bill: item.bill,
+          id: this.soldId,
+          bill: this.soldBill,
           priceTran: this.priceTran,
           customer: this.customer,
           soldTime: this.transitionTime(this.soldTime)
@@ -1835,34 +1859,73 @@
 </script>
 
 <style lang="scss" scoped>
+  .onsale-container {
+    font-family: '微软雅黑';
+  }
+
+  .onsale-top {
+    margin-top: 38px;
+    margin-bottom: 55px;
+    margin-left: 40px;
+
+    .onsale-top-radio {
+      margin-right: 80px;
+      font-size: 16px;
+      color: #000;
+    }
+
+    .el-input__inner {
+      width: 600px;
+      height: 48px;
+      position: absolute;
+      top: 20px;
+      right: 450px;
+      -webkit-appearance: none;
+      background-color: #FFF;
+      background-image: url('../../assets/imgs/search2.png');
+      background-size: 20px;
+      background-repeat: no-repeat;
+      background-position: 30px center;
+      border-radius: 30px;
+      border: 1px solid #DCDFE6;
+      -webkit-box-sizing: border-box;
+      box-sizing: border-box;
+      color: #606266;
+      display: inline-block;
+      font-size: inherit;
+      line-height: 40px;
+      outline: 0;
+      padding: 0 65px;
+      -webkit-transition: border-color .2s cubic-bezier(.645, .045, .355, 1);
+      transition: border-color .2s cubic-bezier(.645, .045, .355, 1);
+    }
+  }
+
   thead,
   th,
   td {
+    font-weight: normal;
     padding: 5px 0;
-    border-bottom: 1px solid #ddd;
   }
 
-  .el-input__inner {
-    width: 31%;
-    height: 40px;
-    -webkit-appearance: none;
-    background-color: #FFF;
-    background-image: url('../../assets/imgs/search.png');
-    background-size: auto 18px;
-    background-repeat: no-repeat;
-    background-position: 5px center;
-    border-radius: 20px;
-    border: 1px solid #DCDFE6;
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
-    color: #606266;
-    display: inline-block;
-    font-size: inherit;
-    line-height: 40px;
-    outline: 0;
-    padding: 0 30px;
-    -webkit-transition: border-color .2s cubic-bezier(.645, .045, .355, 1);
-    transition: border-color .2s cubic-bezier(.645, .045, .355, 1);
+  tr {
+    margin-top: 30px;
+  }
+
+  td {
+    width: 100px;
+    font-size: 16px;
+  }
+
+  .th-style {
+    width: 100px;
+    margin-right: 100px;
+    font-size: 18px;
+  }
+
+  .handle-button {
+    color: #9695f3;
+    font-size: 16px;
   }
 
   .el-upload--picture-card {
@@ -1897,6 +1960,7 @@
         position: absolute;
         top: 45%;
         left: 45%;
+        z-index: 1;
       }
 
       .inputUpload {
@@ -1906,6 +1970,7 @@
         height: 100px;
         opacity: 0;
         cursor: pointer;
+        z-index: 999;
       }
     }
   }
@@ -1918,10 +1983,7 @@
     border-radius: 5px;
   }
 
-  .previewImg {
-    display: flex;
-  }
-
+  .previewImg,
   .previewImg2 {
     display: flex;
   }
@@ -1930,7 +1992,7 @@
     width: 15px;
     height: 15px;
     text-align: center;
-    line-height: 1;
+    line-height: 0.7;
     background-color: rgb(221, 221, 221);
     color: rgb(255, 255, 255);
     border: 1px solid rgb(221, 221, 221);
@@ -1939,7 +2001,7 @@
     top: 1px;
     right: 1px;
     z-index: 999;
-    cursor: default;
+    cursor: pointer;
   }
 
   .el-dialog--center .el-dialog__body {
@@ -1947,4 +2009,88 @@
     padding: 28px 25px 40px;
   }
 
+  .sure-button {
+    width: 300px;
+    padding-right: 142px;
+    margin-right: -123px;
+  }
+
+  .update-sure-button {
+    width: 300px;
+    padding-right: 142px;
+    margin-right: 40px;
+  }
+
+  .sell-sure-button {
+    width: 300px;
+    padding-right: 142px;
+    margin-right: -55px;
+  }
+
 </style>
+<style lang="scss">
+  $color:#9695f3;
+
+  .el-dialog {
+    border-radius: 20px;
+
+    // background-color: none;
+    // background-image: url('../../assets/imgs/alertBackground.png');
+    // .el-dialog__header {
+    //   margin-bottom: 40px;
+    // }
+
+    .el-dialog__header {
+      padding: 30px 20px 10px;
+    }
+
+    .el-dialog__title,
+    .el-dialog__body {
+      color: #000;
+      font-size: 18px;
+    }
+
+    .el-dialog__body {
+      margin-bottom: 25px;
+      padding: 30px 70px;
+    }
+
+    .el-button {
+      height: 50px;
+      border: 1px solid $color;
+      border-radius: 7px;
+      background: none;
+      font-size: 15px;
+    }
+  }
+
+  .el-radio__input.is-checked+.el-radio__label {
+    color: $color;
+  }
+
+  .el-radio__input.is-checked .el-radio__inner {
+    border-color: $color;
+    background: $color;
+  }
+
+  .el-checkbox__input.is-checked .el-checkbox__inner,
+  .el-checkbox__input.is-indeterminate .el-checkbox__inner {
+    background-color: $color;
+    border-color: $color;
+  }
+
+  .el-checkbox__input.is-checked+.el-checkbox__label {
+    color: $color;
+  }
+
+  .el-pager li.active {
+    color: $color;
+    cursor: default;
+  }
+
+  .el-pager li:hover {
+    color: $color;
+  }
+
+</style>
+ 

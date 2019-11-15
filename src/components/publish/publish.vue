@@ -1,87 +1,88 @@
 <template>
-  <div>
+  <div class="publish-container">
     <el-form ref="form" label-width="135px">
-      <div>
+      <div style="margin-left:3%;">
         <upload></upload>
       </div>
       <el-form-item label="入库时间" required>
         <el-col :span="11">
           <el-form-item>
-            <el-date-picker type="datetime" placeholder="请选择日期时间" v-model="createTime" style="width: 100%;">
+            <el-date-picker type="datetime" placeholder="请选择日期时间" v-model="createTime"
+              style="width: 100%;margin-left:17%;">
             </el-date-picker>
           </el-form-item>
         </el-col>
       </el-form-item>
       <el-form-item label="价格">
         <el-form-item label="价格币种" required>
-          <el-select v-model="currencyId" placeholder="请选择" clearable>
+          <el-select v-model="currencyId" placeholder="请选择" style="width: 50%;" clearable>
             <el-option v-for="item in currencyIds" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="成本价" required>
-          <el-input style="width:80%;" type="text" placeholder="请输入成本价" v-model="cost" clearable></el-input>
+          <el-input style="width:50%;" type="text" placeholder="请输入成本价" v-model="cost" clearable></el-input>
         </el-form-item>
         <el-form-item label="同行价" required>
-          <el-input style="width:80%;" placeholder="请输入同行价" v-model="pricePeer" clearable></el-input>
+          <el-input style="width:50%;" placeholder="请输入同行价" v-model="pricePeer" clearable></el-input>
         </el-form-item>
         <el-form-item label="散客价" required>
-          <el-input style="width:80%;" placeholder="请输入散客价" v-model="priceIndi" clearable></el-input>
+          <el-input style="width:50%;" placeholder="请输入散客价" v-model="priceIndi" clearable></el-input>
         </el-form-item>
         <el-form-item label="货源" required>
-          <el-input style="width:80%;" placeholder="请输入货源" v-model="source" clearable></el-input>
+          <el-input style="width:50%;" placeholder="请输入货源" v-model="source" clearable></el-input>
         </el-form-item>
         <el-form-item label="库存地" required>
-          <el-select v-model="stockLoc" placeholder="请选择" clearable>
+          <el-select v-model="stockLoc" placeholder="请选择" style="width: 50%;" clearable>
             <el-option v-for="item in stockLocs" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
       </el-form-item>
-      <el-form-item label="属性">
+      <el-form-item label="属性" style="margin-bottom:40px;">
         <el-form-item label="包款" required>
-          <el-select v-model="model" placeholder="请选择" clearable @change="sizeSel">
+          <el-select v-model="model" placeholder="请选择" style="width: 50%;" clearable @change="sizeSel">
             <el-option v-for="item in modelSize" :key="item.name" :label="item.name" :value="item.name">
             </el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="大小" required>
-          <el-select v-model="size" placeholder="请选择" clearable>
+          <el-select v-model="size" placeholder="请选择" style="width: 50%;" clearable>
             <el-option v-for="items in sizes" :key="items" :label="items" :value="items">
             </el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="材质" required>
-          <el-cascader v-model="leather" :options="leathers" @change="handleChange">
+          <el-cascader v-model="leather" :options="leathers" @change="handleChange" style="width: 50%;">
           </el-cascader>
         </el-form-item>
         <el-form-item label="金属质感" required>
-          <el-select v-model="metal" placeholder="请选择" clearable>
+          <el-select v-model="metal" placeholder="请选择" style="width: 50%;" clearable>
             <el-option v-for="item in metals" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="色号" required>
-          <el-input style="width:80%;" placeholder="请输入色号" v-model="colorId" @blur="colorIdBlur" clearable>
+          <el-input style="width:50%;" placeholder="请输入色号" v-model="colorId" @blur="colorIdBlur" clearable>
           </el-input>
         </el-form-item>
         <el-form-item label="颜色">
-          <el-input style="width:80%;" v-model="color" clearable></el-input>
+          <el-input style="width:50%;" v-model="color" clearable></el-input>
         </el-form-item>
         <el-form-item label="色系">
-          <el-input style="width:80%;" v-model="colorSeries" clearable></el-input>
+          <el-input style="width:50%;" v-model="colorSeries" clearable></el-input>
         </el-form-item>
         <el-form-item label="刻度" required>
-          <el-input style="width:80%;" placeholder="请输入刻度" v-model="letter" clearable></el-input>
+          <el-input style="width:50%;" placeholder="请输入刻度" v-model="letter" clearable></el-input>
         </el-form-item>
         <el-form-item label="状态" required>
-          <el-checkbox-group v-model="stock">
+          <el-checkbox-group v-model="stock" style="width:50%;">
             <el-checkbox v-for="stock in stockStats" :label="stock" :key="stock">{{stock}}</el-checkbox>
           </el-checkbox-group>
         </el-form-item>
       </el-form-item>
-      <el-form-item style="margin-left:30%;">
-        <el-button type="primary" @click="submitForm()">立即创建</el-button>
+      <el-form-item style="margin-left:40%;">
+        <button class="publish-button" @click="submitForm()">立即创建</button>
       </el-form-item>
     </el-form>
   </div>
@@ -1370,7 +1371,8 @@
           name: this.model + ' ' + this.size + ' ' + this.colorId + ' ' + this.color + ' ' + this.leather + ' ' +
             this.metal,
           colorSeries: this.colorSeries,
-          saleStat: "出售中"
+          saleStat: "出售中",
+          sold: "0"
         }).then((res) => {
           console.log('1111tong');
           console.log(res);
@@ -1388,6 +1390,28 @@
   }
 
 </script>
+<style lang="scss" scoped>
+  .publish-container {
+    margin-top: 40px;
+    margin-left: 40px;
+  }
+
+  .publish-button {
+    width: 160px;
+    height: 48px;
+    background: url('../../assets/imgs/export.png') no-repeat;
+    border: 0;
+    border-radius: 10px;
+    font-size: 15px;
+    color: #fff;
+    cursor: pointer;
+  }
+
+  .publish-button:focus {
+    outline: 0;
+  }
+
+</style>
 <style lang="scss">
   .el-upload--picture-card {
     width: 100px !important;
@@ -1403,5 +1427,4 @@
   .el-form-item .el-form-item {
     margin-bottom: 10px;
   }
-
 </style>

@@ -1,22 +1,29 @@
 <template>
   <div class="login-container" @keydown="keyLogin()">
-    <el-form ref="loginForm" :model="loginForm" label-width="80px" class="login-form">
-      <div class="title-container">
-        <h3 class="title">欢迎您 !</h3>
+    <div class="login-font-style">
+      <div class="hermes-font">HERMES</div>
+      <div class="hermes-bottom">ta的名字本身像极了一封吸引力十足的邀请函</div>
+      <div class="welcome">欢迎您</div>
+      <div>
+        <img class="handbag" src="../../assets/imgs/handbag.png" />
+        <img class="handleimg" src="../../assets/imgs/shadow.png" />
       </div>
-      <el-form-item prop="username">
-        <el-input type="text" v-model="loginForm.username" placeholder="请输入用户名" prefix-icon="el-icon-s-custom"
-          tabindex="1" auto-complete="on"></el-input>
-      </el-form-item>
-      <el-form-item prop="password">
-        <el-input type="password" v-model="loginForm.password" placeholder="请输入不少于6位的密码" prefix-icon="el-icon-lock"
-          tabindex="2" auto-complete="on"></el-input>
-      </el-form-item>
-    </el-form>
-    <div style="margin-left:36.4%;">
-      <el-button type="primary" @click="handleLogin" class="loginBtn">登录</el-button>
     </div>
-    
+    <div class="login-form">
+      <div class="username">
+        <span><img :src="usernameImg" /></span>
+        <input class="user-input" type="text" v-model="loginForm.username" placeholder="请输入用户名"
+          prefix-icon="el-icon-s-custom" tabindex="1" auto-complete="on" @focus="usernameFocus" @blur="usernameBlur" />
+      </div>
+      <div class="password">
+        <span><img :src="passwordImg" /></span>
+        <input class="pass-input" type="password" v-model="loginForm.password" placeholder="请输入不少于6位的密码"
+          prefix-icon="el-icon-lock" tabindex="2" auto-complete="on" @focus="passwordFocus" @blur="passwordBlur" />
+      </div>
+    </div>
+    <div class="login-button">
+      <button @click="handleLogin" class="loginBtn">登录</button>
+    </div>
   </div>
 </template>
 <script>
@@ -28,6 +35,8 @@
           username: "admin",
           psaaword: ""
         },
+        usernameImg: require('../../assets/imgs/user.png'),
+        passwordImg: require('../../assets/imgs/password.png')
       }
     },
     beforeRouteEnter: (to, from, next) => {
@@ -74,7 +83,7 @@
                 duration: 2000
               });
               this.$store.dispatch('setRole', null);
-              this.loginForm.password="";
+              this.loginForm.password = "";
             }
           }).catch(function (err) {
             console.log(err);
@@ -82,8 +91,20 @@
         }
 
       },
-      keyLogin(){
-        if(event.keyCode==13){
+      usernameFocus() {
+        this.usernameImg = require('../../assets/imgs/userselect.png');
+      },
+      usernameBlur(){
+        this.usernameImg = require('../../assets/imgs/user.png');
+      },
+      passwordFocus() {
+        this.passwordImg = require('../../assets/imgs/passwordSelect.png');
+      },
+      passwordBlur(){
+        this.passwordImg = require('../../assets/imgs/password.png');
+      },
+      keyLogin() {
+        if (event.keyCode == 13) {
           this.handleLogin();
         }
       }
@@ -91,102 +112,88 @@
   }
 
 </script>
-
 <style lang="scss">
-  /* 修复input 背景不协调 和光标变色 */
-  /* Detail see https://github.com/PanJiaChen/vue-element-admin/pull/927 */
-
-  $bg:#283443;
-  $light_gray:#fff;
-  $cursor: #fff;
-
-  @supports (-webkit-mask: none) and (not (cater-color: $cursor)) {
-    .login-container .el-input input {
-      color: $cursor;
-    }
-  }
-
-  /* reset element-ui css */
-  .login-container {
-    .el-input {
-      display: inline-block;
-      height: 47px;
-      width: 85%;
-
-      input {
-        background: transparent;
-        border: 0px;
-        -webkit-appearance: none;
-        border-radius: 0px;
-        padding: 12px 5px 12px 50px;
-        color: $light_gray;
-        height: 47px;
-        caret-color: $cursor;
-
-        &:-webkit-autofill {
-          box-shadow: 0 0 0px 1000px $bg inset !important;
-          -webkit-text-fill-color: $cursor !important;
-        }
-      }
-    }
-
-    .el-form-item {
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(0, 0, 0, 0.1);
-      border-radius: 5px;
-      color: #454545;
-    }
-    .loginBtn{
-      width: 520px;
-      max-width: 100%;
-      margin-bottom: 30px;
-      text-align: center;
-    }
-  }
-
-</style>
-
-<style lang="scss" scoped>
-  $bg:#2d3a4b;
-  $dark_gray:#889aa4;
-  $light_gray:#eee;
+  $width: 330px;
+  $height: 40px;
 
   .login-container {
-    height: 999px;
-    min-height: 100%;
     width: 100%;
-    background-color: $bg;
-    overflow: hidden;
+    min-height: 1000px;
+    position: relative;
+    background: url("../../assets/imgs/login.png") no-repeat;
 
-    .login-form {
-      position: relative;
-      width: 520px;
-      max-width: 100%;
-      padding: 160px 35px 0;
-      margin: 0 auto;
-      overflow: hidden;
-    }
+    .login-font-style {
+      position: absolute;
+      top: 178px;
+      left: 248px;
 
-    .title-container {
-      position: relative;
-
-      .title {
-        font-size: 26px;
-        color: $light_gray;
-        margin: 0px auto 40px auto;
-        text-align: center;
+      .hermes-font {
+        color: #fff;
+        font-size: 48px;
         font-weight: bold;
       }
+
+      .hermes-bottom {
+        margin-top: 70px;
+        font-size: 28px;
+        color: #fff;
+      }
+
+      .welcome {
+        margin-left: 660px;
+        margin-top: 88px;
+        font-size: 60px;
+        color: #fff;
+        font-weight: bold;
+      }
+      .handbag{
+        position: absolute;
+        top: 185px;
+        right: -600px;
+      }
+      .handleimg{
+        position: absolute;
+        top: 525px;
+        right: -600px;
+      }
     }
 
-    .show-pwd {
+    .login-form {
       position: absolute;
-      right: 10px;
-      top: 7px;
-      font-size: 16px;
-      color: $dark_gray;
-      cursor: pointer;
-      user-select: none;
+      top: 590px;
+      left: 204px;
+
+      .user-input,
+      .pass-input {
+        width: $width;
+        height: $height;
+        padding-left: 20px;
+        border: 0;
+        background: 0;
+        font-size: 28px;
+        color: #fff;
+      }
+
+      .password {
+        margin-top: 40px;
+      }
+    }
+
+    .login-button {
+      position: absolute;
+      top: 78%;
+      left: 40%;
+
+      .loginBtn {
+        width: 260px;
+        height: 90px;
+        font-size: 28px;
+        color: #fff;
+        background-color: rgba($color: #000000, $alpha: 0.2);
+        border: 0;
+        border-radius: 5px;
+        cursor: pointer;
+      }
     }
   }
 
