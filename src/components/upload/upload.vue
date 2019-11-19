@@ -5,8 +5,7 @@
       <div class="upload-imgs">
         <div class="add">
           <form id="formUpload" enctype="multipart/form-data">
-            <input @change="inputChange($event)" type="file" name="upload-images" accept='image/*' id="picture"
-              class="inputUpload" multiple />
+            <input @change="inputChange($event)" type="file" name="upload-images" accept='image/*' class="inputUpload" multiple />
             <i class="el-icon-plus addIcon"></i>
           </form>
         </div>
@@ -65,8 +64,8 @@
           let preview1 = document.getElementById("previewImg1");
           console.log(this.$store.state.imgUrl);
           for (let i = 0; i < this.imgurls.length - 1; i++) {
-            console.log('http://192.168.0.106:8080/stock/file/' + this.imgurls[i]);
-            this.$store.state.imgUrl += 'http://192.168.0.106:8080/stock/file/' + this.imgurls[i] + '|';
+            console.log('http://192.168.0.104:8080/stock/file/' + this.imgurls[i]);
+            this.$store.state.imgUrl += 'http://192.168.0.104:8080/stock/file/' + this.imgurls[i] + '|';
             let preview = document.createElement('div');
             preview.style.position = 'relative';
             preview.className = 'previewImg2';
@@ -80,7 +79,7 @@
             img.style.borderRadius = '5px';
             img.style.marginLeft = '10px';
             img.style.zIndex = 1;
-            img.src = 'http://192.168.0.106:8080/stock/file/' + this.imgurls[i];
+            img.src = 'http://192.168.0.104:8080/stock/file/' + this.imgurls[i];
             preview.appendChild(span);
             preview.appendChild(img);
             preview1.appendChild(preview);
@@ -93,7 +92,7 @@
               console.log('333333' + this.$store.state.imgUrl);
               preview1.removeChild(e.currentTarget.parentElement);
             }
-            console.log(this.$store.state.imgUrl);
+            console.log('444444'+this.$store.state.imgUrl);
           }
         }).catch((err) => {
           console.log(err);

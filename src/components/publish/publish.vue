@@ -63,26 +63,26 @@
           </el-select>
         </el-form-item>
         <el-form-item label="色号" required>
-          <el-input style="width:50%;" placeholder="请输入色号" v-model="colorId" @blur="colorIdBlur" clearable>
+          <el-input style="width:50%;" placeholder="请输入色号" v-model="colorId" @input="colorIdBlur" clearable>
           </el-input>
         </el-form-item>
         <el-form-item label="颜色">
-          <el-input style="width:50%;" v-model="color" clearable></el-input>
+          <el-input style="width:50%;" v-model="color" clearable disabled></el-input>
         </el-form-item>
         <el-form-item label="色系">
-          <el-input style="width:50%;" v-model="colorSeries" clearable></el-input>
+          <el-input style="width:50%;" v-model="colorSeries" clearable disabled></el-input>
         </el-form-item>
         <el-form-item label="刻度" required>
           <el-input style="width:50%;" placeholder="请输入刻度" v-model="letter" clearable></el-input>
         </el-form-item>
         <el-form-item label="状态" required>
           <el-checkbox-group v-model="stock" style="width:50%;">
-            <el-checkbox v-for="stock in stockStats" :label="stock" :key="stock">{{stock}}</el-checkbox>
+            <el-checkbox v-for="stocks in stockStats" :label="stocks" :key="stocks">{{stocks}}</el-checkbox>
           </el-checkbox-group>
         </el-form-item>
       </el-form-item>
       <el-form-item style="margin-left:40%;">
-        <button class="publish-button" @click="submitForm()">立即创建</button>
+        <button class="publish-button" @click="submitForm">立即创建</button>
       </el-form-item>
     </el-form>
   </div>
@@ -1298,13 +1298,15 @@
       },
       // 颜色色系
       colorIdBlur() {
+        this.color = '';
+        this.colorSeries = '';
         for (let i = 0; i < this.clrs.length; i++) {
           for (let j = 0; j < this.clrs[i].yanse.length; j++) {
             if (this.colorId.indexOf('/') !== -1) {
               this.colorList = this.colorId.split('/');
-              // console.log(this.colorList);
-              for (let x in this.colorList) {
-                if (this.colorList[x] == this.clrs[i].yanse[j].sehao) {
+              console.log(this.colorList);
+              for (let x of this.colorList) {
+                if (x == this.clrs[i].yanse[j].sehao) {
                   this.color += this.clrs[i].yanse[j].name + '拼';
                   this.colorSeries += this.clrs[i].sexi + '/';
                 }
@@ -1315,7 +1317,6 @@
                 this.colorSeries = this.clrs[i].sexi;
               }
             }
-
           }
         }
         this.color = this.color.slice(0, -1);
@@ -1382,7 +1383,7 @@
               showClose: true,
               duration: 2000
             })
-            // location.reload();
+            location.reload();
           }
         })
       },
@@ -1427,4 +1428,5 @@
   .el-form-item .el-form-item {
     margin-bottom: 10px;
   }
+
 </style>

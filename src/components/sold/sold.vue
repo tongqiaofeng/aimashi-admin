@@ -6,7 +6,7 @@
         <el-radio :label="1" class="onsale-top-radio">仅查看自己发布的商品</el-radio>
       </el-radio-group>
       <input placeholder="输入包款,大小,材质,色号,货号可搜索,如:H000001、000001、1" class="el-input__inner" v-model="searchKey"
-        @blur="searchProducts" />
+        @input="searchProducts" />
     </div>
     <table border="0" cellspacing="0" cellpadding="0" width="84%">
       <tr align="center">
@@ -165,7 +165,7 @@
                 colorSeries: this.searchKey
               }).then((res) => {
               console.log('1111' + res);
-              this.onSaleProducts = res.list;
+              this.onSaleProducts = res.data.list;
               console.log(this.onSaleProducts);
             })
           }

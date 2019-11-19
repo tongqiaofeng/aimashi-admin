@@ -6,7 +6,7 @@
         <el-radio :label="1" class="onsale-top-radio">仅查看自己发布的商品</el-radio>
       </el-radio-group>
       <input placeholder="输入包款,大小,材质,色号,货号可搜索,如:H000001、000001、1" class="el-input__inner" v-model="searchKey"
-        @blur="searchProducts" />
+        @input="searchProducts" />
     </div>
     <table border="0" cellspacing="0" cellpadding="0" width="84%">
       <tr align="center">
@@ -56,123 +56,115 @@
             </div>
             <div style="margin-right:10px;">
               <el-button type="text" @click="editProduct(item.id)" class="handle-button">编辑</el-button>
-              <el-dialog title="编辑商品" :visible.sync="dialogVisible" width="50%" style="margin-top:-10vh;">
-                <div>
-                  <div>
-                    <div style="text-align:left;margin-bottom:10px;">
-                      <div style="margin-bottom:15px;"><span style="font-size:15px;">最多上传9张图片</span></div>
-                      <div style="display:flex;">
-                        <div class="upload-imgs">
-                          <div class="add">
-                            <div id="previewImg">
-                              <form id="formUpload" enctype="multipart/form-data">
-                                <input @change="inputChange($event)" type="file" name="upload-images" accept='image/*'
-                                  class="inputUpload" multiple="multiple" />
-                                <i class="el-icon-plus addIcon"></i>
-                              </form>
-                            </div>
-                            <div style="display:flex;white-space:normal" id="delImg">
-                              <div v-for="(item,index) of imgSrc" :key="index"
-                                style="margin-left:10px;position:relative;">
-                                <span class="spanStyle" @click="delImage(item,index)">x</span>
-                                <img :src="item" width="100px" height="100px" style="border-radius:5px;object-fit:cover;">
-                              </div>
-                            </div>
-                            <div class="previewImg" id="previewImg1"> </div>
+              <el-dialog title="编辑商品" :visible.sync="dialogVisible" width="50%" style="margin-top:-10vh;z-index:2000">
+                <div style="text-align:left;margin-bottom:10px;">
+                  <div style="margin-bottom:15px;"><span style="font-size:15px;">最多上传9张图片</span></div>
+                  <div style="display:flex;">
+                    <div class="upload-imgs">
+                      <div class="add">
+                        <div id="previewImg">
+                          <form :id="item.id" enctype="multipart/form-data">
+                            <input @change="inputChange1($event,item.id)" type="file" name="upload-images"
+                              accept='image/*' class="inputUpload" multiple />
+                            <i class="el-icon-plus addIcon"></i>
+                          </form>
+                        </div>
+                        <div style="display:flex;" id="delImg">
+                          <div v-for="(item,index) of imgSrc" :key="index" style="margin-left:10px;position:relative;">
+                            <span class="spanStyle" @click="delImage(item,index)">x</span>
+                            <img :src="item" width="100px" height="100px" style="border-radius:5px;object-fit:cover;">
                           </div>
                         </div>
+                        <div class="previewImg" id="preview1"></div>
                       </div>
                     </div>
-                    <div style="margin-bottom:-80px;">
-                      <el-form ref="form" label-width="80px">
-                        <el-form-item label="入库时间" required>
-                          <el-col :span="11" style="margin-left:15.5%;">
-                            <el-form-item>
-                              <el-date-picker type="datetime" placeholder="请选择日期时间" v-model="createTime"
-                                style="width: 163%;">
-                              </el-date-picker>
-                            </el-form-item>
-                          </el-col>
-                        </el-form-item>
-                        <el-form-item label="价格" label-width="45px">
-                          <el-form-item label="价格币种" style="margin-left:0;" required>
-                            <el-select v-model="currencyId" placeholder="请选择" clearable style="width:80%;">
-                              <el-option v-for="item in currencyIds" :key="item.value" :label="item.label"
-                                :value="item.value">
-                              </el-option>
-                            </el-select>
-                          </el-form-item>
-                          <el-form-item label="成本价" style="margin-left:0;" required>
-                            <el-input style="width:80%;" type="text" placeholder="请输入成本价" v-model="cost" clearable>
-                            </el-input>
-                          </el-form-item>
-                          <el-form-item label="同行价" required>
-                            <el-input style="width:80%;" placeholder="请输入同行价" v-model="pricePeer" clearable></el-input>
-                          </el-form-item>
-                          <el-form-item label="散客价" required>
-                            <el-input style="width:80%;" placeholder="请输入散客价" v-model="priceIndi" clearable></el-input>
-                          </el-form-item>
-                          <el-form-item label="货源" required>
-                            <el-input style="width:80%;" placeholder="请输入货源" v-model="source" clearable></el-input>
-                          </el-form-item>
-                          <el-form-item label="库存地" required>
-                            <el-select v-model="stockLoc" placeholder="请选择" clearable style="width:80%;">
-                              <el-option v-for="item in stockLocs" :key="item.value" :label="item.label"
-                                :value="item.value">
-                              </el-option>
-                            </el-select>
-                          </el-form-item>
-                        </el-form-item>
-                        <el-form-item label="属性" label-width="45px">
-                          <el-form-item label="包款" required>
-                            <el-select v-model="model" placeholder="请选择" clearable @change="sizeSel" style="width:80%;">
-                              <el-option v-for="item in modelSize" :key="item.name" :label="item.name"
-                                :value="item.name">
-                              </el-option>
-                            </el-select>
-                          </el-form-item>
-                          <el-form-item label="大小" required>
-                            <el-select v-model="size" placeholder="请选择" clearable style="width:80%;">
-                              <el-option v-for="items in sizes" :key="items" :label="items" :value="items">
-                              </el-option>
-                            </el-select>
-                          </el-form-item>
-                          <el-form-item label="材质" required>
-                            <el-cascader v-model="leather" :options="leathers" @change="handleChange"
-                              style="width:80%;">
-                            </el-cascader>
-                          </el-form-item>
-                          <el-form-item label="金属质感" required>
-                            <el-select v-model="metal" placeholder="请选择" clearable style="width:80%;">
-                              <el-option v-for="item in metals" :key="item.value" :label="item.label"
-                                :value="item.value">
-                              </el-option>
-                            </el-select>
-                          </el-form-item>
-                          <el-form-item label="色号" required>
-                            <el-input style="width:80%;" placeholder="请输入色号" v-model="colorId" @blur="colorIdBlur"
-                              clearable>
-                            </el-input>
-                          </el-form-item>
-                          <el-form-item label="颜色">
-                            <el-input style="width:80%;" v-model="color" clearable></el-input>
-                          </el-form-item>
-                          <el-form-item label="色系">
-                            <el-input style="width:80%;" v-model="colorSeries" clearable></el-input>
-                          </el-form-item>
-                          <el-form-item label="刻度" required>
-                            <el-input style="width:80%;" placeholder="请输入刻度" v-model="letter" clearable></el-input>
-                          </el-form-item>
-                          <el-form-item label="状态" required>
-                            <el-checkbox-group v-model="stock">
-                              <el-checkbox v-for="stock in stockStats" :label="stock" :key="stock">{{stock}}
-                              </el-checkbox>
-                            </el-checkbox-group>
-                          </el-form-item>
-                        </el-form-item>
-                      </el-form>
-                    </div>
                   </div>
+                </div>
+                <div style="margin-bottom:-80px;">
+                  <el-form ref="form" label-width="80px">
+                    <el-form-item label="入库时间" required>
+                      <el-col :span="11" style="margin-left:15.5%;">
+                        <el-form-item>
+                          <el-date-picker type="datetime" placeholder="请选择日期时间" v-model="createTime"
+                            style="width: 163%;">
+                          </el-date-picker>
+                        </el-form-item>
+                      </el-col>
+                    </el-form-item>
+                    <el-form-item label="价格" label-width="45px">
+                      <el-form-item label="价格币种" style="margin-left:0;" required>
+                        <el-select v-model="currencyId" placeholder="请选择" clearable style="width:80%;">
+                          <el-option v-for="item in currencyIds" :key="item.value" :label="item.label"
+                            :value="item.value">
+                          </el-option>
+                        </el-select>
+                      </el-form-item>
+                      <el-form-item label="成本价" style="margin-left:0;" required>
+                        <el-input style="width:80%;" type="text" placeholder="请输入成本价" v-model="cost" clearable>
+                        </el-input>
+                      </el-form-item>
+                      <el-form-item label="同行价" required>
+                        <el-input style="width:80%;" placeholder="请输入同行价" v-model="pricePeer" clearable></el-input>
+                      </el-form-item>
+                      <el-form-item label="散客价" required>
+                        <el-input style="width:80%;" placeholder="请输入散客价" v-model="priceIndi" clearable></el-input>
+                      </el-form-item>
+                      <el-form-item label="货源" required>
+                        <el-input style="width:80%;" placeholder="请输入货源" v-model="source" clearable></el-input>
+                      </el-form-item>
+                      <el-form-item label="库存地" required>
+                        <el-select v-model="stockLoc" placeholder="请选择" clearable style="width:80%;">
+                          <el-option v-for="item in stockLocs" :key="item.value" :label="item.label"
+                            :value="item.value">
+                          </el-option>
+                        </el-select>
+                      </el-form-item>
+                    </el-form-item>
+                    <el-form-item label="属性" label-width="45px">
+                      <el-form-item label="包款" required>
+                        <el-select v-model="model" placeholder="请选择" clearable @change="sizeSel" style="width:80%;">
+                          <el-option v-for="item in modelSize" :key="item.name" :label="item.name" :value="item.name">
+                          </el-option>
+                        </el-select>
+                      </el-form-item>
+                      <el-form-item label="大小" required>
+                        <el-select v-model="size" placeholder="请选择" clearable style="width:80%;">
+                          <el-option v-for="items in sizes" :key="items" :label="items" :value="items">
+                          </el-option>
+                        </el-select>
+                      </el-form-item>
+                      <el-form-item label="材质" required>
+                        <el-cascader v-model="leather" :options="leathers" @change="handleChange" style="width:80%;">
+                        </el-cascader>
+                      </el-form-item>
+                      <el-form-item label="金属质感" required>
+                        <el-select v-model="metal" placeholder="请选择" clearable style="width:80%;">
+                          <el-option v-for="item in metals" :key="item.value" :label="item.label" :value="item.value">
+                          </el-option>
+                        </el-select>
+                      </el-form-item>
+                      <el-form-item label="色号" required>
+                        <el-input style="width:80%;" placeholder="请输入色号" v-model="colorId" @input="colorIdBlur"
+                          clearable>
+                        </el-input>
+                      </el-form-item>
+                      <el-form-item label="颜色">
+                        <el-input style="width:80%;" v-model="color" clearable disabled></el-input>
+                      </el-form-item>
+                      <el-form-item label="色系">
+                        <el-input style="width:80%;" v-model="colorSeries" clearable disabled></el-input>
+                      </el-form-item>
+                      <el-form-item label="刻度" required>
+                        <el-input style="width:80%;" placeholder="请输入刻度" v-model="letter" clearable></el-input>
+                      </el-form-item>
+                      <el-form-item label="状态" required>
+                        <el-checkbox-group v-model="stock">
+                          <el-checkbox v-for="stock in stockStats" :label="stock" :key="stock">{{stock}}
+                          </el-checkbox>
+                        </el-checkbox-group>
+                      </el-form-item>
+                    </el-form-item>
+                  </el-form>
                 </div>
                 <span slot="footer" class="dialog-footer">
                   <el-button @click="dialogVisible = false" style="width:100px;color:#9695f3;margin-right:20px;">取 消
@@ -193,7 +185,6 @@
                     <el-form-item label="客户名称">
                       <el-input v-model="customer" placeholder="请输入客户名称"></el-input>
                     </el-form-item>
-
                     <el-form-item label="出库时间">
                       <el-date-picker type="datetime" placeholder="请选择日期时间" v-model="soldTime" style="width: 100%;">
                       </el-date-picker>
@@ -1543,7 +1534,7 @@
                 colorSeries: this.searchKey
               }).then((res) => {
               console.log('1111' + res);
-              this.onSaleProducts = res.list;
+              this.onSaleProducts = res.data.list;
               console.log(this.onSaleProducts);
             })
           }
@@ -1559,6 +1550,8 @@
       },
       // 颜色色系的判断
       colorIdBlur() {
+        this.color = '';
+        this.colorSeries = '';
         for (let i = 0; i < this.clrs.length; i++) {
           for (let j = 0; j < this.clrs[i].yanse.length; j++) {
             if (this.colorId.indexOf('/') !== -1) {
@@ -1568,6 +1561,7 @@
                 if (this.colorList[x] == this.clrs[i].yanse[j].sehao) {
                   this.color += this.clrs[i].yanse[j].name + '拼';
                   this.colorSeries += this.clrs[i].sexi + '/';
+                  console.log(this.color+this.colorSeries);
                 }
               }
             } else {
@@ -1633,6 +1627,7 @@
             showClose: true,
             duration: 1500
           })
+          location.reload();
         }).catch((err) => {
           console.log(err);
         })
@@ -1641,6 +1636,7 @@
       editProduct(id) {
         console.log('2222222222');
         console.log(id);
+        this.uploadId = id;
         if (this.self == 1) {
           this.dialogVisible = true;
         } else {
@@ -1653,7 +1649,7 @@
         }
         this.$store.state.imgUrl = "";
         console.log('ggggggg' + this.$store.state.imgUrl);
-        this.$axios.get(this.$store.state.baseUrl + '/detail?id=' + id).then((res) => {
+        this.$axios.get(this.$store.state.baseUrl + '/detail?id=' + this.uploadId).then((res) => {
           console.log(res.data.pics.split("|"));
           this.id = res.data.id;
           this.pics = res.data.pics;
@@ -1688,6 +1684,8 @@
       },
       // 删除图片
       delImage(item, index) {
+        this.$store.state.imgUrl = '';
+        console.log('-----'+item);
         console.log(index);
         let delImg = document.getElementById("delImg");
         let child = delImg.children;
@@ -1698,19 +1696,24 @@
         console.log(this.delList);
         this.delList.splice(index, 1);
         this.imgSrc.splice(index, 1);
+        console.log(this.imgSrc);
         let b = item + "|";
-        this.$store.state.imgUrl = this.$store.state.imgUrl.replace(b, "");
+        console.log(b);
+        for(let src of this.imgSrc){
+          this.$store.state.imgUrl += src + "|";
+        }
         console.log(this.$store.state.imgUrl);
       },
       // 上传图片
-      inputChange(file) {
-        let formUpload = document.getElementById('formUpload');
-        let formdata = new FormData(formUpload);
+      inputChange1(file, id) {
+        let formUpload1 = document.getElementById(id);
+        console.log(formUpload1);
+        let formdata1 = new FormData(formUpload1);
         console.log(file);
         let imgFiles = file.target.files;
         console.log(imgFiles);
-        formdata.append('upload-images', imgFiles);
-        console.log('---' + formdata.get('upload-imgs'));
+        formdata1.append('upload-images', imgFiles);
+        console.log('---' + formdata1.get('upload-imgs'));
         for (let i = 0; i < imgFiles.length; i++) {
           let filePath = imgFiles[i].name;
           let fileFormat = filePath.split('.')[1].toLowerCase();
@@ -1719,14 +1722,14 @@
             return
           };
         }
-        this.uploadImg(formdata);
+        this.uploadImg(formdata1);
       },
-      uploadImg(formdata) {
-        console.log(formdata);
-        formdata.append('state', 0);
-        formdata.append('type', 0);
+      uploadImg(formdata1) {
+        console.log(formdata1);
+        formdata1.append('state', 0);
+        formdata1.append('type', 0);
         console.log('11111');
-        this.$axios.post(this.$store.state.baseUrl + '/upload', formdata).then((res) => {
+        this.$axios.post(this.$store.state.baseUrl + '/upload', formdata1).then((res) => {
           if (res.status == 200) {
             this.$message.success({
               message: '图片上传成功',
@@ -1737,35 +1740,13 @@
           console.log(res);
           this.imgurls = res.data.split("|");
           console.log(this.imgurls);
-          let preview1 = document.getElementById("previewImg1");
+          let preview1 = document.getElementById("preview1");
           console.log(this.$store.state.imgUrl);
           for (let i = 0; i < this.imgurls.length - 1; i++) {
-            console.log('http://192.168.0.106:8080/stock/file/' + this.imgurls[i]);
-            this.$store.state.imgUrl += 'http://192.168.0.106:8080/stock/file/' + this.imgurls[i] + ' | ';
-            let preview = document.createElement('div');
-            preview.style.position = 'relative';
-            preview.className = 'previewImg2';
-            let span = document.createElement('span');
-            span.innerHTML = 'x';
-            span.className = 'spanStyle';
-            let img = document.createElement("img");
-            img.width = 100;
-            img.height = 100;
-            img.style.objectFit = 'cover';
-            img.style.borderRadius = '5px';
-            img.style.marginLeft = '10px';
-            img.style.zIndex = 1;
-            img.src = 'http://192.168.0.106:8080/stock/file/' + this.imgurls[i];
-            preview.appendChild(span);
-            preview.appendChild(img);
-            preview1.appendChild(preview);
-            span.onclick = (e) => {
-              let b = e.currentTarget.nextElementSibling.src + "|";
-              console.log('------' + b);
-              this.$store.state.imgUrl = this.$store.state.imgUrl.replace(b, "");
-              console.log('333333' + this.$store.state.imgUrl);
-              preview1.removeChild(e.currentTarget.parentElement);
-            }
+            console.log('http://192.168.0.104:8080/stock/file/' + this.imgurls[i]);
+            this.$store.state.imgUrl += 'http://192.168.0.104:8080/stock/file/' + this.imgurls[i] + ' | ';
+            let a = 'http://192.168.0.104:8080/stock/file/' + this.imgurls[i];
+            this.imgSrc.push(a);
             console.log(this.$store.state.imgUrl);
           }
         }).catch((err) => {
@@ -1814,7 +1795,7 @@
               duration: 2000
             })
             this.dialogVisible = false;
-            // location.reload();
+            location.reload();
           }
         }).catch((err) => {
           console.log(err);
@@ -1828,8 +1809,6 @@
       },
       // 确认出库
       sellSure() {
-        // this.id = item.id;
-        // this.bill = item.bill;
         this.$axios.post(this.$store.state.baseUrl + '/sell', {
           id: this.soldId,
           bill: this.soldBill,
@@ -1843,7 +1822,8 @@
             message: '出库成功',
             showClose: true,
             duration: 2000
-          })
+          });
+          location.reload();
         }).catch((err) => {
           console.log(err);
         })
@@ -1987,21 +1967,31 @@
   .previewImg2 {
     display: flex;
   }
-
+  .previewImg2{
+    z-index: 9999;
+  }
   .spanStyle {
     width: 15px;
     height: 15px;
+    position: absolute;
+    top: 1px;
+    right: 1px;
     text-align: center;
     line-height: 0.7;
     background-color: rgb(221, 221, 221);
     color: rgb(255, 255, 255);
     border: 1px solid rgb(221, 221, 221);
     border-radius: 50%;
-    position: absolute;
-    top: 1px;
-    right: 1px;
     z-index: 999;
     cursor: pointer;
+  }
+  .imgStyle{
+    width: 100px;
+    height: 100px;
+    margin-left: 10px;
+    object-fit: cover;
+    border-radius: 5px;
+    z-index: 1;
   }
 
   .el-dialog--center .el-dialog__body {
@@ -2093,4 +2083,3 @@
   }
 
 </style>
- 

@@ -36,8 +36,8 @@
           <el-col :span="24" class="main-top">
             <el-row>
               <div class="main-top-left">
-                <span style="margin-top:2px;cursor:pointer;" class="fint-size" @click="jump">首页</span>
-                <span style="font-size:13px;line-height:2.3">
+                <span style="cursor:pointer;" class="first-fint-size" @click="jump">首页</span>
+                <span style="font-size:12px;line-height:2.3">
                   <span v-if="selected==1" class="fint-size">
                     <i class="el-icon-arrow-right"></i>个人数据
                     <i class="el-icon-arrow-right"></i>在售商品
@@ -56,9 +56,9 @@
                 </span>
               </div>
               <div class="main-top-right">
-                <span
-                  style="font-weight:bold;font-size:22px;">您好，{{this.$store.state.currentRole=='admin'?'管理员':(this.$store.state.currentRole=='peer'?'同行':'')}}
-                  !</span>
+                <span style="font-weight:bold;font-size:22px;">
+                  您好，{{this.$store.state.currentRole=='admin'?'管理员':(this.$store.state.currentRole=='peer'?'同行':'')}}!
+                </span>
               </div>
             </el-row>
           </el-col>
@@ -221,6 +221,7 @@
       padding-left: 40px;
       line-height: 100px;
       border-bottom: 1px solid #dedede;
+      box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 
       .main-top-left {
         position: absolute;
@@ -228,9 +229,12 @@
         left: 0;
         display: flex;
         line-height: 2;
-
+        .first-fint-size{
+          font-size: 18px;
+        }
         .fint-size {
-          font-size: 20px;
+          font-size: 16px;
+          color: #aaa;
         }
       }
 

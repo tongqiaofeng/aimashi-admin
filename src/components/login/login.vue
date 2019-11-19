@@ -66,6 +66,7 @@
                 showClose: true,
                 duration: 2000
               });
+              sessionStorage.setItem('username',this.loginForm.username);
               // 将用户角色和token放入sessionStorage
               sessionStorage.setItem('role', res.data.role);
               sessionStorage.setItem('token', res.data.token);

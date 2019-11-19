@@ -1,8 +1,11 @@
 <template>
   <div class="export-container">
     <div v-if="this.$store.state.currentRole == 'admin'" class="seller-style">
-      <span>卖家</span>
-      <input type="text" v-model="seller" placeholder="请输入卖家用户名" class="seller-input-style">
+      <span style="margin-right:8.6%;">卖家</span>
+      <el-select v-model="seller" placeholder="请选择" @focus="sellerUsername" width="100%">
+        <el-option v-for="item in sellerList" :key="item" :label="item" :value="item">
+        </el-option>
+      </el-select>
     </div>
     <div class="create-time-style">
       <span>入库时间</span>
@@ -33,6 +36,7 @@
   export default {
     data() {
       return {
+        sellerList: [],
         seller: '',
         in1: '',
         in2: '',
@@ -40,7 +44,20 @@
         out2: ''
       }
     },
+    created() {
+      this.sellerList.push(sessionStorage.getItem('username'));
+    },
     methods: {
+      // 获取卖家用户名
+      sellerUsername() {
+        this.$axios.get(this.$store.state.baseUrl + '/clients').then((res) => {
+          console.log(res);
+          for(let item of res.data){
+            this.sellerList.push(item);
+          }
+          console.log(this.sellerList);
+        })
+      },
       // 时间转换
       transitionTime(time) {
         if (time) {
@@ -61,6 +78,7 @@
           return y + "-" + m + "-" + d + " " + h + ":" + m1 + ":" + s;
         }
       },
+      // 导出Excel表格
       exportExcel() {
         this.in1 = this.transitionTime(this.in1);
         this.in2 = this.transitionTime(this.in2);
@@ -100,6 +118,7 @@
     position: absolute;
     top: 0;
     left: 5%;
+
     .seller-style,
     .create-time-style {
       display: flex;
@@ -147,10 +166,12 @@
       }
 
     }
-    .export-button{
+
+    .export-button {
       margin-top: 40px;
       margin-left: 70%;
-      .export-excel{
+
+      .export-excel {
         width: 160px;
         height: 48px;
         background: url('../../assets/imgs/export.png') no-repeat;
@@ -160,7 +181,8 @@
         color: #fff;
         cursor: pointer;
       }
-      .export-excel:focus{
+
+      .export-excel:focus {
         outline: 0;
       }
     }
@@ -191,5 +213,4 @@
     height: 48px;
     border-radius: 10px;
   }
-
 </style>
