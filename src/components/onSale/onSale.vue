@@ -63,13 +63,13 @@
                     <div class="upload-imgs">
                       <div class="add">
                         <div id="previewImg">
-                          <form :id="item.id" enctype="multipart/form-data">
+                          <form :id="item.id" enctype="multipart/form-data" style="width:100px;height:100px;">
                             <input @change="inputChange1($event,item.id)" type="file" name="upload-images"
                               accept='image/*' class="inputUpload" multiple />
                             <i class="el-icon-plus addIcon"></i>
                           </form>
                         </div>
-                        <div style="display:flex;" id="delImg">
+                        <div style="display:flex;position:relative;" id="delImg">
                           <div v-for="(item,index) of imgSrc" :key="index" style="margin-left:10px;position:relative;">
                             <span class="spanStyle" @click="delImage(item,index)">x</span>
                             <img :src="item" width="100px" height="100px" style="border-radius:5px;object-fit:cover;">
@@ -1780,8 +1780,7 @@
           letter: this.letter,
           stockStat: this.stockStat,
           name: this.model + ' ' + this.size + ' ' + this.colorId + ' ' + this.color + ' ' + this.leather +
-            ' ' +
-            this.metal,
+            ' ' + this.metal,
           colorSeries: this.colorSeries,
           saleStat: "出售中",
           sold: this.sold,
@@ -1930,6 +1929,7 @@
     display: flex;
 
     .add {
+      width: 100px;
       height: 100px;
       position: relative;
       display: flex;
@@ -1938,16 +1938,18 @@
         width: 50px;
         height: 50px;
         position: absolute;
-        top: 45%;
-        left: 45%;
+        top: 44.5%;
+        left: 44%;
         z-index: 1;
       }
 
       .inputUpload {
-        position: absolute;
-        display: block;
         width: 100px;
         height: 100px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: block;
         opacity: 0;
         cursor: pointer;
         z-index: 999;
