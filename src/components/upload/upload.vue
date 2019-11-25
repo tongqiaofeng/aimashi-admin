@@ -5,7 +5,8 @@
       <div class="upload-imgs">
         <div class="add">
           <form id="formUpload" enctype="multipart/form-data">
-            <input @change="inputChange($event)" type="file" name="upload-images" accept='image/*' class="inputUpload" multiple />
+            <input @change="inputChange($event)" type="file" name="upload-images" accept='image/*' class="inputUpload"
+              multiple />
             <i class="el-icon-plus addIcon"></i>
           </form>
         </div>
@@ -34,17 +35,26 @@
         console.log(file);
         let imgFiles = file.target.files;
         console.log(imgFiles);
-        formdata.append('upload-images', imgFiles);
-        console.log('---' + formdata.get('upload-imgs'));
-        for (let i = 0; i < imgFiles.length; i++) {
-          let filePath = imgFiles[i].name;
-          let fileFormat = filePath.split('.')[1].toLowerCase();
-          if (!fileFormat.match(/png|jpg|jpeg/)) {
-            alert('上传错误，文件格式必须为：png/jpg/jpeg');
-            return
-          };
+        if (imgFiles.length > 9) {
+          this.$message.error({
+            message: '最多上传9张图片，请重新选择',
+            showClose: true,
+            duration: 2000
+          })
+        } else {
+          formdata.append('upload-images', imgFiles);
+          console.log('---' + formdata.get('upload-imgs'));
+          for (let i = 0; i < imgFiles.length; i++) {
+            let filePath = imgFiles[i].name;
+            let fileFormat = filePath.split('.')[1].toLowerCase();
+            if (!fileFormat.match(/png|jpg|jpeg/)) {
+              alert('上传错误，文件格式必须为：png/jpg/jpeg');
+              return
+            };
+          }
+          this.uploadImg(formdata);
         }
-        this.uploadImg(formdata);
+
       },
       uploadImg(formdata) {
         // console.log(this.formData);
@@ -64,8 +74,8 @@
           let preview1 = document.getElementById("previewImg1");
           console.log(this.$store.state.imgUrl);
           for (let i = 0; i < this.imgurls.length - 1; i++) {
-            console.log('http://192.168.0.104:8080/stock/file/' + this.imgurls[i]);
-            this.$store.state.imgUrl += 'http://192.168.0.104:8080/stock/file/' + this.imgurls[i] + '|';
+            console.log(this.$store.state.baseUrl + '/file/' + this.imgurls[i]);
+            this.$store.state.imgUrl += this.$store.state.baseUrl + '/file/' + this.imgurls[i] + '|';
             let preview = document.createElement('div');
             preview.style.position = 'relative';
             preview.className = 'previewImg2';
@@ -73,13 +83,13 @@
             span.innerHTML = 'x';
             span.className = 'spanStyle';
             let img = document.createElement("img");
-            img.width = 150;
-            img.height = 150;
+            img.width = 100;
+            img.height = 100;
             img.style.objectFit = 'cover';
             img.style.borderRadius = '5px';
             img.style.marginLeft = '10px';
             img.style.zIndex = 1;
-            img.src = 'http://192.168.0.104:8080/stock/file/' + this.imgurls[i];
+            img.src = this.$store.state.baseUrl + '/file/' + this.imgurls[i];
             preview.appendChild(span);
             preview.appendChild(img);
             preview1.appendChild(preview);
@@ -87,13 +97,38 @@
               let b = e.currentTarget.nextElementSibling.src + "|";
               console.log('------' + b);
               console.log(this.$store.state.imgUrl);
-              let a = this.$store.state.imgUrl.replace(b,"");
+              let a = this.$store.state.imgUrl.replace(b, "");
               this.$store.state.imgUrl = a;
               console.log('333333' + this.$store.state.imgUrl);
               preview1.removeChild(e.currentTarget.parentElement);
             }
-            console.log('444444'+this.$store.state.imgUrl);
+            console.log('444444' + this.$store.state.imgUrl);
           }
+          console.log(this.$store.state.imgUrl);
+          let arr = this.$store.state.imgUrl.match(/[|]/g);
+          if (arr.length > 9) {
+            this.$message.error({
+              message: '最多上传9张图片',
+              showClose: true,
+              duration: 2000
+            })
+            console.log(preview1.childNodes);
+            for (let index in preview1.childNodes) {
+              if (index > 7) {
+                preview1.removeChild(preview1.childNodes[index])
+              }
+            }
+            let b = this.$store.state.imgUrl.split("|");
+            console.log(b);
+            let e = b.length - 9;
+            let c = b.splice(-e, e);
+            console.log(b);
+            this.$store.state.imgUrl = "";
+            for (let item of b) {
+              this.$store.state.imgUrl += item + '|';
+            }
+          }
+          console.log(this.$store.state.imgUrl);
         }).catch((err) => {
           console.log(err);
         })
@@ -110,8 +145,8 @@
     display: flex;
 
     .add {
-      width: 150px;
-      height: 150px;
+      width: 100px;
+      height: 100px;
       position: relative;
       border: 1px solid #ddd;
       border-radius: 5px;
@@ -129,8 +164,8 @@
       .inputUpload {
         position: absolute;
         display: block;
-        width: 150px;
-        height: 150px;
+        width: 100px;
+        height: 100px;
         opacity: 0;
         cursor: pointer;
         z-index: 999;

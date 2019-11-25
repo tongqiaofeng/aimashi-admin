@@ -162,7 +162,7 @@
     .login-form {
       position: absolute;
       top: 590px;
-      left: 204px;
+      left: 25%;
 
       .user-input,
       .pass-input {

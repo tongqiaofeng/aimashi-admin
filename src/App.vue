@@ -1,6 +1,5 @@
 <template>
   <div id="app">
-    <!-- <img src="./assets/logo.png"> -->
     <div v-show="!isLogin">
       <Login></Login>
     </div>
@@ -30,6 +29,8 @@
         } else {
           this.$store.commit('userStatus', null);
         }
+        console.log('ddd');
+        console.log(this.$store.getters.isLogin);
         return this.$store.getters.isLogin;
       }
     },

@@ -82,7 +82,7 @@
         </el-form-item>
       </el-form-item>
       <el-form-item style="margin-left:40%;">
-        <button class="publish-button" @click="submitForm">立即创建</button>
+        <input type="button" class="publish-button" @click="submitForm" value="立即创建">
       </el-form-item>
     </el-form>
   </div>
@@ -95,13 +95,16 @@
             id: 1,
             name: "Kelly 凯莉包",
             size: ["Kelly Mini", "Kelly Mini 2", "Kelly 25", "Kelly 28", "Kelly 32", "Kelly 35", "Kelly 40",
-              "Kelly 50"
+              "Kelly 50", "Kelly Depeche 34", "Kelly Depeche 38", "Kelly Depeche 25 Pochette", "Kelly Picnic Mini",
+              "Kelly Lakis 32"
             ]
           },
           {
             id: 2,
             name: "Birkin 铂金包",
-            size: ["Birkin Mini", "Birkin 25", "Birkin 30", "Birkin 35", "Birkin 40", "Birkin 45", "Birkin 50"]
+            size: ["Birkin Mini", "Birkin 25", "Birkin 30", "Birkin 35", "Birkin 40", "Birkin 45", "Birkin 50",
+              "Birkin Shadow 35"
+            ]
           },
           {
             id: 3,
@@ -336,6 +339,9 @@
             }, {
               value: '马鞍皮',
               label: '马鞍皮',
+            }, {
+              value: '竹篮子',
+              label: '竹篮子'
             }]
           }
         ],
@@ -1273,7 +1279,11 @@
         ],
 
         stockStats: ['全新', '9.9成新', '齐膜', '有轻微划痕', '有压痕', '发票', '鳄鱼皮证书', '说明书', '锁扣', '肩带', '盒子', '绒布', '雨衣'],
-        colorList: []
+        colorList: [],
+        b: '',
+        c: '',
+        e: '',
+        d: ''
       }
     },
     methods: {
@@ -1298,32 +1308,55 @@
       },
       // 颜色色系
       colorIdBlur() {
+        this.b = '';
+        this.c = '';
+        this.e = '';
+        this.d = '';
         this.color = '';
         this.colorSeries = '';
-        for (let i = 0; i < this.clrs.length; i++) {
-          for (let j = 0; j < this.clrs[i].yanse.length; j++) {
-            if (this.colorId.indexOf('/') !== -1) {
-              this.colorList = this.colorId.split('/');
-              console.log(this.colorList);
-              for (let x of this.colorList) {
-                if (x == this.clrs[i].yanse[j].sehao) {
-                  this.color += this.clrs[i].yanse[j].name + '拼';
-                  this.colorSeries += this.clrs[i].sexi + '/';
+        for (let i in this.clrs) {
+          for (let j in this.clrs[i].yanse) {
+            if (this.colorId.match(/[a-z]/g) !== null) {
+              this.colorId = this.colorId.toUpperCase();
+              if (this.colorId.indexOf('/') !== -1) {
+                this.colorList = this.colorId.split('/');
+                if (this.colorList[0] == this.clrs[i].yanse[j].sehao) {
+                  this.e = this.clrs[i].yanse[j].name;
+                  this.b = this.clrs[i].sexi;
+                }
+                if (this.colorList[1] == this.clrs[i].yanse[j].sehao) {
+                  this.d = this.clrs[i].yanse[j].name;
+                  this.c = this.clrs[i].sexi;
+                }
+                this.color = this.e + '拼' + this.d;
+                this.colorSeries = this.b + '/' + this.c;
+              } else {
+                if (this.colorId == this.clrs[i].yanse[j].sehao) {
+                  this.color = this.clrs[i].yanse[j].name;
+                  this.colorSeries = this.clrs[i].sexi;
                 }
               }
             } else {
-              if (this.colorId == this.clrs[i].yanse[j].sehao) {
-                this.color = this.clrs[i].yanse[j].name;
-                this.colorSeries = this.clrs[i].sexi;
+              if (this.colorId.indexOf('/') !== -1) {
+                this.colorList = this.colorId.split('/');
+                if (this.colorList[0] == this.clrs[i].yanse[j].sehao) {
+                  this.e = this.clrs[i].yanse[j].name;
+                  this.b = this.clrs[i].sexi;
+                }
+                if (this.colorList[1] == this.clrs[i].yanse[j].sehao) {
+                  this.d = this.clrs[i].yanse[j].name;
+                  this.c = this.clrs[i].sexi;
+                }
+                this.color = this.e + '拼' + this.d;
+                this.colorSeries = this.b + '/' + this.c;
+              } else {
+                if (this.colorId == this.clrs[i].yanse[j].sehao) {
+                  this.color = this.clrs[i].yanse[j].name;
+                  this.colorSeries = this.clrs[i].sexi;
+                }
               }
             }
           }
-        }
-        this.color = this.color.slice(0, -1);
-        this.colorSeries = this.colorSeries.slice(0, -1);
-        if (this.colorId == '') {
-          this.color = '';
-          this.colorSeries = '';
         }
       },
       // 时间转换
@@ -1347,12 +1380,26 @@
         }
       },
       // 提交
+      data1() {
+        if (this.createTime == '' || this.currencyId == '' || this.cost == '' || this.pricePeer == '' || this.priceIndi == '' ||
+          this.source == '' || this.stockLoc == '' || this.model == '' || this.size == '' || this.leather == '' || this.metal == '' ||
+          this.colorId == '' || this.letter == '' || this.stock == '') {
+          alert('数据不能为空，请检查数据的填写');
+          return 1;
+        }
+      },
       submitForm() {
+        if (this.data1() !== 1) {
+          this.updateData();
+        }
+      },
+      updateData() {
         for (let item of this.stock) {
           this.stockStat += item + '|';
         }
+        console.log('ppppp');
         console.log(this.$store.state.imgUrl);
-        this.$axios.post(this.$store.state.baseUrl + '/insert', {
+        let params = {
           pics: this.$store.state.imgUrl,
           createTime: this.transitionTime(this.createTime),
           currencyId: this.currencyId,
@@ -1374,7 +1421,8 @@
           colorSeries: this.colorSeries,
           saleStat: "出售中",
           sold: "0"
-        }).then((res) => {
+        };
+        this.$axios.post(this.$store.state.baseUrl + '/insert', params).then((res) => {
           console.log('1111tong');
           console.log(res);
           if (res.status == 200) {
@@ -1385,8 +1433,14 @@
             })
             location.reload();
           }
+        }).catch((err) => {
+          this.$message.error({
+            message: err,
+            showClose: true,
+            duration: 6000
+          })
         })
-      },
+      }
     }
   }
 

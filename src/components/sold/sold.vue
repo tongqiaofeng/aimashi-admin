@@ -33,9 +33,9 @@
         <td>{{item.customer}}</td>
         <td>{{item.soldTime}}</td>
         <td>{{item.name}}</td>
-        <td>{{moneys(item.currencyId)+item.cost}}</td>
-        <td>{{moneys(item.currencyId)+item.priceTran}}</td>
-        <td>{{moneys(item.currencyId)+money(item.cost,item.priceTran)}}</td>
+        <td>{{moneys(item.currencyId)+' '+formatNumberRgx(item.cost)}}</td>
+        <td>{{moneys(item.currencyId)+' '+formatNumberRgx(item.priceTran)}}</td>
+        <td>{{moneys(item.currencyId)+' '+money(item.cost,item.priceTran)}}</td>
         <td>{{timeLong(item.createTime)}}天</td>
       </tr>
     </table>
@@ -126,12 +126,18 @@
           return 'AUD';
         }
       },
+      // 千分钱数
+      formatNumberRgx(num) {
+        let parts = num.toString().split(".");
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return parts.join(".");
+      },
       // 利润计算
       money(x, y) {
         console.log(x, y);
         let money = y - x;
         console.log(money);
-        return money;
+        return this.formatNumberRgx(money);
       },
       // 模糊查询
       searchProducts() {

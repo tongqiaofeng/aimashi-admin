@@ -23,11 +23,6 @@ export default new Router({
       component: () => import('@/components/home/home'),
       children: [
         {
-          path: '/',
-          name: 'onsale',
-          component: () => import('@/components/onSale/onSale'),
-        },
-        {
           path: '/onsale',
           name: 'onsale',
           component: () => import('@/components/onSale/onSale'),

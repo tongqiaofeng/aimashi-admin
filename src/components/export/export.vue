@@ -10,20 +10,20 @@
     <div class="create-time-style">
       <span>入库时间</span>
       <div class="create">
-        <el-date-picker v-model="in1" type="datetime" placeholder="开始日期时间" class="create-time-input-style1">
+        <el-date-picker v-model="in1" type="datetime" placeholder="开始日期时间" class="create-time-input-style1" :disabled="isSelect1" @input="selectSure">
         </el-date-picker>
         <span class="create-time-span-style">至</span>
-        <el-date-picker v-model="in2" type="datetime" placeholder="结束日期时间" class="create-time-input-style2">
+        <el-date-picker v-model="in2" type="datetime" placeholder="结束日期时间" class="create-time-input-style2" :disabled="isSelect1" @input="selectSure">
         </el-date-picker>
       </div>
     </div>
     <div class="create-time-style">
       <span>出库时间</span>
       <div class="create">
-        <el-date-picker v-model="out1" type="datetime" placeholder="开始日期时间" class="create-time-input-style1">
+        <el-date-picker v-model="out1" type="datetime" placeholder="开始日期时间" class="create-time-input-style1" :disabled="isSelect2" @input="selectSure2">
         </el-date-picker>
         <span class="create-time-span-style">至</span>
-        <el-date-picker v-model="out2" type="datetime" placeholder="结束日期时间" class="create-time-input-style2">
+        <el-date-picker v-model="out2" type="datetime" placeholder="结束日期时间" class="create-time-input-style2" :disabled="isSelect2" @input="selectSure2">
         </el-date-picker>
       </div>
     </div>
@@ -41,11 +41,14 @@
         in1: '',
         in2: '',
         out1: '',
-        out2: ''
+        out2: '',
+        isSelect1: false,
+        isSelect2: false
       }
     },
     created() {
       this.sellerList.push(sessionStorage.getItem('username'));
+      this.seller = sessionStorage.getItem('username');
     },
     methods: {
       // 获取卖家用户名
@@ -57,6 +60,22 @@
           }
           console.log(this.sellerList);
         })
+      },
+      // 确定选择时间
+      selectSure(){
+        if(this.in1 !== '' && this.in2 !== ''){
+          this.isSelect2 = true;
+        }
+        if(this.in1 == '' && this.in2 == ''){
+          this.isSelect2 = false;
+        }
+      },
+      selectSure2(){
+        if(this.out1 !== '' && this.out2 !== ''){
+          this.isSelect1 = true;
+        }else{
+          this.isSelect1 = false;
+        }
       },
       // 时间转换
       transitionTime(time) {

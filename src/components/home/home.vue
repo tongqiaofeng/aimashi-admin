@@ -64,10 +64,10 @@
           </el-col>
           <el-col :span="24" style="position:absolute;top:100px;left:16%;">
             <div>
-              <onSale v-if="selected==1"></onSale>
-              <sold v-if="selected==2"></sold>
-              <export v-if="selected==3"></export>
-              <publish v-if="selected==4"></publish>
+              <onSale v-show="selected==1"></onSale>
+              <sold v-show="selected==2"></sold>
+              <export v-show="selected==3"></export>
+              <publish v-show="selected==4"></publish>
             </div>
           </el-col>
         </el-main>
@@ -229,9 +229,11 @@
         left: 0;
         display: flex;
         line-height: 2;
-        .first-fint-size{
+
+        .first-fint-size {
           font-size: 18px;
         }
+
         .fint-size {
           font-size: 16px;
           color: #aaa;
@@ -340,6 +342,7 @@
       height: 160px;
       animation-delay: 5s;
     }
+
     // 自定义 square 动画；
     @keyframes square {
       0% {

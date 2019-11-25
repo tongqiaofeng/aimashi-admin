@@ -31,9 +31,9 @@
             <img :src="item.pics.split('|')[0]" style="width:100px;height:100px;object-fit:cover;" />
           </div>
         </td>
-        <td>{{moneys(item.currencyId)+item.cost}}</td>
-        <td>{{moneys(item.currencyId)+item.pricePeer}}</td>
-        <td>{{moneys(item.currencyId)+item.priceIndi}}</td>
+        <td>{{moneys(item.currencyId)+' '+formatNumberRgx(item.cost)}}</td>
+        <td>{{moneys(item.currencyId)+' '+formatNumberRgx(item.pricePeer)}}</td>
+        <td>{{moneys(item.currencyId)+' '+formatNumberRgx(item.priceIndi)}}</td>
         <td>{{item.name}}</td>
         <td>{{item.favoriteNum}}人</td>
         <td>{{item.createTime}}</td>
@@ -219,13 +219,16 @@
             id: 1,
             name: "Kelly 凯莉包",
             size: ["Kelly Mini", "Kelly Mini 2", "Kelly 25", "Kelly 28", "Kelly 32", "Kelly 35", "Kelly 40",
-              "Kelly 50"
+              "Kelly 50", "Kelly Depeche 34", "Kelly Depeche 38", "Kelly Depeche 25 Pochette", "Kelly Picnic Mini",
+              "Kelly Lakis 32"
             ]
           },
           {
             id: 2,
             name: "Birkin 铂金包",
-            size: ["Birkin Mini", "Birkin 25", "Birkin 30", "Birkin 35", "Birkin 40", "Birkin 45", "Birkin 50"]
+            size: ["Birkin Mini", "Birkin 25", "Birkin 30", "Birkin 35", "Birkin 40", "Birkin 45", "Birkin 50",
+              "Birkin Shadow 35"
+            ]
           },
           {
             id: 3,
@@ -349,7 +352,7 @@
         priceTran: '', //成交价
         customer: '', //客户名称
         bill: '', //账单号
-        soldTime: '', //售出时间
+        soldTime: new Date(), //售出时间
         imgsUpload: '', //上传图片
         dialogImageUrl: '',
         dialogVisible: false,
@@ -489,6 +492,9 @@
             }, {
               value: '马鞍皮',
               label: '马鞍皮',
+            }, {
+              value: '竹篮子',
+              label: '竹篮子'
             }]
           }
         ],
@@ -1428,7 +1434,11 @@
         stockStats: ['全新', '9.9成新', '齐膜', '有轻微划痕', '有压痕', '发票', '鳄鱼皮证书', '说明书', '锁扣', '肩带', '盒子', '绒布', '雨衣'],
         colorList: [],
         imgs: '',
-        delList: []
+        delList: [],
+        b: '',
+        c: '',
+        e: '',
+        d: ''
       }
     },
     created() {
@@ -1463,9 +1473,25 @@
       // 获取展示数据
       handleList() {
         console.log('mmmm' + this.page);
-        this.$axios.get(this.$store.state.baseUrl + '/unsold?self=' + this.self + '&page=' + this.page).then((res) => {
+        let b = setInterval(() => {
+          this.$axios.get(this.$store.state.baseUrl + '/unsold?self=' + this.self + '&page=' + this.page).then((
+            res) => {
+            this.onSaleProducts = res.data.list;
+            // console.log(this.onSaleProducts);
+            this.total = res.data.total;
+            this.myList = res.data.list;
+          }).catch(err => {
+            console.log(err);
+          })
+        }, 5000)
+        console.log('gggg' + this.onSaleProducts.length)
+        if (this.onSaleProducts.length > 9) {
+          clearInterval(b);
+        }
+        this.$axios.get(this.$store.state.baseUrl + '/unsold?self=' + this.self + '&page=' + this.page).then((
+          res) => {
           this.onSaleProducts = res.data.list;
-          console.log(this.onSaleProducts);
+          // console.log(this.onSaleProducts);
           this.total = res.data.total;
           this.myList = res.data.list;
         }).catch(err => {
@@ -1501,6 +1527,12 @@
         } else if (money == 6) {
           return 'AUD';
         }
+      },
+      // 千分钱数
+      formatNumberRgx(num) {
+        let parts = num.toString().split(".");
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return parts.join(".");
       },
       // 模糊查询
       searchProducts() {
@@ -1544,40 +1576,62 @@
       },
       // 色号
       handleChange(value) {
+        console.log('ssss');
         console.log(value);
         this.leather = value[1];
         console.log(this.leather);
       },
       // 颜色色系的判断
       colorIdBlur() {
+        this.b = '';
+        this.c = '';
+        this.e = '';
+        this.d = '';
         this.color = '';
         this.colorSeries = '';
-        for (let i = 0; i < this.clrs.length; i++) {
-          for (let j = 0; j < this.clrs[i].yanse.length; j++) {
-            if (this.colorId.indexOf('/') !== -1) {
-              this.colorList = this.colorId.split('/');
-              // console.log(this.colorList);
-              for (let x in this.colorList) {
-                if (this.colorList[x] == this.clrs[i].yanse[j].sehao) {
-                  this.color += this.clrs[i].yanse[j].name + '拼';
-                  this.colorSeries += this.clrs[i].sexi + '/';
-                  console.log(this.color+this.colorSeries);
+        for (let i in this.clrs) {
+          for (let j in this.clrs[i].yanse) {
+            if (this.colorId.match(/[a-z]/g) !== null) {
+              this.colorId = this.colorId.toUpperCase();
+              if (this.colorId.indexOf('/') !== -1) {
+                this.colorList = this.colorId.split('/');
+                if (this.colorList[0] == this.clrs[i].yanse[j].sehao) {
+                  this.e = this.clrs[i].yanse[j].name;
+                  this.b = this.clrs[i].sexi;
+                }
+                if (this.colorList[1] == this.clrs[i].yanse[j].sehao) {
+                  this.d = this.clrs[i].yanse[j].name;
+                  this.c = this.clrs[i].sexi;
+                }
+                this.color = this.e + '拼' + this.d;
+                this.colorSeries = this.b + '/' + this.c;
+              } else {
+                if (this.colorId == this.clrs[i].yanse[j].sehao) {
+                  this.color = this.clrs[i].yanse[j].name;
+                  this.colorSeries = this.clrs[i].sexi;
                 }
               }
             } else {
-              if (this.colorId == this.clrs[i].yanse[j].sehao) {
-                this.color = this.clrs[i].yanse[j].name;
-                this.colorSeries = this.clrs[i].sexi;
+              if (this.colorId.indexOf('/') !== -1) {
+                this.colorList = this.colorId.split('/');
+                if (this.colorList[0] == this.clrs[i].yanse[j].sehao) {
+                  this.e = this.clrs[i].yanse[j].name;
+                  this.b = this.clrs[i].sexi;
+                }
+                if (this.colorList[1] == this.clrs[i].yanse[j].sehao) {
+                  this.d = this.clrs[i].yanse[j].name;
+                  this.c = this.clrs[i].sexi;
+                }
+                this.color = this.e + '拼' + this.d;
+                this.colorSeries = this.b + '/' + this.c;
+              } else {
+                if (this.colorId == this.clrs[i].yanse[j].sehao) {
+                  this.color = this.clrs[i].yanse[j].name;
+                  this.colorSeries = this.clrs[i].sexi;
+                }
               }
             }
-
           }
-        }
-        this.color = this.color.slice(0, -1);
-        this.colorSeries = this.colorSeries.slice(0, -1);
-        if (this.colorId == '') {
-          this.color = '';
-          this.colorSeries = '';
         }
       },
       // 时间转换
@@ -1685,7 +1739,7 @@
       // 删除图片
       delImage(item, index) {
         this.$store.state.imgUrl = '';
-        console.log('-----'+item);
+        console.log('-----' + item);
         console.log(index);
         let delImg = document.getElementById("delImg");
         let child = delImg.children;
@@ -1699,7 +1753,7 @@
         console.log(this.imgSrc);
         let b = item + "|";
         console.log(b);
-        for(let src of this.imgSrc){
+        for (let src of this.imgSrc) {
           this.$store.state.imgUrl += src + "|";
         }
         console.log(this.$store.state.imgUrl);
@@ -1743,18 +1797,57 @@
           let preview1 = document.getElementById("preview1");
           console.log(this.$store.state.imgUrl);
           for (let i = 0; i < this.imgurls.length - 1; i++) {
-            console.log('http://192.168.0.104:8080/stock/file/' + this.imgurls[i]);
-            this.$store.state.imgUrl += 'http://192.168.0.104:8080/stock/file/' + this.imgurls[i] + ' | ';
-            let a = 'http://192.168.0.104:8080/stock/file/' + this.imgurls[i];
+            console.log(this.$store.state.baseUrl + '/file/' + this.imgurls[i]);
+            this.$store.state.imgUrl += this.$store.state.baseUrl + '/file/' + this.imgurls[i] + ' | ';
+            let a = this.$store.state.baseUrl + '/file/' + this.imgurls[i];
             this.imgSrc.push(a);
             console.log(this.$store.state.imgUrl);
+          }
+          if (this.imgSrc.length > 9) {
+            this.$message.error({
+              message: '最多上传9张图片',
+              showClose: true,
+              duration: 2000
+            })
+            let y = this.imgSrc.pop();
+            console.log('000');
+            console.log(y);
+            console.log(this.imgSrc);
+            this.$store.state.imgUrl = "";
+            for (let z of this.imgSrc) {
+              console.log(z);
+              this.$store.state.imgUrl += z + ' | ';
+            }
+            console.log(this.$store.state.imgUrl);
+            console.log(this.$store.state.imgUrl.split('|'))
           }
         }).catch((err) => {
           console.log(err);
         })
       },
+      submitData() {
+        if (this.colorId == '') {
+          showToast('请输入颜色')
+          return false
+        }
+      },
+      data1() {
+        if (this.createTime == '' || this.currencyId == '' || this.cost == '' || this.pricePeer == '' || this
+          .priceIndi == '' ||
+          this.source == '' || this.stockLoc == '' || this.model == '' || this.size == '' || this.leather == '' || this
+          .metal == '' ||
+          this.colorId == '' || this.letter == '' || this.stock == '') {
+          alert('数据不能为空，请检查数据的填写');
+          return 1;
+        }
+      },
       // 确认编辑
       updateSure() {
+        if (this.data1() !== 1) {
+          this.updateData();
+        }
+      },
+      updateData() {
         console.log(this.id);
         console.log(this.$store.state.imgUrl);
         this.stockStat = "";
@@ -1794,7 +1887,7 @@
               duration: 2000
             })
             this.dialogVisible = false;
-            location.reload();
+            // location.reload();
           }
         }).catch((err) => {
           console.log(err);
@@ -1969,9 +2062,11 @@
   .previewImg2 {
     display: flex;
   }
-  .previewImg2{
+
+  .previewImg2 {
     z-index: 9999;
   }
+
   .spanStyle {
     width: 15px;
     height: 15px;
@@ -1987,7 +2082,8 @@
     z-index: 999;
     cursor: pointer;
   }
-  .imgStyle{
+
+  .imgStyle {
     width: 100px;
     height: 100px;
     margin-left: 10px;
