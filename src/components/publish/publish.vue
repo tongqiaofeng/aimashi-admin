@@ -1381,10 +1381,14 @@
       },
       // 提交
       data1() {
-        if (this.createTime == '' || this.currencyId == '' || this.cost == '' || this.pricePeer == '' || this.priceIndi == '' ||
+        if (this.$store.state.imgUrl == '' || this.createTime == null || this.currencyId == '' || this.cost == '' || this.pricePeer == '' || this.priceIndi == '' ||
           this.source == '' || this.stockLoc == '' || this.model == '' || this.size == '' || this.leather == '' || this.metal == '' ||
           this.colorId == '' || this.letter == '' || this.stock == '') {
           alert('数据不能为空，请检查数据的填写');
+          return 1;
+        }
+        if(this.color == ''){
+          alert('颜色色号输入错误，请重新填写');
           return 1;
         }
       },

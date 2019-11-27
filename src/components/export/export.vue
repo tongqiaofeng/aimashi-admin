@@ -8,22 +8,18 @@
       </el-select>
     </div>
     <div class="create-time-style">
-      <span>入库时间</span>
-      <div class="create">
-        <el-date-picker v-model="in1" type="datetime" placeholder="开始日期时间" class="create-time-input-style1" :disabled="isSelect1" @input="selectSure">
-        </el-date-picker>
-        <span class="create-time-span-style">至</span>
-        <el-date-picker v-model="in2" type="datetime" placeholder="结束日期时间" class="create-time-input-style2" :disabled="isSelect1" @input="selectSure">
-        </el-date-picker>
-      </div>
+      <span style="margin-right:8.6%;">时间</span>
+      <el-select v-model="timer" placeholder="请选择" width="100%">
+        <el-option v-for="item in timerList" :key="item" :label="item" :value="item"></el-option>
+      </el-select>
     </div>
     <div class="create-time-style">
-      <span>出库时间</span>
       <div class="create">
-        <el-date-picker v-model="out1" type="datetime" placeholder="开始日期时间" class="create-time-input-style1" :disabled="isSelect2" @input="selectSure2">
+        <el-date-picker v-model="time1" type="datetime" placeholder="开始日期时间" class="create-time-input-style1">
         </el-date-picker>
         <span class="create-time-span-style">至</span>
-        <el-date-picker v-model="out2" type="datetime" placeholder="结束日期时间" class="create-time-input-style2" :disabled="isSelect2" @input="selectSure2">
+        <el-date-picker v-model="time2" type="datetime" placeholder="结束日期时间" class="create-time-input-style2"
+          @blur="sureTime">
         </el-date-picker>
       </div>
     </div>
@@ -38,6 +34,10 @@
       return {
         sellerList: [],
         seller: '',
+        timer: '',
+        timerList: ['入库时间', '出库时间'],
+        time1: '',
+        time2: '',
         in1: '',
         in2: '',
         out1: '',
@@ -55,27 +55,11 @@
       sellerUsername() {
         this.$axios.get(this.$store.state.baseUrl + '/clients').then((res) => {
           console.log(res);
-          for(let item of res.data){
+          for (let item of res.data) {
             this.sellerList.push(item);
           }
           console.log(this.sellerList);
         })
-      },
-      // 确定选择时间
-      selectSure(){
-        if(this.in1 !== '' && this.in2 !== ''){
-          this.isSelect2 = true;
-        }
-        if(this.in1 == '' && this.in2 == ''){
-          this.isSelect2 = false;
-        }
-      },
-      selectSure2(){
-        if(this.out1 !== '' && this.out2 !== ''){
-          this.isSelect1 = true;
-        }else{
-          this.isSelect1 = false;
-        }
       },
       // 时间转换
       transitionTime(time) {
@@ -97,13 +81,17 @@
           return y + "-" + m + "-" + d + " " + h + ":" + m1 + ":" + s;
         }
       },
+      sureTime() {
+        if (this.timer == '入库时间') {
+          this.in1 = this.transitionTime(this.time1);
+          this.in2 = this.transitionTime(this.time2);
+        } else if (this.timer == '出库时间') {
+          this.out1 = this.transitionTime(this.time1);
+          this.out2 = this.transitionTime(this.time2);
+        }
+      }, 
       // 导出Excel表格
       exportExcel() {
-        this.in1 = this.transitionTime(this.in1);
-        this.in2 = this.transitionTime(this.in2);
-        this.out1 = this.transitionTime(this.out1);
-        this.out2 = this.transitionTime(this.out2);
-
         this.$axios.get(this.$store.state.baseUrl + '/export?username=' + this.seller + '&in1=' + this
           .in1 + '&in2=' + this.in2 + '&out1=' + this.out1 + '&out2=' + this.out2, {
             responseType: 'blob'
@@ -135,8 +123,8 @@
   .export-container {
     margin-top: 60px;
     position: absolute;
-    top: 0;
-    left: 5%;
+    top: 25px;
+    left: 15%;
 
     .seller-style,
     .create-time-style {
@@ -169,9 +157,7 @@
         line-height: 48px;
 
         .create-time-input-style1 {
-          width: 210px;
           height: 48px;
-          margin-left: 20px;
         }
 
         .create-time-span-style {
@@ -232,4 +218,5 @@
     height: 48px;
     border-radius: 10px;
   }
+
 </style>
