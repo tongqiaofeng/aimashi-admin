@@ -9,12 +9,45 @@ import 'element-ui/lib/theme-chalk/index.css'
 import store from '@/vuex/store'
 import global from '@/components/global.js'
 
+import Viewer from 'v-viewer'
+import 'viewerjs/dist/viewer.css'
+
 Vue.config.productionTip = false
 
 // axios.defaults.withCredentials = true
 Vue.prototype.$axios = axios
 
+// 全局函数
+import functions from './utils/globalFunctions.js'
+
+// 防止重复点击
+import preventClick from './utils/clickStatefrom' // 根据自己的路径
+
+Vue.use(functions)
+
+Vue.use(preventClick)
+
 Vue.use(ElementUI)
+
+Vue.use(Viewer)
+Viewer.setDefaults({
+  Options: {
+    'inline': false,
+    'button': true,
+    'navbar': true,
+    'title': true,
+    'toolbar': true,
+    'tooltip': true,
+    'movable': true,
+    'zoomable': true,
+    'rotatable': true,
+    'scalable': true,
+    'transition': true,
+    'fullscreen': true,
+    'keyboard': true,
+    'url': 'data-source'
+  }
+})
 
 // http request 拦截器
 axios.interceptors.request.use(config => {
@@ -29,6 +62,7 @@ axios.interceptors.request.use(config => {
 }, err => {
   return Promise.reject(error);
 })
+
 axios.interceptors.response.use(
   response => {
     return response;
@@ -45,7 +79,7 @@ axios.interceptors.response.use(
             path: '/login',
             query: {
               redirect: router.currentRoute.fullPath //登录成功后跳入浏览的当前页面
-            } 
+            }
           })
       }
     }

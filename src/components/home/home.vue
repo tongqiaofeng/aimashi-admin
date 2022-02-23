@@ -2,72 +2,219 @@
   <div class="container">
     <el-container class="container">
       <el-container class="container">
-        <el-aside class="aside" style="width:16%;min-height:1460px;">
+        <el-aside class="aside" style="width: 218px;min-height: 100vh;">
           <div class="aside-container">
-            <div class="aside-top">爱马仕包包</div>
-            <div class="aside-top-admin">后台管理系统</div>
+            <div class="aside-one">
+              <div class="aside-top">爱马仕包包</div>
+              <div class="aside-top-admin">后台管理系统</div>
+            </div>
             <ul class="person-ul">
-              <li class="person-li">
-                <div style="display: flex;line-height:20px;">
-                  <img class="icon icon-size" src="../../assets/imgs/person.png" />
-                  <span class="icon" style="color:#fff;" @click="closeAndOpen($event)">个人数据</span>
-                  <i id="arrows" class="el-icon-arrow-up"></i>
+              <li>
+                <div
+                  style="display: flex;justify-content: center;line-height:16px;"
+                >
+                  <img
+                    class="icon"
+                    style="width: 17px;height: 16px;"
+                    src="../../assets/imgs/ge.png"
+                  />
+                  <span class="icon" style="color:#fff;" @click="closeAndOpen1"
+                    >个人数据</span
+                  >
+                  <i id="arrows1" class="el-icon-arrow-up"></i>
                 </div>
-                <ul id="openOrClose" class="open">
-                  <li @click="selected1($event)" ref="onsale" class="font" style="color:#0aa1ed;">在售商品</li>
-                  <li @click="selected2($event)" ref="sold" class="font">已售商品</li>
-                  <li @click="selected3($event)" ref="export" class="font">导出数据</li>
+                <ul id="openOrClose1" class="open">
+                  <li
+                    @click="selected5"
+                    ref="onWarehouse"
+                    class="font"
+                    style="background-color: #000;"
+                  >
+                    库存查询
+                  </li>
+                  <li @click="selected2" ref="sold" class="font">
+                    已出售商品
+                  </li>
+                  <li @click="selected1" ref="onsale" class="font">
+                    价格未录入
+                  </li>
+                  <li @click="selected3" ref="export" class="font">
+                    导出数据
+                  </li>
                 </ul>
               </li>
-              <li @click="selected4($event)">
-                <div style="display: flex;line-height:20px;">
-                  <img class="icon icon-size" src="../../assets/imgs/exportProduct.png" />
-                  <span class="publish icon" ref="publish">发布商品</span>
+              <li class="person-li" @click="selected4" ref="publish">
+                <img
+                  class="icon"
+                  style="width: 17px;height: 16px;"
+                  src="../../assets/imgs/fa.png"
+                />
+                <span class="publish icon">发布商品</span>
+                <div style="width: 16px;"></div>
+              </li>
+              <li style=" margin-top: 30px;" v-show="role == 'admin'">
+                <div
+                  style="display: flex;justify-content: center;line-height:16px;"
+                >
+                  <img
+                    class="icon"
+                    style="width: 17px;height: 16px;"
+                    src="../../assets/imgs/ge.png"
+                  />
+                  <span class="icon" style="color:#fff;" @click="closeAndOpen2"
+                    >账单管理</span
+                  >
+                  <i id="arrows2" class="el-icon-arrow-down"></i>
                 </div>
+                <ul id="openOrClose2" class="close">
+                  <li class="person-li" @click="selected6" ref="billEntry">
+                    账单录入
+                    <!-- <img
+                      class="icon"
+                      style="width: 17px;height: 16px;"
+                      src="../../assets/imgs/fa.png"
+                    />
+                    <span class="publish icon">账单录入</span>
+                    <div style="width: 16px;"></div> -->
+                  </li>
+                  <li class="person-li" @click="selected7" ref="billReport">
+                    账单查询
+                    <!-- <img
+                      class="icon"
+                      style="width: 17px;height: 16px;"
+                      src="../../assets/imgs/search2.png"
+                    />
+                    <span class="publish icon">账单查询</span>
+                    <div style="width: 16px;"></div> -->
+                  </li>
+                </ul>
+              </li>
+              <li
+                class="person-li"
+                @click="selected8"
+                ref="companyAdmin"
+                v-show="role == 'system_admin' || role == 'admin'"
+              >
+                <img
+                  class="icon"
+                  style="width: 17px;height: 16px;"
+                  src="../../assets/imgs/fa.png"
+                />
+                <span class="publish icon">公司管理</span>
+                <div style="width: 16px;"></div>
+              </li>
+              <li style=" margin-top: 30px;" v-show="role == 'admin'">
+                <div
+                  style="display: flex;justify-content: center;line-height:16px;"
+                >
+                  <img
+                    class="icon"
+                    style="width: 17px;height: 16px;"
+                    src="../../assets/imgs/ge.png"
+                  />
+                  <span class="icon" style="color:#fff;" @click="closeAndOpen3"
+                    >人員管理</span
+                  >
+                  <i id="arrows3" class="el-icon-arrow-down"></i>
+                </div>
+                <ul id="openOrClose3" class="close">
+                  <li
+                    class="person-li"
+                    @click="selected9"
+                    ref="departmentAdmin"
+                  >
+                    部門管理
+                  </li>
+                  <li class="person-li" @click="selected10" ref="userAdmin">
+                    人員管理
+                  </li>
+                </ul>
               </li>
             </ul>
-            <canvas id="canvas"></canvas>
           </div>
-          <ul class="bg-bubbles">
-            <li v-for="(item, index) in bubbles" :key="index"></li>
-          </ul>
         </el-aside>
         <el-main class="main">
           <el-col :span="24" class="main-top">
             <el-row>
               <div class="main-top-left">
-                <span style="cursor:pointer;" class="first-fint-size" @click="jump">首页</span>
-                <span style="font-size:12px;line-height:2.3">
-                  <span v-if="selected==1" class="fint-size">
+                <span
+                  style="cursor:pointer;"
+                  class="first-fint-size"
+                  @click="jump"
+                  >首页</span
+                >
+                <span>
+                  <span v-if="selected == 1" class="fint-size">
                     <i class="el-icon-arrow-right"></i>个人数据
-                    <i class="el-icon-arrow-right"></i>在售商品
+                    <i class="el-icon-arrow-right"></i>价格未录入
                   </span>
-                  <span v-if="selected==2" class="fint-size">
+                  <span v-if="selected == 2" class="fint-size">
                     <i class="el-icon-arrow-right"></i>个人数据
-                    <i class="el-icon-arrow-right"></i>已售商品
+                    <i class="el-icon-arrow-right"></i>已出售商品
                   </span>
-                  <span v-if="selected==3" class="fint-size">
+                  <span v-if="selected == 3" class="fint-size">
                     <i class="el-icon-arrow-right"></i>个人数据
                     <i class="el-icon-arrow-right"></i>数据导出
                   </span>
-                  <span v-if="selected==4" class="fint-size">
+                  <span v-if="selected == 5" class="fint-size">
+                    <i class="el-icon-arrow-right"></i>个人数据
+                    <i class="el-icon-arrow-right"></i>库存查询
+                  </span>
+                  <span v-if="selected == 4" class="fint-size">
                     <i class="el-icon-arrow-right"></i>发布商品
+                  </span>
+                  <span v-if="selected == 6" class="fint-size">
+                    <i class="el-icon-arrow-right"></i>账单管理
+                    <i class="el-icon-arrow-right"></i>账单录入
+                  </span>
+                  <span v-if="selected == 7" class="fint-size">
+                    <i class="el-icon-arrow-right"></i>账单管理
+                    <i class="el-icon-arrow-right"></i>账单查询
+                  </span>
+                  <span v-if="selected == 8" class="fint-size">
+                    <i class="el-icon-arrow-right"></i>公司管理
+                  </span>
+                  <span v-if="selected == 9" class="fint-size">
+                    <i class="el-icon-arrow-right"></i>人員管理
+                    <i class="el-icon-arrow-right"></i>部門管理
+                  </span>
+                  <span v-if="selected == 10" class="fint-size">
+                    <i class="el-icon-arrow-right"></i>人員管理
                   </span>
                 </span>
               </div>
               <div class="main-top-right">
-                <span style="font-weight:bold;font-size:22px;">
-                  您好，{{this.$store.state.currentRole=='admin'?'管理员':(this.$store.state.currentRole=='peer'?'同行':'')}}!
+                <span style="font-size:16px;">
+                  您好{{
+                    role == "admin"
+                      ? "，管理员"
+                      : role == "peer"
+                      ? "，同行"
+                      : ""
+                  }}
+                  !
                 </span>
+                <div class="logout" @click="logoutSure">退出登录</div>
               </div>
             </el-row>
           </el-col>
-          <el-col :span="24" style="position:absolute;top:100px;left:16%;">
-            <div>
-              <onSale v-show="selected==1"></onSale>
-              <sold v-show="selected==2"></sold>
-              <export v-show="selected==3"></export>
-              <publish v-show="selected==4"></publish>
+          <el-col :span="24" class="main-container">
+            <div class="main-center">
+              <onSale v-if="selected == 1"></onSale>
+              <sold v-if="selected == 2"></sold>
+              <export v-if="selected == 3"></export>
+              <publish v-if="selected == 4"></publish>
+              <warehouse v-if="selected == 5"></warehouse>
+              <bill-entry v-if="selected == 6"></bill-entry>
+              <bill-report v-if="selected == 7"></bill-report>
+              <system-company-admin
+                v-if="selected == 8 && role == 'system_admin'"
+              ></system-company-admin>
+              <company-admin
+                v-if="selected == 8 && role == 'admin'"
+              ></company-admin>
+              <department-admin v-if="selected == 9"></department-admin>
+              <user-admin v-if="selected == 10"></user-admin>
             </div>
           </el-col>
         </el-main>
@@ -76,162 +223,433 @@
   </div>
 </template>
 <script>
-  export default {
-    data() {
-      return {
-        msg: '我是home组件',
-        selected: 1,
-        breadList: [],
-        actives: '1-1',
-        bubbles: []
+export default {
+  data() {
+    return {
+      selected: 5,
+      role: ""
+    };
+  },
+  created() {
+    this.role = sessionStorage.getItem("role");
+  },
+  methods: {
+    // 侧边栏
+    closeAndOpen1() {
+      if (openOrClose1.className == "close") {
+        openOrClose1.className = "open";
+        arrows1.className = "el-icon-arrow-up";
+        this.selected5();
+      } else if (openOrClose1.className == "open") {
+        openOrClose1.className = "close";
+        arrows1.className = "el-icon-arrow-down";
       }
+      openOrClose2.className = "close";
+      arrows2.className = "el-icon-arrow-down";
+      openOrClose3.className = "close";
+      arrows3.className = "el-icon-arrow-down";
     },
-    created() {
-      this.getBreadList();
-      this.bubbles.length = 10;
+    closeAndOpen2() {
+      if (openOrClose2.className == "close") {
+        openOrClose2.className = "open";
+        arrows2.className = "el-icon-arrow-up";
+        this.selected6();
+      } else if (openOrClose2.className == "open") {
+        openOrClose2.className = "close";
+        arrows2.className = "el-icon-arrow-down";
+      }
+      openOrClose1.className = "close";
+      arrows1.className = "el-icon-arrow-down";
+      openOrClose3.className = "close";
+      arrows3.className = "el-icon-arrow-down";
     },
-    methods: {
-      // 侧边栏
-      closeAndOpen(e) {
-        console.log('5555');
-        let openOrClose = document.getElementById('openOrClose');
-        let arrows = e.target.nextElementSibling;
-        console.log(arrows);
-        if (openOrClose.className == 'close') {
-          openOrClose.className = 'open';
-          arrows.className = 'el-icon-arrow-up';
-        } else if (openOrClose.className == 'open') {
-          openOrClose.className = 'close';
-          arrows.className = 'el-icon-arrow-down';
-        }
-      },
-      getBreadList() {
-        for (let routeInfo of this.$route.matched) {
-          console.log(routeInfo);
-          if (typeof routeInfo.name === 'string' && routeInfo.name !== 'home') {
-            this.breadList.push(routeInfo.name);
-          }
-        }
-      },
-      jump() {
-        this.selected1();
-      },
-      selected1() {
-        this.selected = 1;
-        this.$refs.onsale.style.color = "#0aa1ed";
-        this.$refs.sold.style.color = '#fff';
-        this.$refs.export.style.color = '#fff';
-        this.$refs.publish.style.color = '#fff';
-      },
-      selected2(e) {
-        this.selected = 2;
-        e.target.style.color = "#0aa1ed";
-        console.log('222');
-        this.$refs.onsale.style.color = '#fff';
-        this.$refs.export.style.color = '#fff';
-        this.$refs.publish.style.color = '#fff';
-      },
-      selected3(e) {
-        this.selected = 3;
-        e.target.style.color = "#0aa1ed";
-        this.$refs.onsale.style.color = '#fff';
-        this.$refs.sold.style.color = '#fff';
-        this.$refs.publish.style.color = '#fff';
-      },
-      selected4(e) {
-        this.selected = 4;
-        e.target.style.color = "#0aa1ed";
-        this.$refs.onsale.style.color = '#fff';
-        this.$refs.sold.style.color = '#fff';
-        this.$refs.export.style.color = '#fff';
-      },
+    closeAndOpen3() {
+      if (openOrClose3.className == "close") {
+        openOrClose3.className = "open";
+        arrows3.className = "el-icon-arrow-up";
+        this.selected9();
+      } else if (openOrClose3.className == "open") {
+        openOrClose3.className = "close";
+        arrows3.className = "el-icon-arrow-down";
+      }
+      openOrClose1.className = "close";
+      arrows1.className = "el-icon-arrow-down";
+      openOrClose2.className = "close";
+      arrows2.className = "el-icon-arrow-down";
+    },
+    jump() {
+      if (openOrClose1.className == "close") {
+        openOrClose1.className = "open";
+        arrows1.className = "el-icon-arrow-up";
+      }
+      if (openOrClose2.className == "open") {
+        openOrClose2.className = "close";
+        arrows2.className = "el-icon-arrow-down";
+      }
+      this.selected5();
+    },
+    selected1() {
+      this.selected = 1;
+      this.$store.state.imgUrl = "";
+      this.$store.state.imgUrl2 = "";
 
+      this.$refs.onWarehouse.style.backgroundColor = "transparent";
+      this.$refs.onsale.style.backgroundColor = "#000";
+      this.$refs.export.style.backgroundColor = "transparent";
+      this.$refs.publish.style.backgroundColor = "transparent";
+      this.$refs.sold.style.backgroundColor = "transparent";
+      this.$refs.billEntry.style.backgroundColor = "transparent";
+      this.$refs.billReport.style.backgroundColor = "transparent";
+      this.$refs.companyAdmin.style.backgroundColor = "transparent";
+      this.$refs.departmentAdmin.style.backgroundColor = "transparent";
+      this.$refs.userAdmin.style.backgroundColor = "transparent";
+
+      (function smoothscroll() {
+        var currentScroll =
+          document.documentElement.scrollTop || document.body.scrollTop;
+        if (currentScroll > 0) {
+          window.requestAnimationFrame(smoothscroll);
+          window.scrollTo(0, currentScroll - currentScroll / 5);
+        }
+      })();
     },
+    selected2() {
+      this.selected = 2;
+
+      this.$refs.sold.style.backgroundColor = "#000";
+      this.$refs.onWarehouse.style.backgroundColor = "transparent";
+      this.$refs.onsale.style.backgroundColor = "transparent";
+      this.$refs.export.style.backgroundColor = "transparent";
+      this.$refs.publish.style.backgroundColor = "transparent";
+      this.$refs.billEntry.style.backgroundColor = "transparent";
+      this.$refs.billReport.style.backgroundColor = "transparent";
+      this.$refs.companyAdmin.style.backgroundColor = "transparent";
+      this.$refs.departmentAdmin.style.backgroundColor = "transparent";
+      this.$refs.userAdmin.style.backgroundColor = "transparent";
+
+      (function smoothscroll() {
+        var currentScroll =
+          document.documentElement.scrollTop || document.body.scrollTop;
+        if (currentScroll > 0) {
+          window.requestAnimationFrame(smoothscroll);
+          window.scrollTo(0, currentScroll - currentScroll / 5);
+        }
+      })();
+    },
+    selected3() {
+      this.selected = 3;
+      this.$refs.onWarehouse.style.backgroundColor = "transparent";
+      this.$refs.onsale.style.backgroundColor = "transparent";
+      this.$refs.export.style.backgroundColor = "#000";
+      this.$refs.publish.style.backgroundColor = "transparent";
+      this.$refs.sold.style.backgroundColor = "transparent";
+      this.$refs.billEntry.style.backgroundColor = "transparent";
+      this.$refs.billReport.style.backgroundColor = "transparent";
+      this.$refs.companyAdmin.style.backgroundColor = "transparent";
+      this.$refs.departmentAdmin.style.backgroundColor = "transparent";
+      this.$refs.userAdmin.style.backgroundColor = "transparent";
+    },
+    selected4() {
+      this.selected = 4;
+      this.$store.state.imgUrl = "";
+      this.$store.state.imgUrl2 = "";
+
+      this.$refs.onWarehouse.style.backgroundColor = "transparent";
+      this.$refs.onsale.style.backgroundColor = "transparent";
+      this.$refs.export.style.backgroundColor = "transparent";
+      this.$refs.publish.style.backgroundColor = "#000";
+      this.$refs.sold.style.backgroundColor = "transparent";
+      this.$refs.billEntry.style.backgroundColor = "transparent";
+      this.$refs.billReport.style.backgroundColor = "transparent";
+      this.$refs.companyAdmin.style.backgroundColor = "transparent";
+      this.$refs.departmentAdmin.style.backgroundColor = "transparent";
+      this.$refs.userAdmin.style.backgroundColor = "transparent";
+
+      openOrClose1.className = "close";
+      arrows1.className = "el-icon-arrow-down";
+      openOrClose2.className = "close";
+      arrows2.className = "el-icon-arrow-down";
+
+      (function smoothscroll() {
+        var currentScroll =
+          document.documentElement.scrollTop || document.body.scrollTop;
+        if (currentScroll > 0) {
+          window.requestAnimationFrame(smoothscroll);
+          window.scrollTo(0, currentScroll - currentScroll / 5);
+        }
+      })();
+    },
+    selected5() {
+      this.selected = 5;
+      this.$refs.onWarehouse.style.backgroundColor = "#000";
+      this.$refs.onsale.style.backgroundColor = "transparent";
+      this.$refs.export.style.backgroundColor = "transparent";
+      this.$refs.publish.style.backgroundColor = "transparent";
+      this.$refs.sold.style.backgroundColor = "transparent";
+      this.$refs.billEntry.style.backgroundColor = "transparent";
+      this.$refs.billReport.style.backgroundColor = "transparent";
+      this.$refs.companyAdmin.style.backgroundColor = "transparent";
+      this.$refs.departmentAdmin.style.backgroundColor = "transparent";
+      this.$refs.userAdmin.style.backgroundColor = "transparent";
+
+      (function smoothscroll() {
+        var currentScroll =
+          document.documentElement.scrollTop || document.body.scrollTop;
+        if (currentScroll > 0) {
+          window.requestAnimationFrame(smoothscroll);
+          window.scrollTo(0, currentScroll - currentScroll / 5);
+        }
+      })();
+    },
+    selected6() {
+      this.selected = 6;
+
+      this.$refs.billEntry.style.backgroundColor = "#000";
+      this.$refs.onWarehouse.style.backgroundColor = "transparent";
+      this.$refs.onsale.style.backgroundColor = "transparent";
+      this.$refs.export.style.backgroundColor = "transparent";
+      this.$refs.publish.style.backgroundColor = "transparent";
+      this.$refs.sold.style.backgroundColor = "transparent";
+      this.$refs.billReport.style.backgroundColor = "transparent";
+      this.$refs.companyAdmin.style.backgroundColor = "transparent";
+      this.$refs.departmentAdmin.style.backgroundColor = "transparent";
+      this.$refs.userAdmin.style.backgroundColor = "transparent";
+
+      (function smoothscroll() {
+        var currentScroll =
+          document.documentElement.scrollTop || document.body.scrollTop;
+        if (currentScroll > 0) {
+          window.requestAnimationFrame(smoothscroll);
+          window.scrollTo(0, currentScroll - currentScroll / 5);
+        }
+      })();
+    },
+    selected7() {
+      this.selected = 7;
+
+      this.$refs.billEntry.style.backgroundColor = "transparent";
+      this.$refs.onWarehouse.style.backgroundColor = "transparent";
+      this.$refs.onsale.style.backgroundColor = "transparent";
+      this.$refs.export.style.backgroundColor = "transparent";
+      this.$refs.publish.style.backgroundColor = "transparent";
+      this.$refs.sold.style.backgroundColor = "transparent";
+      this.$refs.billReport.style.backgroundColor = "#000";
+      this.$refs.companyAdmin.style.backgroundColor = "transparent";
+      this.$refs.departmentAdmin.style.backgroundColor = "transparent";
+      this.$refs.userAdmin.style.backgroundColor = "transparent";
+
+      (function smoothscroll() {
+        var currentScroll =
+          document.documentElement.scrollTop || document.body.scrollTop;
+        if (currentScroll > 0) {
+          window.requestAnimationFrame(smoothscroll);
+          window.scrollTo(0, currentScroll - currentScroll / 5);
+        }
+      })();
+    },
+    selected8() {
+      this.selected = 8;
+
+      this.$refs.billEntry.style.backgroundColor = "transparent";
+      this.$refs.onWarehouse.style.backgroundColor = "transparent";
+      this.$refs.onsale.style.backgroundColor = "transparent";
+      this.$refs.export.style.backgroundColor = "transparent";
+      this.$refs.publish.style.backgroundColor = "transparent";
+      this.$refs.sold.style.backgroundColor = "transparent";
+      this.$refs.billReport.style.backgroundColor = "transparent";
+      this.$refs.companyAdmin.style.backgroundColor = "#000";
+      this.$refs.departmentAdmin.style.backgroundColor = "transparent";
+      this.$refs.userAdmin.style.backgroundColor = "transparent";
+
+      openOrClose1.className = "close";
+      arrows1.className = "el-icon-arrow-down";
+      openOrClose2.className = "close";
+      arrows2.className = "el-icon-arrow-down";
+
+      (function smoothscroll() {
+        var currentScroll =
+          document.documentElement.scrollTop || document.body.scrollTop;
+        if (currentScroll > 0) {
+          window.requestAnimationFrame(smoothscroll);
+          window.scrollTo(0, currentScroll - currentScroll / 5);
+        }
+      })();
+    },
+    selected9() {
+      this.selected = 9;
+
+      this.$refs.billEntry.style.backgroundColor = "transparent";
+      this.$refs.onWarehouse.style.backgroundColor = "transparent";
+      this.$refs.onsale.style.backgroundColor = "transparent";
+      this.$refs.export.style.backgroundColor = "transparent";
+      this.$refs.publish.style.backgroundColor = "transparent";
+      this.$refs.sold.style.backgroundColor = "transparent";
+      this.$refs.billReport.style.backgroundColor = "transparent";
+      this.$refs.companyAdmin.style.backgroundColor = "transparent";
+      this.$refs.departmentAdmin.style.backgroundColor = "#000";
+      this.$refs.userAdmin.style.backgroundColor = "transparent";
+
+      openOrClose1.className = "close";
+      arrows1.className = "el-icon-arrow-down";
+      openOrClose2.className = "close";
+      arrows2.className = "el-icon-arrow-down";
+
+      (function smoothscroll() {
+        var currentScroll =
+          document.documentElement.scrollTop || document.body.scrollTop;
+        if (currentScroll > 0) {
+          window.requestAnimationFrame(smoothscroll);
+          window.scrollTo(0, currentScroll - currentScroll / 5);
+        }
+      })();
+    },
+    selected10() {
+      this.selected = 10;
+
+      this.$refs.billEntry.style.backgroundColor = "transparent";
+      this.$refs.onWarehouse.style.backgroundColor = "transparent";
+      this.$refs.onsale.style.backgroundColor = "transparent";
+      this.$refs.export.style.backgroundColor = "transparent";
+      this.$refs.publish.style.backgroundColor = "transparent";
+      this.$refs.sold.style.backgroundColor = "transparent";
+      this.$refs.billReport.style.backgroundColor = "transparent";
+      this.$refs.companyAdmin.style.backgroundColor = "transparent";
+      this.$refs.departmentAdmin.style.backgroundColor = "transparent";
+      this.$refs.userAdmin.style.backgroundColor = "#000";
+
+      openOrClose1.className = "close";
+      arrows1.className = "el-icon-arrow-down";
+      openOrClose2.className = "close";
+      arrows2.className = "el-icon-arrow-down";
+
+      (function smoothscroll() {
+        var currentScroll =
+          document.documentElement.scrollTop || document.body.scrollTop;
+        if (currentScroll > 0) {
+          window.requestAnimationFrame(smoothscroll);
+          window.scrollTo(0, currentScroll - currentScroll / 5);
+        }
+      })();
+    },
+
+    // 退出登录
+    logoutSure() {
+      this.$router.push("/");
+      this.$store.dispatch("setRole", null);
+      sessionStorage.setItem("username", "");
+      sessionStorage.setItem("role", "");
+      sessionStorage.setItem("token", "");
+    }
   }
-
+};
 </script>
 <style lang="scss">
-  .aside {
-    width: 16%;
-    padding-top: 20px;
-    background: url('../../assets/imgs/onsale.png') no-repeat;
+.el-message {
+  z-index: 99999 !important;
+}
 
-    ul li {
-      margin-top: 60px;
-      list-style: none;
-      cursor: pointer;
-      color: #fff;
+.font-warp {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.container {
+  width: 100%;
+
+  .aside {
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: #282828;
+
+    .open {
+      padding-left: 0;
+      text-align: center;
+
+      li {
+        height: 46px;
+        line-height: 46px;
+        margin-top: 20px;
+        list-style: none;
+        cursor: pointer;
+        color: #fff;
+      }
+    }
+
+    ul {
+      padding-left: 0;
+      text-align: center;
+
+      li {
+        list-style: none;
+        cursor: pointer;
+        color: #fff;
+      }
     }
 
     .aside-container {
-      position: absolute;
-      z-index: 999;
+      height: 100%;
 
-      .aside-top,
-      .aside-top-admin {
-        font-size: 28px;
-        color: #fff;
-        text-align: center;
-        line-height: 36px;
-      }
+      .aside-one {
+        height: 80px;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
 
-      .aside-top {
-        padding: 0 60px;
-      }
-
-      .aside-top-admin {
-        padding: 0 50px;
+        .aside-top,
+        .aside-top-admin {
+          font-size: 18px;
+          color: #fff;
+          text-align: center;
+        }
       }
 
       .person-ul {
-        margin-left: 35px;
+        margin-top: 30px;
+
+        .person-li {
+          margin-top: 30px;
+          height: 46px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
 
         .icon {
           margin-right: 20px;
-          font-size: 22px;
-        }
-
-        .icon-size {
-          width: 20px;
-          height: 20px;
+          font-size: 18px;
         }
 
         .font {
-          font-size: 20px;
+          font-size: 14px;
         }
       }
-
     }
   }
 
-  .close {
-    display: none;
-  }
-
-  .open {
-    display: block;
-  }
-
   .main {
+    margin-left: 218px;
     padding: 0;
-    margin: 0;
 
     .main-top {
-      height: 100px;
+      height: 80px;
       padding-left: 40px;
-      line-height: 100px;
+      line-height: 80px;
+      position: fixed;
+      top: 0;
+      left: 218px;
+      right: 0;
       border-bottom: 1px solid #dedede;
+      background-color: #fff;
       box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+      z-index: 3333;
 
       .main-top-left {
-        position: absolute;
-        top: 30px;
-        left: 0;
         display: flex;
-        line-height: 2;
 
         .first-fint-size {
-          font-size: 18px;
+          font-size: 16px;
         }
 
         .fint-size {
@@ -241,120 +659,103 @@
       }
 
       .main-top-right {
+        display: flex;
         position: absolute;
         top: 0;
-        right: 96px;
+        right: 300px;
+
+        .logout {
+          margin-left: 20px;
+          font-size: 16px;
+          cursor: pointer;
+        }
+      }
+    }
+
+    .main-container {
+      min-height: 100vh;
+      padding: 0 10px;
+      padding-top: 80px;
+      z-index: 0;
+      background-color: #fafdff;
+
+      .onsale-top {
+        margin-top: 38px;
+        margin-left: 0;
+      }
+
+      table {
+        background-color: #fff;
+
+        tr > th {
+          padding: 3px 0;
+          line-height: 41px;
+          background-color: #f6f6f6;
+          font-size: 16px !important;
+          font-weight: normal;
+          color: #000;
+        }
+
+        tr > td {
+          padding: 10px 0 !important;
+          font-size: 14px !important;
+        }
+
+        /*设置奇数行颜色*/
+        // tr:nth-child(odd) {
+        //   background-color: #fff;
+        // }
+
+        /*设置偶数行颜色*/
+        // tr:nth-child(even) {
+        //   background-color: #f6f6f6;
+        // }
       }
     }
   }
+}
 
-</style>
-<style lang="scss" scoped>
-  .bg-bubbles {
-    position: absolute;
-    // 使气泡背景充满整个屏幕
-    bottom: 0;
-    left: 0;
-    width: 16%;
-    min-height: 1460px;
-    z-index: 1;
+.close {
+  display: none;
+}
 
-    li {
-      position: absolute;
-      // bottom 的设置是为了营造出气泡从页面底部冒出的效果；
-      bottom: -160px;
-      // 默认的气泡大小；
-      width: 40px;
-      height: 40px;
-      background-color: rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      list-style: none;
-      // 使用自定义动画使气泡渐现、上升和翻滚；
-      animation: square 30s infinite;
-      transition-timing-function: linear;
-    }
+.open {
+  display: block;
+}
 
-    // 分别设置每个气泡不同的位置、大小、透明度和速度，以显得有层次感；
-    li:nth-child(1) {
-      left: 10%;
-    }
+.el-input-number .el-input__inner {
+  text-align: left;
+}
 
-    li:nth-child(2) {
-      left: 20%;
-      width: 90px;
-      height: 90px;
-      animation-delay: 2s;
-      animation-duration: 7s;
-    }
+.el-dialog--center .el-dialog__footer {
+  text-align: right;
+}
 
-    li:nth-child(3) {
-      left: 25%;
-      animation-delay: 4s;
-    }
+.el-textarea__inner {
+  min-height: 100px !important;
+}
 
-    li:nth-child(4) {
-      left: 40%;
-      width: 60px;
-      height: 60px;
-      animation-duration: 8s;
-      background-color: rgba(255, 255, 255, 0.3);
-    }
+.el-dialog .el-dialog__body {
+  max-height: 600px;
+  overflow-y: auto;
+}
 
-    li:nth-child(5) {
-      left: 70%;
-    }
+.el-pagination button:disabled {
+  color: #c0c4cc;
+  background-color: transparent;
+  cursor: not-allowed;
+}
 
-    li:nth-child(6) {
-      left: 80%;
-      width: 120px;
-      height: 120px;
-      animation-delay: 3s;
-      background-color: rgba(255, 255, 255, 0.2);
-    }
+.el-pagination .btn-next,
+.el-pagination .btn-prev {
+  background: center center no-repeat transparent;
+}
 
-    li:nth-child(7) {
-      left: 32%;
-      width: 160px;
-      height: 160px;
-      animation-delay: 2s;
-    }
+.el-pager li {
+  background: transparent;
+}
 
-    li:nth-child(8) {
-      left: 55%;
-      width: 20px;
-      height: 20px;
-      animation-delay: 4s;
-      animation-duration: 15s;
-    }
-
-    li:nth-child(9) {
-      left: 25%;
-      width: 10px;
-      height: 10px;
-      animation-delay: 2s;
-      animation-duration: 12s;
-      background-color: rgba(255, 255, 255, 0.3);
-    }
-
-    li:nth-child(10) {
-      left: 85%;
-      width: 160px;
-      height: 160px;
-      animation-delay: 5s;
-    }
-
-    // 自定义 square 动画；
-    @keyframes square {
-      0% {
-        opacity: 0.75;
-        transform: translateY(400px) rotate(45deg);
-      }
-
-      100% {
-        opacity: 0;
-        transform: translateY(-1000px) rotate(180deg);
-      }
-    }
-  }
-
+img {
+  object-fit: cover;
+}
 </style>
