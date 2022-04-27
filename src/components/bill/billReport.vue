@@ -1,26 +1,627 @@
 <template>
-  <div class="bill-report-container">
-    <!-- 账单报表 -->
-    <div v-if="pageSel == 0">
-      <div>
-        <el-form inline label-width="55px">
-          <el-form-item label="日期：">
+  <div style="margin-top: -20px;overflow: hidden;" id="billReportContainer">
+    <div class="bill-report-container">
+      <!-- 账单报表 -->
+      <div v-if="pageSel == 0">
+        <div>
+          <el-form inline label-width="55px">
+            <el-form-item label="日期：">
+              <el-date-picker
+                v-model="time"
+                type="daterange"
+                range-separator="至"
+                format="yyyy-MM-dd"
+                value-format="yyyy-MM-dd"
+                start-placeholder="開始日期"
+                end-placeholder="結束日期"
+              >
+              </el-date-picker>
+              <!-- <el-date-picker
+                v-model="time"
+                type="monthrange"
+                range-separator="至"
+                format="yyyy-MM"
+                value-format="yyyy-MM"
+                start-placeholder="開始日期"
+                end-placeholder="結束日期"
+              >
+              </el-date-picker> -->
+            </el-form-item>
+            <el-form-item label="賬戶">
+              <el-select
+                style="width:100%;"
+                v-model="personId"
+                placeholder="請選擇"
+              >
+                <el-option
+                  v-for="(item, index) in userList"
+                  :key="index"
+                  :label="item.name"
+                  :value="item.id"
+                ></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="">
+              <el-input
+                style="width: 360px;"
+                v-model="keyword"
+                placeholder="可輸入產品貨號、產品描述和賬單備註進行查詢"
+                clearable
+              ></el-input>
+            </el-form-item>
+            <el-form-item label="">
+              <el-button type="primary" @click="personChange">查詢</el-button>
+            </el-form-item>
+            <el-form-item label="">
+              <el-button type="primary" @click="exportData">導出數據</el-button>
+            </el-form-item>
+          </el-form>
+        </div>
+        <div v-show="isCompany == 0">
+          <el-tabs v-model="activeName">
+            <el-tab-pane label="統計列表" name="first">
+              <el-table
+                :data="accountList"
+                style="width: 800px"
+                border
+                @row-dblclick="checkThisList"
+              >
+                <el-table-column align="center" width="80px">
+                  <template slot-scope="scope">
+                    <div>
+                      {{ ++scope.$index }}
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column align="center" label="信息">
+                  <template slot-scope="scope">
+                    <div
+                      style="display: flex;align-items: center;justify-content:center;"
+                    >
+                      <div
+                        v-if="scope.row.type == 2"
+                        style="display: flex;align-items: center;"
+                      >
+                        <span>{{ scope.row.name }}</span>
+                        <span style="font-size: 14px;">欠公司</span>
+                      </div>
+                      <div v-else style="display: flex;align-items: center;">
+                        <span style="font-size: 14px;">公司欠</span>
+                        <span>{{ scope.row.name }}</span>
+                      </div>
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column align="center" label="欠款總數">
+                  <template slot-scope="scope">
+                    <div>
+                      <span
+                        :style="{
+                          color: scope.row.totalPrice < 0 ? 'red' : '#606266'
+                        }"
+                        >{{ formatNumberRgx(scope.row.totalPrice)
+                        }}<span style="margin-left: 5px;font-size: 12px;">{{
+                          scope.row.currency
+                        }}</span></span
+                      >
+                    </div>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </el-tab-pane>
+            <el-tab-pane label="記錄列表" name="second">
+              <el-table
+                border
+                :data="billList"
+                style="width: 100%"
+                @row-click="delBill"
+                @row-dblclick="updateBill"
+                v-loading="loading"
+                element-loading-text="加载中..."
+                element-loading-spinner="el-icon-loading"
+              >
+                <el-table-column align="center" prop="time" label="日期">
+                  <template slot-scope="scope">
+                    <div
+                      :style="{
+                        color:
+                          isRed(scope.row.flag, scope.row.totalHkPrice) == 1
+                            ? 'red'
+                            : '#606266'
+                      }"
+                    >
+                      {{ scope.row.time }}
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column
+                  align="center"
+                  prop="tradeType"
+                  label="買入/賣出"
+                >
+                  <template slot-scope="scope">
+                    <div
+                      :style="{
+                        color:
+                          isRed(scope.row.flag, scope.row.totalHkPrice) == 1
+                            ? 'red'
+                            : '#606266'
+                      }"
+                    >
+                      {{
+                        isOther == true &&
+                        (tradeTypeRgx(scope.row.tradeType) == "買入" ||
+                          tradeTypeRgx(scope.row.tradeType) == "賣出")
+                          ? "TopTime " + tradeTypeRgx(scope.row.tradeType)
+                          : tradeTypeRgx(scope.row.tradeType)
+                      }}
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column align="center" prop="stockList" label="貨號">
+                  <template slot-scope="scope">
+                    <div
+                      :style="{
+                        color:
+                          isRed(scope.row.flag, scope.row.totalHkPrice) == 1
+                            ? 'red'
+                            : '#606266'
+                      }"
+                      v-html="productCodeGet(scope.row.stockList)"
+                    ></div>
+                  </template>
+                </el-table-column>
+                <el-table-column
+                  width="250px"
+                  align="center"
+                  prop="productDes"
+                  label="產品描述"
+                >
+                  <template slot-scope="scope">
+                    <div
+                      :style="{
+                        color:
+                          isRed(scope.row.flag, scope.row.totalHkPrice) == 1
+                            ? 'red'
+                            : '#606266'
+                      }"
+                    >
+                      <el-tooltip effect="light" place="top-start">
+                        <div
+                          v-html="
+                            scope.row.productDes.replace(/[\r\n]/g, '<br />')
+                          "
+                          slot="content"
+                        ></div>
+                        <div
+                          class="font-warp"
+                          v-html="
+                            scope.row.productDes.replace(/[\r\n]/g, '<br />')
+                          "
+                        ></div>
+                      </el-tooltip>
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column align="center" prop="money" label="外幣金額">
+                  <template slot-scope="scope">
+                    <div
+                      :style="{
+                        color:
+                          isRed(scope.row.flag, scope.row.totalHkPrice) == 1
+                            ? 'red'
+                            : '#606266'
+                      }"
+                    >
+                      {{
+                        isFanMoney(
+                          scope.row.flag,
+                          scope.row.totalHkPrice,
+                          scope.row.money,
+                          scope.row.currency
+                        )
+                      }}
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column
+                  align="center"
+                  prop="totalToHkRate"
+                  label="匯率"
+                >
+                  <template slot-scope="scope">
+                    <div
+                      :style="{
+                        color:
+                          isRed(scope.row.flag, scope.row.totalHkPrice) == 1
+                            ? 'red'
+                            : '#606266'
+                      }"
+                    >
+                      {{
+                        scope.row.totalToHkRate == ""
+                          ? "/"
+                          : scope.row.totalToHkRate
+                      }}
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column
+                  align="center"
+                  prop="totalHkPrice"
+                  :label="companyCurrency + '金額'"
+                >
+                  <template slot-scope="scope">
+                    <div
+                      :style="{
+                        color:
+                          isRed(scope.row.flag, scope.row.totalHkPrice) == 1
+                            ? 'red'
+                            : '#606266'
+                      }"
+                    >
+                      {{ isFanHkPrice(scope.row.flag, scope.row.totalHkPrice) }}
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column
+                  align="center"
+                  prop="receiveType"
+                  label="交易方式"
+                >
+                  <template slot-scope="scope">
+                    <div
+                      :style="{
+                        color:
+                          isRed(scope.row.flag, scope.row.totalHkPrice) == 1
+                            ? 'red'
+                            : '#606266'
+                      }"
+                    >
+                      {{ scope.row.receiveType }}
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column
+                  width="250px"
+                  align="center"
+                  prop="remark"
+                  label="Remarks"
+                >
+                  <template slot-scope="scope">
+                    <div
+                      :style="{
+                        color:
+                          isRed(scope.row.flag, scope.row.totalHkPrice) == 1
+                            ? 'red'
+                            : '#606266'
+                      }"
+                    >
+                      <el-tooltip
+                        class="item"
+                        effect="light"
+                        :content="scope.row.remark"
+                        placement="top-start"
+                      >
+                        <div class="font-warp">{{ scope.row.remark }}</div>
+                      </el-tooltip>
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column align="center" label="操作">
+                  <template>
+                    <div>
+                      <span style="color:#409EFF;cursor: pointer;">刪除</span>
+                    </div>
+                  </template>
+                </el-table-column>
+              </el-table>
+              <div style="margin-top:15px;text-align: right">
+                <el-pagination
+                  @current-change="handleCurrentChange"
+                  :current-page="page"
+                  layout="total, prev, pager, next, jumper"
+                  :total="total"
+                >
+                </el-pagination>
+              </div>
+            </el-tab-pane>
+          </el-tabs>
+        </div>
+        <div v-show="isCompany == 1">
+          <div
+            class="right-title"
+            v-if="personAllMoney !== 0 && isOther == false"
+          >
+            公司欠
+            {{ personName + "總數： " }}
+            <span
+              :style="{
+                color: personAllMoney < 0 ? 'red' : '#000'
+              }"
+              >{{ formatNumberRgx(personAllMoney)
+              }}<span style="margin-left: 5px;font-size: 12px;">{{
+                personAllCurrency
+              }}</span></span
+            >
+          </div>
+          <div
+            class="right-title"
+            v-if="personAllMoney !== 0 && isOther == true"
+          >
+            {{ personName }}
+            <span>欠公司總數： </span>
+            <span
+              :style="{
+                color: personAllMoney < 0 ? 'red' : '#000'
+              }"
+              >{{ formatNumberRgx(personAllMoney)
+              }}<span style="margin-left: 5px;font-size: 12px;">{{
+                personAllCurrency
+              }}</span></span
+            >
+          </div>
+          <el-table
+            border
+            :data="billList"
+            style="width: 100%"
+            @row-click="delBill"
+            @row-dblclick="updateBill"
+            v-loading="loading"
+            element-loading-text="加载中..."
+            element-loading-spinner="el-icon-loading"
+          >
+            <el-table-column align="center" prop="time" label="日期">
+              <template slot-scope="scope">
+                <div
+                  :style="{
+                    color:
+                      isRed(scope.row.flag, scope.row.totalHkPrice) == 1
+                        ? 'red'
+                        : '#606266'
+                  }"
+                >
+                  {{ scope.row.time }}
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column align="center" prop="tradeType" label="買入/賣出">
+              <template slot-scope="scope">
+                <div
+                  :style="{
+                    color:
+                      isRed(scope.row.flag, scope.row.totalHkPrice) == 1
+                        ? 'red'
+                        : '#606266'
+                  }"
+                >
+                  {{
+                    isOther == true &&
+                    (tradeTypeRgx(scope.row.tradeType) == "買入" ||
+                      tradeTypeRgx(scope.row.tradeType) == "賣出")
+                      ? "TopTime " + tradeTypeRgx(scope.row.tradeType)
+                      : tradeTypeRgx(scope.row.tradeType)
+                  }}
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column align="center" prop="stockList" label="貨號">
+              <template slot-scope="scope">
+                <div
+                  :style="{
+                    color:
+                      isRed(scope.row.flag, scope.row.totalHkPrice) == 1
+                        ? 'red'
+                        : '#606266'
+                  }"
+                  v-html="productCodeGet(scope.row.stockList)"
+                ></div>
+              </template>
+            </el-table-column>
+            <el-table-column
+              width="250px"
+              align="center"
+              prop="productDes"
+              label="產品描述"
+            >
+              <template slot-scope="scope">
+                <div
+                  :style="{
+                    color:
+                      isRed(scope.row.flag, scope.row.totalHkPrice) == 1
+                        ? 'red'
+                        : '#606266'
+                  }"
+                >
+                  <el-tooltip effect="light" place="top-start">
+                    <div
+                      v-html="scope.row.productDes.replace(/[\r\n]/g, '<br />')"
+                      slot="content"
+                    ></div>
+                    <div
+                      class="font-warp"
+                      v-html="scope.row.productDes.replace(/[\r\n]/g, '<br />')"
+                    ></div>
+                  </el-tooltip>
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column align="center" prop="money" label="外幣金額">
+              <template slot-scope="scope">
+                <div
+                  :style="{
+                    color:
+                      isRed(scope.row.flag, scope.row.totalHkPrice) == 1
+                        ? 'red'
+                        : '#606266'
+                  }"
+                >
+                  {{
+                    isFanMoney(
+                      scope.row.flag,
+                      scope.row.totalHkPrice,
+                      scope.row.money,
+                      scope.row.currency
+                    )
+                  }}
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column align="center" prop="totalToHkRate" label="匯率">
+              <template slot-scope="scope">
+                <div
+                  :style="{
+                    color:
+                      isRed(scope.row.flag, scope.row.totalHkPrice) == 1
+                        ? 'red'
+                        : '#606266'
+                  }"
+                >
+                  {{
+                    scope.row.totalToHkRate == ""
+                      ? "/"
+                      : scope.row.totalToHkRate
+                  }}
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column
+              align="center"
+              prop="totalHkPrice"
+              :label="companyCurrency + '金額'"
+            >
+              <template slot-scope="scope">
+                <div
+                  :style="{
+                    color:
+                      isRed(scope.row.flag, scope.row.totalHkPrice) == 1
+                        ? 'red'
+                        : '#606266'
+                  }"
+                >
+                  {{ isFanHkPrice(scope.row.flag, scope.row.totalHkPrice) }}
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column align="center" prop="receiveType" label="交易方式">
+              <template slot-scope="scope">
+                <div
+                  :style="{
+                    color:
+                      isRed(scope.row.flag, scope.row.totalHkPrice) == 1
+                        ? 'red'
+                        : '#606266'
+                  }"
+                >
+                  {{ scope.row.receiveType }}
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column
+              width="250px"
+              align="center"
+              prop="remark"
+              label="Remarks"
+            >
+              <template slot-scope="scope">
+                <div
+                  :style="{
+                    color:
+                      isRed(scope.row.flag, scope.row.totalHkPrice) == 1
+                        ? 'red'
+                        : '#606266'
+                  }"
+                >
+                  <el-tooltip
+                    class="item"
+                    effect="light"
+                    :content="scope.row.remark"
+                    placement="top-start"
+                  >
+                    <div class="font-warp">{{ scope.row.remark }}</div>
+                  </el-tooltip>
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column align="center" label="操作">
+              <template>
+                <div>
+                  <span style="color:#409EFF;cursor: pointer;">刪除</span>
+                </div>
+              </template>
+            </el-table-column>
+          </el-table>
+          <div style="margin-top:15px;text-align: right">
+            <el-pagination
+              @current-change="handleCurrentChange"
+              :current-page="page"
+              layout="total, prev, pager, next, jumper"
+              :total="total"
+            >
+            </el-pagination>
+          </div>
+        </div>
+        <el-dialog
+          title="刪除該賬單"
+          :visible.sync="dialogDelVisible"
+          width="500px"
+        >
+          <div style="text-align: center;font-size: 16px;">
+            確定刪除該賬單？刪除後不能恢復
+          </div>
+          <div slot="footer">
+            <el-button @click="dialogDelVisible = false">取 消</el-button>
+            <el-button type="primary" @click="delBillSure">確 定</el-button>
+          </div>
+        </el-dialog>
+      </div>
+      <div v-else style="width: 60%;">
+        <div
+          style="width: 60px;margin: 0 0 20px 30px;display: flex;justify-content:space-between;cursor: pointer;"
+          @click="goback"
+        >
+          <img src="../../assets/imgs/goback.png" style="height: 21px;" />
+          <p style="margin: 0;">返回</p>
+        </div>
+        <el-form
+          ref="billForm"
+          :model="billData"
+          :rules="billRules"
+          label-width="110px"
+        >
+          <el-form-item label="賬單日期" prop="time">
             <el-date-picker
-              v-model="time"
-              type="monthrange"
-              range-separator="至"
-              format="yyyy-MM"
-              value-format="yyyy-MM"
-              start-placeholder="開始月份"
-              end-placeholder="結束月份"
+              type="date"
+              placeholder="請選擇賬單日期"
+              v-model="billData.time"
+              style="width:100%;"
+              value-format="yyyy-MM-dd"
+              format="yyyy-MM-dd"
             >
             </el-date-picker>
           </el-form-item>
-          <el-form-item label="賬戶">
+          <el-form-item label="交易類型" prop="tradeType">
             <el-select
               style="width:100%;"
-              v-model="personId"
+              v-model="billData.tradeType"
               placeholder="請選擇"
+              @change="tradeTypeChange"
+            >
+              <el-option
+                v-for="(item, index) in typeList"
+                :key="index"
+                :label="item.label"
+                :value="item.value"
+              ></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item :label="personShow(billData.tradeType)" prop="personId">
+            <el-select
+              style="width:100%;"
+              v-model="billData.personId"
+              placeholder="請選擇"
+              clearable
+              @change="personIdIsSam"
             >
               <el-option
                 v-for="(item, index) in userList"
@@ -30,679 +631,174 @@
               ></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="">
+          <el-form-item
+            label="收款賬戶"
+            v-show="billData.tradeType == 2"
+            prop="payeeId"
+          >
+            <el-select
+              style="width:100%;"
+              v-model="billData.payeeId"
+              placeholder="請選擇"
+              @change="payeeIdIsSam"
+            >
+              <el-option
+                v-for="(item, index) in userList"
+                :key="index"
+                :label="item.name"
+                :value="item.id"
+                v-show="item.id != billData.personId"
+              ></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="交易方式" prop="receiveType">
+            <el-autocomplete
+              style="width: 100%;"
+              class="inline-input"
+              v-model="billData.receiveType"
+              :fetch-suggestions="querySearch"
+              placeholder="請選擇/輸入內容"
+              @select="handleSelect"
+            ></el-autocomplete>
+          </el-form-item>
+          <el-form-item
+            label="產品貨號"
+            prop="productCode"
+            v-show="accountNumberType == 1"
+          >
+            <div class="code-table">
+              <div class="every1">
+                <span style="color: red;">*</span>
+                貨號
+              </div>
+              <div class="every2">
+                外幣金額
+              </div>
+              <div class="every3">外幣轉{{ companyCurrency }}匯率</div>
+              <div class="every4">
+                <span
+                  style="color: red;"
+                  v-show="
+                    billData.tradeType != 2 &&
+                      billData.tradeType != 5 &&
+                      billData.tradeType != 6
+                  "
+                  >*</span
+                >{{ companyCurrency }}金額
+              </div>
+              <div class="every5">
+                操作
+              </div>
+            </div>
+            <div
+              class="code-table"
+              style="margin-top: 5px;"
+              v-for="(items, index) in billData.stockList"
+              :key="index"
+            >
+              <div class="every1">
+                <el-input
+                  v-model="items.productCode"
+                  placeholder="請輸入"
+                  @change="searchCode(items.productCode, index)"
+                ></el-input>
+              </div>
+              <div class="every2">
+                <el-input
+                  v-model="items.money"
+                  placeholder="請輸入"
+                  @change="tablePriceChange(items)"
+                ></el-input>
+                <el-select
+                  v-model="billData.currencyId"
+                  placeholder="請選擇幣種"
+                >
+                  <el-option
+                    v-for="item in currencyIds"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  >
+                  </el-option>
+                </el-select>
+              </div>
+              <div class="every3">
+                <el-input
+                  v-model="billData.totalToHkRate"
+                  placeholder="請輸入"
+                  @input="hkRateTableNum"
+                ></el-input>
+              </div>
+              <div class="every4">
+                <el-input
+                  v-model="items.totalHkPrice"
+                  placeholder="請輸入"
+                  @change="tablePriceChange(items)"
+                ></el-input>
+              </div>
+              <div class="every5">
+                <img
+                  src="../../assets/imgs/add.png"
+                  style="width: 30px;height: 30px;cursor: pointer;"
+                  @click="addCode"
+                  v-if="index == 0"
+                />
+                <el-button type="text" @click="delCode(index)" v-else
+                  >刪除</el-button
+                >
+              </div>
+            </div>
+            <el-dialog
+              title="提示"
+              :visible.sync="dialogCodeVisible"
+              width="520px"
+            >
+              <div style="text-align: center;font-size: 16px;">
+                未查找到{{ productCode }}，請檢查貨號輸入是否正確
+              </div>
+              <div slot="footer">
+                <el-button
+                  type="primary"
+                  @click="dialogCodeVisible = false"
+                  class="sure-button"
+                  >確 定</el-button
+                >
+              </div>
+            </el-dialog>
+          </el-form-item>
+          <el-form-item
+            label="產品描述"
+            prop="productDes"
+            v-show="accountNumberType == 1"
+          >
             <el-input
-              style="width: 360px;"
-              v-model="keyword"
-              placeholder="可輸入產品貨號、產品描述和賬單備註進行查詢"
-              clearable
+              style="width:100%;"
+              type="textarea"
+              v-model="billData.productDes"
+              placeholder="產品描述"
             ></el-input>
           </el-form-item>
-          <el-form-item label="">
-            <el-button
-              type="primary"
-              @click="personChange"
-              style="background-color: #9695f3;border: 1px solid #9695f3;"
-              >查詢</el-button
-            >
-          </el-form-item>
-          <el-form-item label="">
-            <el-button
-              type="primary"
-              @click="exportData"
-              style="background-color: #9695f3;border: 1px solid #9695f3;"
-              >導出數據</el-button
-            >
-          </el-form-item>
-        </el-form>
-      </div>
-      <div v-show="isCompany == 0">
-        <el-tabs v-model="activeName">
-          <el-tab-pane label="統計列表" name="first">
-            <el-table
-              :data="accountList"
-              style="width: 800px"
-              @row-dblclick="checkThisList"
-            >
-              <el-table-column align="center" width="80px">
-                <template slot-scope="scope">
-                  <div>
-                    {{ ++scope.$index }}
-                  </div>
-                </template>
-              </el-table-column>
-              <el-table-column align="center" label="信息">
-                <template slot-scope="scope">
-                  <div
-                    style="display: flex;align-items: center;justify-content:center;color: #409eff;"
-                  >
-                    <div
-                      v-if="scope.row.type == 2"
-                      style="display: flex;align-items: center;"
-                    >
-                      <span>{{ scope.row.name }}</span>
-                      <span style="font-size: 14px;">欠公司</span>
-                    </div>
-                    <div v-else style="display: flex;align-items: center;">
-                      <span style="font-size: 14px;">公司欠</span>
-                      <span>{{ scope.row.name }}</span>
-                    </div>
-                  </div>
-                </template>
-              </el-table-column>
-              <el-table-column align="center" label="欠款總數">
-                <template slot-scope="scope">
-                  <div>
-                    <span
-                      :style="{
-                        color: scope.row.totalPrice < 0 ? 'red' : '#000'
-                      }"
-                      >{{ formatNumberRgx(scope.row.totalPrice)
-                      }}<span style="margin-left: 5px;font-size: 12px;">{{
-                        scope.row.currency
-                      }}</span></span
-                    >
-                  </div>
-                </template>
-              </el-table-column>
-            </el-table>
-          </el-tab-pane>
-          <el-tab-pane label="記錄列表" name="second">
-            <el-table
-              :data="billList"
-              style="width: 100%"
-              @row-click="delBill"
-              @row-dblclick="updateBill"
-              v-loading="loading"
-              element-loading-text="加载中..."
-              element-loading-spinner="el-icon-loading"
-            >
-              <el-table-column align="center" prop="time" label="日期">
-                <template slot-scope="scope">
-                  <div
-                    :style="{
-                      color:
-                        isRed(scope.row.flag, scope.row.totalHkPrice) == 1
-                          ? 'red'
-                          : '#000'
-                    }"
-                  >
-                    {{ scope.row.time }}
-                  </div>
-                </template>
-              </el-table-column>
-              <el-table-column
-                align="center"
-                prop="tradeType"
-                label="買入/賣出"
-              >
-                <template slot-scope="scope">
-                  <div
-                    :style="{
-                      color:
-                        isRed(scope.row.flag, scope.row.totalHkPrice) == 1
-                          ? 'red'
-                          : '#000'
-                    }"
-                  >
-                    {{
-                      isOther == true &&
-                      (tradeTypeRgx(scope.row.tradeType) == "買入" ||
-                        tradeTypeRgx(scope.row.tradeType) == "賣出")
-                        ? "TopTime " + tradeTypeRgx(scope.row.tradeType)
-                        : tradeTypeRgx(scope.row.tradeType)
-                    }}
-                  </div>
-                </template>
-              </el-table-column>
-              <el-table-column align="center" prop="stockList" label="貨號">
-                <template slot-scope="scope">
-                  <div
-                    :style="{
-                      color:
-                        isRed(scope.row.flag, scope.row.totalHkPrice) == 1
-                          ? 'red'
-                          : '#000'
-                    }"
-                    v-html="productCodeGet(scope.row.stockList)"
-                  ></div>
-                </template>
-              </el-table-column>
-              <el-table-column
-                width="250px"
-                align="center"
-                prop="productDes"
-                label="產品描述"
-              >
-                <template slot-scope="scope">
-                  <div
-                    :style="{
-                      color:
-                        isRed(scope.row.flag, scope.row.totalHkPrice) == 1
-                          ? 'red'
-                          : '#000'
-                    }"
-                  >
-                    <el-tooltip effect="light" place="top-start">
-                      <div
-                        v-html="
-                          scope.row.productDes.replace(/[\r\n]/g, '<br />')
-                        "
-                        slot="content"
-                      ></div>
-                      <div
-                        class="font-warp"
-                        v-html="
-                          scope.row.productDes.replace(/[\r\n]/g, '<br />')
-                        "
-                      ></div>
-                    </el-tooltip>
-                  </div>
-                </template>
-              </el-table-column>
-              <el-table-column align="center" prop="money" label="外幣金額">
-                <template slot-scope="scope">
-                  <div
-                    :style="{
-                      color:
-                        isRed(scope.row.flag, scope.row.totalHkPrice) == 1
-                          ? 'red'
-                          : '#000'
-                    }"
-                  >
-                    {{
-                      isFanMoney(
-                        scope.row.flag,
-                        scope.row.totalHkPrice,
-                        scope.row.money,
-                        scope.row.currency
-                      )
-                    }}
-                  </div>
-                </template>
-              </el-table-column>
-              <el-table-column align="center" prop="totalToHkRate" label="匯率">
-                <template slot-scope="scope">
-                  <div
-                    :style="{
-                      color:
-                        isRed(scope.row.flag, scope.row.totalHkPrice) == 1
-                          ? 'red'
-                          : '#000'
-                    }"
-                  >
-                    {{
-                      scope.row.totalToHkRate == ""
-                        ? "/"
-                        : scope.row.totalToHkRate
-                    }}
-                  </div>
-                </template>
-              </el-table-column>
-              <el-table-column
-                align="center"
-                prop="totalHkPrice"
-                label="港幣金額"
-              >
-                <template slot-scope="scope">
-                  <div
-                    :style="{
-                      color:
-                        isRed(scope.row.flag, scope.row.totalHkPrice) == 1
-                          ? 'red'
-                          : '#000'
-                    }"
-                  >
-                    {{ isFanHkPrice(scope.row.flag, scope.row.totalHkPrice) }}
-                  </div>
-                </template>
-              </el-table-column>
-              <el-table-column
-                align="center"
-                prop="receiveType"
-                label="交易方式"
-              >
-                <template slot-scope="scope">
-                  <div
-                    :style="{
-                      color:
-                        isRed(scope.row.flag, scope.row.totalHkPrice) == 1
-                          ? 'red'
-                          : '#000'
-                    }"
-                  >
-                    {{ scope.row.receiveType }}
-                  </div>
-                </template>
-              </el-table-column>
-              <el-table-column
-                width="250px"
-                align="center"
-                prop="remark"
-                label="Remarks"
-              >
-                <template slot-scope="scope">
-                  <div
-                    :style="{
-                      color:
-                        isRed(scope.row.flag, scope.row.totalHkPrice) == 1
-                          ? 'red'
-                          : '#000'
-                    }"
-                  >
-                    <el-tooltip
-                      class="item"
-                      effect="light"
-                      :content="scope.row.remark"
-                      placement="top-start"
-                    >
-                      <div class="font-warp">{{ scope.row.remark }}</div>
-                    </el-tooltip>
-                  </div>
-                </template>
-              </el-table-column>
-              <el-table-column align="center" label="操作">
-                <template>
-                  <div>
-                    <span style="color:#9695f3;cursor: pointer;">刪除</span>
-                  </div>
-                </template>
-              </el-table-column>
-            </el-table>
-            <div style="margin:15px 0;padding-bottom: 30px;text-align: right;">
-              <el-pagination
-                @current-change="handleCurrentChange"
-                :current-page="page"
-                layout="total, prev, pager, next, jumper"
-                :total="total"
-              >
-              </el-pagination>
-            </div>
-          </el-tab-pane>
-        </el-tabs>
-      </div>
-      <div v-show="isCompany == 1">
-        <div
-          class="right-title"
-          v-if="personAllMoney !== 0 && isOther == false"
-        >
-          公司欠
-          {{ personName + "總數： " }}
-          <span
-            :style="{
-              color: personAllMoney < 0 ? 'red' : '#000'
-            }"
-            >{{ formatNumberRgx(personAllMoney)
-            }}<span style="margin-left: 5px;font-size: 12px;">{{
-              personAllCurrency
-            }}</span></span
-          >
-        </div>
-        <div class="right-title" v-if="personAllMoney !== 0 && isOther == true">
-          {{ personName }}
-          <span>欠公司總數： </span>
-          <span
-            :style="{
-              color: personAllMoney < 0 ? 'red' : '#000'
-            }"
-            >{{ formatNumberRgx(personAllMoney)
-            }}<span style="margin-left: 5px;font-size: 12px;">{{
-              personAllCurrency
-            }}</span></span
-          >
-        </div>
-        <el-table
-          :data="billList"
-          style="width: 100%"
-          @row-click="delBill"
-          @row-dblclick="updateBill"
-          v-loading="loading"
-          element-loading-text="加载中..."
-          element-loading-spinner="el-icon-loading"
-        >
-          <el-table-column align="center" prop="time" label="日期">
-            <template slot-scope="scope">
-              <div
-                :style="{
-                  color:
-                    isRed(scope.row.flag, scope.row.totalHkPrice) == 1
-                      ? 'red'
-                      : '#000'
-                }"
-              >
-                {{ scope.row.time }}
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column align="center" prop="tradeType" label="買入/賣出">
-            <template slot-scope="scope">
-              <div
-                :style="{
-                  color:
-                    isRed(scope.row.flag, scope.row.totalHkPrice) == 1
-                      ? 'red'
-                      : '#000'
-                }"
-              >
-                {{
-                  isOther == true &&
-                  (tradeTypeRgx(scope.row.tradeType) == "買入" ||
-                    tradeTypeRgx(scope.row.tradeType) == "賣出")
-                    ? "TopTime " + tradeTypeRgx(scope.row.tradeType)
-                    : tradeTypeRgx(scope.row.tradeType)
-                }}
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column align="center" prop="stockList" label="貨號">
-            <template slot-scope="scope">
-              <div
-                :style="{
-                  color:
-                    isRed(scope.row.flag, scope.row.totalHkPrice) == 1
-                      ? 'red'
-                      : '#000'
-                }"
-                v-html="productCodeGet(scope.row.stockList)"
-              ></div>
-            </template>
-          </el-table-column>
-          <el-table-column
-            width="250px"
-            align="center"
-            prop="productDes"
-            label="產品描述"
-          >
-            <template slot-scope="scope">
-              <div
-                :style="{
-                  color:
-                    isRed(scope.row.flag, scope.row.totalHkPrice) == 1
-                      ? 'red'
-                      : '#000'
-                }"
-              >
-                <el-tooltip effect="light" place="top-start">
-                  <div
-                    v-html="scope.row.productDes.replace(/[\r\n]/g, '<br />')"
-                    slot="content"
-                  ></div>
-                  <div
-                    class="font-warp"
-                    v-html="scope.row.productDes.replace(/[\r\n]/g, '<br />')"
-                  ></div>
-                </el-tooltip>
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column align="center" prop="money" label="外幣金額">
-            <template slot-scope="scope">
-              <div
-                :style="{
-                  color:
-                    isRed(scope.row.flag, scope.row.totalHkPrice) == 1
-                      ? 'red'
-                      : '#000'
-                }"
-              >
-                {{
-                  isFanMoney(
-                    scope.row.flag,
-                    scope.row.totalHkPrice,
-                    scope.row.money,
-                    scope.row.currency
-                  )
-                }}
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column align="center" prop="totalToHkRate" label="匯率">
-            <template slot-scope="scope">
-              <div
-                :style="{
-                  color:
-                    isRed(scope.row.flag, scope.row.totalHkPrice) == 1
-                      ? 'red'
-                      : '#000'
-                }"
-              >
-                {{
-                  scope.row.totalToHkRate == "" ? "/" : scope.row.totalToHkRate
-                }}
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column align="center" prop="totalHkPrice" label="港幣金額">
-            <template slot-scope="scope">
-              <div
-                :style="{
-                  color:
-                    isRed(scope.row.flag, scope.row.totalHkPrice) == 1
-                      ? 'red'
-                      : '#000'
-                }"
-              >
-                {{ isFanHkPrice(scope.row.flag, scope.row.totalHkPrice) }}
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column align="center" prop="receiveType" label="交易方式">
-            <template slot-scope="scope">
-              <div
-                :style="{
-                  color:
-                    isRed(scope.row.flag, scope.row.totalHkPrice) == 1
-                      ? 'red'
-                      : '#000'
-                }"
-              >
-                {{ scope.row.receiveType }}
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column
-            width="250px"
-            align="center"
-            prop="remark"
-            label="Remarks"
-          >
-            <template slot-scope="scope">
-              <div
-                :style="{
-                  color:
-                    isRed(scope.row.flag, scope.row.totalHkPrice) == 1
-                      ? 'red'
-                      : '#000'
-                }"
-              >
-                <el-tooltip
-                  class="item"
-                  effect="light"
-                  :content="scope.row.remark"
-                  placement="top-start"
-                >
-                  <div class="font-warp">{{ scope.row.remark }}</div>
-                </el-tooltip>
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column align="center" label="操作">
-            <template>
-              <div>
-                <span style="color:#9695f3;cursor: pointer;">刪除</span>
-              </div>
-            </template>
-          </el-table-column>
-        </el-table>
-        <div
-          style="margin:15px 0;padding-bottom: 30px;position:absolute;right:40px;"
-        >
-          <el-pagination
-            @current-change="handleCurrentChange"
-            :current-page="page"
-            layout="total, prev, pager, next, jumper"
-            :total="total"
-          >
-          </el-pagination>
-        </div>
-      </div>
-      <el-dialog
-        title="刪除該賬單"
-        :visible.sync="dialogDelVisible"
-        width="500px"
-      >
-        <div style="text-align: center;font-size: 16px;">
-          確定刪除該賬單？刪除後不能恢復
-        </div>
-        <div slot="footer">
-          <el-button
-            @click="dialogDelVisible = false"
-            style="width:100px;color:#9695f3;margin-right:10px;"
-            >取 消</el-button
-          >
-          <el-button
-            type="primary"
-            @click="delBillSure"
-            class="sure-button"
-            style="background:#9695f3;color:#fff;"
-            >確 定</el-button
-          >
-        </div>
-      </el-dialog>
-    </div>
-    <div v-else style="width: 60%;">
-      <div
-        style="width: 60px;margin: 0 0 20px 30px;display: flex;justify-content:space-between;cursor: pointer;"
-        @click="goback"
-      >
-        <img src="../../assets/imgs/goback.png" style="height: 21px;" />
-        <p style="margin: 0;">返回</p>
-      </div>
-      <el-form
-        ref="billForm"
-        :model="billData"
-        :rules="billRules"
-        label-width="110px"
-      >
-        <el-form-item label="賬單日期" prop="time">
-          <el-date-picker
-            type="date"
-            placeholder="請選擇賬單日期"
-            v-model="billData.time"
-            style="width:100%;"
-            value-format="yyyy-MM-dd"
-            format="yyyy-MM-dd"
-          >
-          </el-date-picker>
-        </el-form-item>
-        <el-form-item label="交易類型" prop="tradeType">
-          <el-select
-            style="width:100%;"
-            v-model="billData.tradeType"
-            placeholder="請選擇"
-            @change="tradeTypeChange"
-          >
-            <el-option
-              v-for="(item, index) in typeList"
-              :key="index"
-              :label="item.label"
-              :value="item.value"
-            ></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item :label="personShow(billData.tradeType)" prop="personId">
-          <el-select
-            style="width:100%;"
-            v-model="billData.personId"
-            placeholder="請選擇"
-            clearable
-            @change="personIdIsSam"
-          >
-            <el-option
-              v-for="(item, index) in userList"
-              :key="index"
-              :label="item.name"
-              :value="item.id"
-            ></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item
-          label="收款賬戶"
-          v-show="billData.tradeType == 2"
-          prop="payeeId"
-        >
-          <el-select
-            style="width:100%;"
-            v-model="billData.payeeId"
-            placeholder="請選擇"
-            @change="payeeIdIsSam"
-          >
-            <el-option
-              v-for="(item, index) in userList"
-              :key="index"
-              :label="item.name"
-              :value="item.id"
-              v-show="item.id != billData.personId"
-            ></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="交易方式" prop="receiveType">
-          <el-autocomplete
-            style="width: 100%;"
-            class="inline-input"
-            v-model="billData.receiveType"
-            :fetch-suggestions="querySearch"
-            placeholder="請選擇/輸入內容"
-            @select="handleSelect"
-          ></el-autocomplete>
-        </el-form-item>
-        <el-form-item label="產品貨號" prop="productCode">
-          <div class="code-table">
-            <div class="every1">
-              <span style="color: red;">*</span>
-              貨號
-            </div>
-            <div class="every2">
-              外幣金額
-            </div>
-            <div class="every3">
-              外幣轉港幣匯率
-            </div>
-            <div class="every4">
-              <span
-                style="color: red;"
-                v-show="
-                  billData.tradeType != 2 &&
-                    billData.tradeType != 5 &&
-                    billData.tradeType != 6
+          <el-form-item label="外幣金額" prop="money">
+            <div style="display: flex;">
+              <el-input
+                v-model="billData.money"
+                placeholder="請輸入外幣金額"
+                @change="hkMoneyNum"
+              ></el-input>
+              <el-select
+                v-model="billData.currencyId"
+                placeholder="請選擇金額幣種"
+                :disabled="
+                  accountNumberType == 1
+                    ? billData.tradeType == 0 ||
+                      billData.tradeType == 1 ||
+                      billData.tradeType == 3 ||
+                      billData.tradeType == 4
+                      ? true
+                      : false
+                    : false
                 "
-                >*</span
-              >港幣金額
-            </div>
-            <div class="every5">
-              操作
-            </div>
-          </div>
-          <div
-            class="code-table"
-            style="margin-top: 5px;"
-            v-for="(items, index) in billData.stockList"
-            :key="index"
-          >
-            <div class="every1">
-              <el-input
-                v-model="items.productCode"
-                placeholder="請輸入"
-                @change="searchCode(items.productCode, index)"
-              ></el-input>
-            </div>
-            <div class="every2">
-              <el-input
-                v-model="items.money"
-                placeholder="請輸入"
-                @change="tablePriceChange(items)"
-              ></el-input>
-              <el-select v-model="billData.currencyId" placeholder="請選擇幣種">
+              >
                 <el-option
                   v-for="item in currencyIds"
                   :key="item.value"
@@ -712,129 +808,48 @@
                 </el-option>
               </el-select>
             </div>
-            <div class="every3">
-              <el-input
-                v-model="billData.totalToHkRate"
-                placeholder="請輸入"
-                @input="hkRateTableNum"
-              ></el-input>
-            </div>
-            <div class="every4">
-              <el-input
-                v-model="items.totalHkPrice"
-                placeholder="請輸入"
-                @change="tablePriceChange(items)"
-              ></el-input>
-            </div>
-            <div class="every5">
-              <img
-                src="../../assets/imgs/add.png"
-                style="width: 30px;height: 30px;cursor: pointer;"
-                @click="addCode"
-                v-if="index == 0"
-              />
-              <el-button type="text" @click="delCode(index)" v-else
-                >刪除</el-button
-              >
-            </div>
-          </div>
-          <el-dialog
-            title="提示"
-            :visible.sync="dialogCodeVisible"
-            width="520px"
+          </el-form-item>
+          <el-form-item
+            :label="'外幣轉' + companyCurrency + '匯率'"
+            prop="totalToHkRate"
+            v-if="
+              billData.stockList.length > 0
+                ? billData.stockList[0].productCode == ''
+                : productCodeIsNull
+            "
           >
-            <div style="text-align: center;font-size: 16px;">
-              未查找到{{ productCode }}，請檢查貨號輸入是否正確
-            </div>
-            <div slot="footer">
-              <el-button
-                type="primary"
-                @click="dialogCodeVisible = false"
-                class="sure-button"
-                style="background:#9695f3;color:#fff;"
-                >確 定</el-button
-              >
-            </div>
-          </el-dialog>
-        </el-form-item>
-        <el-form-item label="產品描述" prop="productDes">
-          <el-input
-            style="width:100%;"
-            type="textarea"
-            v-model="billData.productDes"
-            placeholder="產品描述"
-          ></el-input>
-        </el-form-item>
-        <el-form-item label="外幣金額" prop="money">
-          <div style="display: flex;">
             <el-input
-              v-model="billData.money"
-              placeholder="請輸入外幣金額"
-              @change="hkMoneyNum"
+              v-model="billData.totalToHkRate"
+              placeholder="請輸入"
+              @input="hkMoneyNum"
             ></el-input>
-            <el-select
-              v-model="billData.currencyId"
-              placeholder="請選擇金額幣種"
-              :disabled="
-                billData.tradeType == 0 ||
-                billData.tradeType == 1 ||
-                billData.tradeType == 3 ||
-                billData.tradeType == 4
-                  ? true
-                  : false
-              "
-            >
-              <el-option
-                v-for="item in currencyIds"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-              >
-              </el-option>
-            </el-select>
-          </div>
-        </el-form-item>
-        <el-form-item
-          label="外幣轉港幣匯率"
-          prop="totalToHkRate"
-          v-if="
-            billData.stockList.length > 0
-              ? billData.stockList[0].productCode == ''
-              : productCodeIsNull
-          "
-        >
-          <el-input
-            v-model="billData.totalToHkRate"
-            placeholder="請輸入"
-            @input="hkMoneyNum"
-          ></el-input>
-        </el-form-item>
-        <el-form-item label="港幣金額" prop="totalHkPrice">
-          <el-input
-            style="width:100%;"
-            v-model="billData.totalHkPrice"
-            placeholder="請輸入港幣金額"
-            @change="hkNum"
-          ></el-input>
-        </el-form-item>
-        <el-form-item label="備註" prop="remark">
-          <el-input
-            style="width:100%;"
-            type="textarea"
-            v-model="billData.remark"
-            placeholder="請輸入備註信息"
-          ></el-input>
-        </el-form-item>
-      </el-form>
-      <div
-        style="display: flex;justify-content: flex-end;padding-bottom: 30px;text-align: right;"
-      >
-        <input
-          type="button"
-          class="publish-button"
-          @click="updateBillSure"
-          value="修改"
-        />
+          </el-form-item>
+          <el-form-item :label="companyCurrency + '金額'" prop="totalHkPrice">
+            <el-input
+              style="width:100%;"
+              v-model="billData.totalHkPrice"
+              placeholder="請輸入金額"
+              @change="hkNum"
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="備註" prop="remark">
+            <el-input
+              style="width:100%;"
+              type="textarea"
+              v-model="billData.remark"
+              placeholder="請輸入備註信息"
+            ></el-input>
+          </el-form-item>
+        </el-form>
+        <div style="display: flex;justify-content: flex-end;text-align: right;">
+          <el-button
+            style="width: 120px;"
+            type="primary"
+            @click="updateBillSure"
+          >
+            修改
+          </el-button>
+        </div>
       </div>
     </div>
   </div>
@@ -932,7 +947,7 @@ export default {
         totalHkPrice: [
           {
             required: true,
-            message: "請輸入港幣金額",
+            message: "請輸入金額",
             trigger: "blur"
           }
         ]
@@ -944,7 +959,7 @@ export default {
         },
         {
           value: 2,
-          label: "HKD港元"
+          label: "HKD港币"
         },
         {
           value: 3,
@@ -983,20 +998,35 @@ export default {
       personCurrency: null,
       payeeCurrency: null,
 
-      activeName: "first"
+      activeName: "first",
+      companyCurrency: "",
+      accountNumberType: null,
+      currencyGlobal: ""
     };
   },
   created() {
+    this.currencyGlobal = sessionStorage.getItem("currencyGlobal");
     this.getBillUserList();
     this.getMeansList();
+    this.accountNumberType = sessionStorage.getItem("type");
   },
   methods: {
     // 賬戶類型為其他和員工
     personIdIsSam() {
+      let companyCurrencyId;
       for (const item of this.userList) {
         if (item.id == this.billData.personId) {
           this.personType = item.type;
           this.personCurrency = item.currencyId;
+          companyCurrencyId = item.companyCurrencyId;
+
+          console.log(companyCurrencyId);
+          for (const ite of this.currencyIds) {
+            if (ite.value === companyCurrencyId) {
+              let reg = /[\u4e00-\u9fa5]/g;
+              this.companyCurrency = ite.label.match(reg).join("");
+            }
+          }
 
           if (
             this.billData.tradeType == 2 &&
@@ -1184,32 +1214,35 @@ export default {
         if (flag == 1) {
           if (this.isCompany == 0) {
             let price = hkPrice < 0 ? Math.abs(hkPrice) : hkPrice;
-            let num = this.formatNumberRgx(price) + " HKD";
+            let num = this.formatNumberRgx(price) + " " + this.currencyGlobal;
             return num;
           } else {
             let price = hkPrice > 0 ? "-" + hkPrice : Math.abs(hkPrice);
 
             if (this.isOther == true) {
               let price2 = price > 0 ? "-" + price : Math.abs(price);
-              let num2 = this.formatNumberRgx(price2) + " HKD";
+              let num2 =
+                this.formatNumberRgx(price2) + " " + this.currencyGlobal;
               return num2;
             } else {
-              let num = this.formatNumberRgx(price) + " HKD";
+              let num = this.formatNumberRgx(price) + " " + this.currencyGlobal;
               return num;
             }
           }
         } else {
           if (this.isCompany == 0) {
             let price = hkPrice > 0 ? "-" + hkPrice : hkPrice;
-            let num = this.formatNumberRgx(price) + " HKD";
+            let num = this.formatNumberRgx(price) + " " + this.currencyGlobal;
             return num;
           } else {
             if (this.isOther == true) {
               let price2 = hkPrice > 0 ? "-" + hkPrice : Math.abs(hkPrice);
-              let num2 = this.formatNumberRgx(price2) + " HKD";
+              let num2 =
+                this.formatNumberRgx(price2) + " " + this.currencyGlobal;
               return num2;
             } else {
-              let num = this.formatNumberRgx(hkPrice) + " HKD";
+              let num =
+                this.formatNumberRgx(hkPrice) + " " + this.currencyGlobal;
               return num;
             }
           }
@@ -1228,6 +1261,22 @@ export default {
     updateBill(row) {
       this.isClick = false;
       this.billData = JSON.parse(JSON.stringify(row));
+      if (this.companyCurrency == "") {
+        let companyCurrencyId;
+        for (const item of this.userList) {
+          if (item.id == this.billData.personId) {
+            companyCurrencyId = item.companyCurrencyId;
+
+            console.log(companyCurrencyId);
+            for (const ite of this.currencyIds) {
+              if (ite.value === companyCurrencyId) {
+                let reg = /[\u4e00-\u9fa5]/g;
+                this.companyCurrency = ite.label.match(reg).join("");
+              }
+            }
+          }
+        }
+      }
 
       if (this.billData.stockList.length == 0) {
         this.billData.stockList = [
@@ -1245,14 +1294,9 @@ export default {
 
       this.pageSel = 1;
 
-      (function smoothscroll() {
-        var currentScroll =
-          document.documentElement.scrollTop || document.body.scrollTop;
-        if (currentScroll > 0) {
-          window.requestAnimationFrame(smoothscroll);
-          window.scrollTo(0, currentScroll - currentScroll / 5);
-        }
-      })();
+      document
+        .getElementById("billReportContainer")
+        .scrollIntoView({ behavior: "smooth" });
     },
     // 確定修改
     updateBillSure() {
@@ -1305,15 +1349,9 @@ export default {
                 this.page = 1;
                 this.getBillList();
 
-                (function smoothscroll() {
-                  var currentScroll =
-                    document.documentElement.scrollTop ||
-                    document.body.scrollTop;
-                  if (currentScroll > 0) {
-                    window.requestAnimationFrame(smoothscroll);
-                    window.scrollTo(0, currentScroll - currentScroll / 5);
-                  }
-                })();
+                document
+                  .getElementById("billReportContainer")
+                  .scrollIntoView({ behavior: "smooth" });
               }
             })
             .catch(err => {
@@ -1367,14 +1405,9 @@ export default {
             this.page = 1;
             this.getBillList();
 
-            (function smoothscroll() {
-              var currentScroll =
-                document.documentElement.scrollTop || document.body.scrollTop;
-              if (currentScroll > 0) {
-                window.requestAnimationFrame(smoothscroll);
-                window.scrollTo(0, currentScroll - currentScroll / 5);
-              }
-            })();
+            document
+              .getElementById("billReportContainer")
+              .scrollIntoView({ behavior: "smooth" });
           }
         })
         .catch(err => {
@@ -1471,7 +1504,10 @@ export default {
           ) {
             if (item.totalHkPrice == "") {
               this.$message.error({
-                message: "產品貨號列表港幣金額不能為空，請輸入",
+                message:
+                  "產品貨號列表" +
+                  this.companyCurrency +
+                  "金額不能為空，請輸入",
                 showClose: true,
                 duration: 2000
               });
@@ -1495,9 +1531,11 @@ export default {
             let msg =
               "產品列表出售總金額為：" +
               this.saleHkMoneyTotal +
-              " HKD,您的轉賬金額為：" +
+              this.currencyGlobal +
+              " ,您的轉賬金額為：" +
+              this.currencyGlobal +
               this.billData.totalHkPrice +
-              " HKD，兩者不相等，是否確定繼續提交？";
+              " ，兩者不相等，是否確定繼續提交？";
             this.$confirm(msg, "提示", {
               confirmButtonText: "確定",
               cancelButtonText: "取消",
@@ -1789,14 +1827,9 @@ export default {
       console.log(this.page);
       this.getBillList();
 
-      (function smoothscroll() {
-        var currentScroll =
-          document.documentElement.scrollTop || document.body.scrollTop;
-        if (currentScroll > 0) {
-          window.requestAnimationFrame(smoothscroll);
-          window.scrollTo(0, currentScroll - currentScroll / 5);
-        }
-      })();
+      document
+        .getElementById("billReportContainer")
+        .scrollIntoView({ behavior: "smooth" });
     }
   }
 };
@@ -1804,7 +1837,10 @@ export default {
 
 <style lang="scss" scoped>
 .bill-report-container {
-  margin: 40px 10px 0;
+  padding: 20px;
+  margin-top: 20px;
+  background-color: #fff;
+  border-radius: 6px;
 
   .user-every {
     margin-bottom: 10px;
@@ -1863,20 +1899,6 @@ export default {
     .every5 {
       width: 10%;
     }
-  }
-  .publish-button {
-    width: 160px;
-    height: 48px;
-    background: url("../../assets/imgs/export.png") no-repeat;
-    border: 0;
-    border-radius: 10px;
-    font-size: 15px;
-    color: #fff;
-    cursor: pointer;
-  }
-
-  .publish-button:focus {
-    outline: 0;
   }
   .right-title {
     margin-bottom: 20px;

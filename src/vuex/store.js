@@ -16,6 +16,7 @@ export default new Vuex.Store({
     currentRole: null, // 当前用户角色
     isLogin: false,
     token: '',
+    type: '',
     imgUrl: '',
     imgUrl2: ''
   },

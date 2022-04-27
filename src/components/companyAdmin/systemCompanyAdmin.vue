@@ -9,9 +9,25 @@
         <el-form :model="companyAddData" inline>
           <el-form-item prop="headCompanyName">
             <el-input
+              style="width: 150px;"
               v-model="companyAddData.headCompanyName"
               placeholder="請輸入公司名稱"
             ></el-input>
+          </el-form-item>
+          <el-form-item prop="currencyId">
+            <el-select
+              style="width: 150px;"
+              v-model="companyAddData.currencyId"
+              placeholder="請選擇幣種"
+            >
+              <el-option
+                v-for="item in currencyIds"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              >
+              </el-option>
+            </el-select>
           </el-form-item>
           <el-form-item>
             <el-button type="primary" v-preventClick @click="addCompany"
@@ -22,11 +38,12 @@
       </div>
       <div style="padding: 20px 10px;">
         <el-table
+          border
           ref="companyListTable"
           :data="companyList"
           style="width: 100%"
           highlight-current-row
-          @current-change="selCompany"
+          @current-change="selCompanyChange"
         >
           <el-table-column prop="headCompanyName" label="名稱" align="center">
           </el-table-column>
@@ -62,21 +79,30 @@
                   placeholder="請輸入公司名稱"
                 ></el-input>
               </el-form-item>
+              <el-form-item prop="currencyId" label="幣種：">
+                <el-select
+                  v-model="updateCompanyMsg.currencyId"
+                  placeholder="請選擇"
+                  style="width: 100%;"
+                >
+                  <el-option
+                    v-for="item in currencyIds"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  >
+                  </el-option>
+                </el-select>
+              </el-form-item>
             </el-form>
           </div>
           <div slot="footer">
             <el-button
               v-preventClick
               @click="dialogUpdateCompanyVisible = false"
-              style="width:100px;color:#9695f3;margin-right:10px;"
               >取 消</el-button
             >
-            <el-button
-              v-preventClick
-              type="primary"
-              @click="updateCompanySure"
-              class="sure-button"
-              style="background:#9695f3;color:#fff;"
+            <el-button v-preventClick type="primary" @click="updateCompanySure"
               >確 定</el-button
             >
           </div>
@@ -90,18 +116,10 @@
             確定刪除該公司信息？刪除後不能恢復
           </div>
           <div slot="footer">
-            <el-button
-              v-preventClick
-              @click="dialogDelCompanyVisible = false"
-              style="width:100px;color:#9695f3;margin-right:10px;"
+            <el-button v-preventClick @click="dialogDelCompanyVisible = false"
               >取 消</el-button
             >
-            <el-button
-              v-preventClick
-              type="primary"
-              @click="delCompanySure"
-              class="sure-button"
-              style="background:#9695f3;color:#fff;"
+            <el-button v-preventClick type="primary" @click="delCompanySure"
               >確 定</el-button
             >
           </div>
@@ -109,126 +127,173 @@
       </div>
     </div>
     <div class="container-middle">
-      <el-collapse v-model="activeName" accordion @change="collapseChange">
-        <el-collapse-item title="分公司" name="1">
-          <div>
-            <el-form
-              :model="branchCompanyAddData"
-              inline
-              style="text-align: right;"
+      <div class="title">
+        公司列表
+      </div>
+      <div style="padding: 0 10px;text-align: right;">
+        <el-form
+          :model="branchCompanyAddData"
+          inline
+          style="text-align: right;"
+        >
+          <el-form-item prop="branchName">
+            <el-input
+              style="width: 150px;"
+              v-model="branchCompanyAddData.branchName"
+              placeholder="請輸入分公司名稱"
+            ></el-input>
+          </el-form-item>
+          <el-form-item prop="currencyId">
+            <el-select
+              style="width: 150px;"
+              v-model="branchCompanyAddData.currencyId"
+              placeholder="請選擇幣種"
             >
-              <el-form-item prop="branchName">
+              <el-option
+                v-for="item in currencyIds"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              >
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" v-preventClick @click="addBranchCompany"
+              >添加</el-button
+            >
+          </el-form-item>
+        </el-form>
+      </div>
+      <div style="padding: 20px 10px;">
+        <el-table
+          border
+          ref="branchCompanyListTable"
+          :data="branchCompanyList"
+          style="width: 100%"
+          highlight-current-row
+          @current-change="selBranchCompany"
+        >
+          <el-table-column prop="branchName" label="名稱" align="center">
+            <template slot-scope="scope">
+              <div>
+                <span
+                  :style="{
+                    'font-weight':
+                      scope.row.id == selCompanyMsg.id ? 'bold' : 'normal'
+                  }"
+                >
+                  {{ scope.row.branchName }}</span
+                >
+                <span>{{
+                  scope.row.id == selCompanyMsg.id ? "(總公司)" : "(分公司)"
+                }}</span>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" align="center">
+            <template slot-scope="scope">
+              <div v-show="scope.row.id != selCompanyMsg.id">
+                <el-button
+                  v-preventClick
+                  type="text"
+                  @click="updateBranchCompany(scope.row)"
+                  >修改</el-button
+                >
+                <el-button
+                  type="text"
+                  v-preventClick
+                  @click="delBranchCompany(scope.row)"
+                  >刪除</el-button
+                >
+              </div>
+            </template>
+          </el-table-column>
+        </el-table>
+        <el-dialog
+          title="修改分公司信息"
+          :visible.sync="dialogUpdateBranchCompanyVisible"
+          width="500px"
+        >
+          <div>
+            <el-form label-width="90px">
+              <el-form-item prop="branchName" label="公司名稱：">
                 <el-input
-                  v-model="branchCompanyAddData.branchName"
-                  placeholder="請輸入分公司名稱"
+                  v-model="updateBranchCompanyMsg.branchName"
+                  placeholder="請輸入公司名稱"
                 ></el-input>
               </el-form-item>
-              <el-form-item>
-                <el-button
-                  type="primary"
-                  v-preventClick
-                  @click="addBranchCompany"
-                  >添加</el-button
+              <el-form-item prop="currencyId" label="幣種：">
+                <el-select
+                  v-model="updateBranchCompanyMsg.currencyId"
+                  placeholder="請選擇"
+                  style="width: 100%;"
                 >
+                  <el-option
+                    v-for="item in currencyIds"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  >
+                  </el-option>
+                </el-select>
               </el-form-item>
             </el-form>
-            <el-table
-              ref="branchCompanyListTable"
-              :data="branchCompanyList"
-              style="width: 100%"
-              highlight-current-row
-              @current-change="selBranchCompany"
-            >
-              <el-table-column prop="branchName" label="名稱" align="center">
-              </el-table-column>
-              <el-table-column label="操作" align="center">
-                <template slot-scope="scope">
-                  <div>
-                    <el-button
-                      v-preventClick
-                      type="text"
-                      @click="updateBranchCompany(scope.row)"
-                      >修改</el-button
-                    >
-                    <el-button
-                      type="text"
-                      v-preventClick
-                      @click="delBranchCompany(scope.row)"
-                      >刪除</el-button
-                    >
-                  </div>
-                </template>
-              </el-table-column>
-            </el-table>
-            <el-dialog
-              title="修改分公司信息"
-              :visible.sync="dialogUpdateBranchCompanyVisible"
-              width="500px"
-            >
-              <div>
-                <el-form label-width="90px">
-                  <el-form-item prop="branchName" label="公司名稱：">
-                    <el-input
-                      v-model="updateBranchCompanyMsg.branchName"
-                      placeholder="請輸入公司名稱"
-                    ></el-input>
-                  </el-form-item>
-                </el-form>
-              </div>
-              <div slot="footer">
-                <el-button
-                  v-preventClick
-                  @click="dialogUpdateBranchCompanyVisible = false"
-                  style="width:100px;color:#9695f3;margin-right:10px;"
-                  >取 消</el-button
-                >
-                <el-button
-                  v-preventClick
-                  type="primary"
-                  @click="updateBranchCompanySure"
-                  class="sure-button"
-                  style="background:#9695f3;color:#fff;"
-                  >確 定</el-button
-                >
-              </div>
-            </el-dialog>
-            <el-dialog
-              title="刪除分公司信息"
-              :visible.sync="dialogDelBranchCompanyVisible"
-              width="500px"
-            >
-              <div style="text-align: center;font-size: 16px;">
-                確定刪除該公司信息？刪除後不能恢復
-              </div>
-              <div slot="footer">
-                <el-button
-                  v-preventClick
-                  @click="dialogDelBranchCompanyVisible = false"
-                  style="width:100px;color:#9695f3;margin-right:10px;"
-                  >取 消</el-button
-                >
-                <el-button
-                  v-preventClick
-                  type="primary"
-                  @click="delBranchCompanySure"
-                  class="sure-button"
-                  style="background:#9695f3;color:#fff;"
-                  >確 定</el-button
-                >
-              </div>
-            </el-dialog>
           </div>
-        </el-collapse-item>
-        <el-collapse-item title="倉庫" name="2">
+          <div slot="footer">
+            <el-button
+              v-preventClick
+              @click="dialogUpdateBranchCompanyVisible = false"
+              >取 消</el-button
+            >
+            <el-button
+              v-preventClick
+              type="primary"
+              @click="updateBranchCompanySure"
+              >確 定</el-button
+            >
+          </div>
+        </el-dialog>
+        <el-dialog
+          title="刪除分公司信息"
+          :visible.sync="dialogDelBranchCompanyVisible"
+          width="500px"
+        >
+          <div style="text-align: center;font-size: 16px;">
+            確定刪除該公司信息？刪除後不能恢復
+          </div>
+          <div slot="footer">
+            <el-button
+              v-preventClick
+              @click="dialogDelBranchCompanyVisible = false"
+              >取 消</el-button
+            >
+            <el-button
+              v-preventClick
+              type="primary"
+              @click="delBranchCompanySure"
+              >確 定</el-button
+            >
+          </div>
+        </el-dialog>
+      </div>
+    </div>
+    <div class="container-right">
+      <el-collapse
+        v-model="activePatchName"
+        accordion
+        @change="patchCollapseChange"
+      >
+        <el-collapse-item title="倉庫" name="1">
           <div>
             <el-form
-              :model="companyWarehouseAddData"
+              :model="filialeWarehouseAddData"
               inline
               style="text-align: right;"
             >
               <el-form-item prop="warehouseName">
                 <el-input
-                  v-model="companyWarehouseAddData.warehouseName"
+                  v-model="filialeWarehouseAddData.warehouseName"
                   placeholder="請輸入倉庫名稱"
                 ></el-input>
               </el-form-item>
@@ -236,32 +301,33 @@
                 <el-button
                   type="primary"
                   v-preventClick
-                  @click="addCompanyWarehouse"
+                  @click="addfilialeWarehouse"
                   >添加</el-button
                 >
               </el-form-item>
             </el-form>
             <el-table
-              ref="companyWarehouseTable"
-              :data="companyWarehouseList"
+              border
+              ref="filialeWarehouseTable"
+              :data="filialeWarehouseList"
               style="width: 100%"
               highlight-current-row
             >
               <el-table-column prop="warehouseName" label="名稱" align="center">
               </el-table-column>
-              <el-table-column label="操作" align="center">
+              <el-table-column label="操作" align="center" :key="1">
                 <template slot-scope="scope">
                   <div>
                     <el-button
                       v-preventClick
                       type="text"
-                      @click="updateCompanyWarehouse(scope.row)"
+                      @click="updateFilialeWarehouse(scope.row)"
                       >修改</el-button
                     >
                     <el-button
-                      v-preventClick
                       type="text"
-                      @click="delCompanyWarehouse(scope.row)"
+                      v-preventClick
+                      @click="delFilialeWarehouse(scope.row)"
                       >刪除</el-button
                     >
                   </div>
@@ -270,18 +336,20 @@
             </el-table>
           </div>
         </el-collapse-item>
-        <el-collapse-item title="管理員賬號" name="3">
-          <div>
+        <el-collapse-item title="公司管理員" name="2">
+          <div style="text-align: right;">
             <el-form :model="companyAdministratorAddData" inline>
               <el-form-item prop="username">
                 <el-input
+                  style="width: 150px;"
                   v-model="companyAdministratorAddData.username"
                   placeholder="請輸入賬號名稱"
                 ></el-input>
               </el-form-item>
-              <el-form-item prop="psw">
+              <el-form-item prop="password">
                 <el-input
-                  v-model="companyAdministratorAddData.psw"
+                  style="width: 150px;"
+                  v-model="companyAdministratorAddData.password"
                   placeholder="請輸入賬號密碼"
                 ></el-input>
               </el-form-item>
@@ -295,11 +363,10 @@
               </el-form-item>
             </el-form>
             <el-table
+              border
               ref="companyAdministratorTable"
               :data="companyAdminList"
               style="width: 100%"
-              highlight-current-row
-              @current-change="selCompanyAdministrator"
             >
               <el-table-column prop="username" label="賬號名稱" align="center">
               </el-table-column>
@@ -324,121 +391,69 @@
             </el-table>
           </div>
         </el-collapse-item>
+        <el-collapse-item
+          v-show="companyId == selCompanyMsg.id"
+          title="普通管理賬號"
+          name="3"
+        >
+          <div style="text-align: right;">
+            <el-form :model="normalAdminListAddData" inline>
+              <el-form-item prop="username">
+                <el-input
+                  style="width: 150px;"
+                  v-model="normalAdminListAddData.username"
+                  placeholder="請輸入賬號名稱"
+                ></el-input>
+              </el-form-item>
+              <el-form-item prop="password">
+                <el-input
+                  style="width: 150px;"
+                  v-model="normalAdminListAddData.password"
+                  placeholder="請輸入賬號密碼"
+                ></el-input>
+              </el-form-item>
+              <el-form-item>
+                <el-button type="primary" v-preventClick @click="addNormalAdmin"
+                  >添加</el-button
+                >
+              </el-form-item>
+            </el-form>
+            <el-table
+              border
+              ref="normalAdminTable"
+              :data="normalAdminList"
+              style="width: 100%"
+            >
+              <el-table-column prop="username" label="賬號名稱" align="center">
+              </el-table-column>
+              <el-table-column label="操作" align="center">
+                <template slot-scope="scope">
+                  <div>
+                    <el-button
+                      type="text"
+                      v-preventClick
+                      @click="updateNormalAdmin(scope.row)"
+                      >修改</el-button
+                    >
+                    <el-button
+                      type="text"
+                      v-preventClick
+                      @click="delNormalAdmin(scope.row)"
+                      >刪除</el-button
+                    >
+                    <el-button
+                      type="text"
+                      v-preventClick
+                      @click="warehouseBinding(scope.row)"
+                      >倉庫綁定</el-button
+                    >
+                  </div>
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
+        </el-collapse-item>
       </el-collapse>
-    </div>
-    <div class="container-right">
-      <div v-if="activeName == 1">
-        <div class="title">
-          倉庫
-        </div>
-        <div>
-          <el-form
-            :model="filialeWarehouseAddData"
-            inline
-            style="text-align: right;"
-          >
-            <el-form-item prop="warehouseName">
-              <el-input
-                v-model="filialeWarehouseAddData.warehouseName"
-                placeholder="請輸入倉庫名稱"
-              ></el-input>
-            </el-form-item>
-            <el-form-item>
-              <el-button
-                type="primary"
-                v-preventClick
-                @click="addfilialeWarehouse"
-                >添加</el-button
-              >
-            </el-form-item>
-          </el-form>
-          <el-table
-            ref="filialeWarehouseTable"
-            :data="filialeWarehouseList"
-            style="width: 100%"
-            highlight-current-row
-          >
-            <el-table-column prop="warehouseName" label="名稱" align="center">
-            </el-table-column>
-            <el-table-column label="操作" align="center">
-              <template slot-scope="scope">
-                <div>
-                  <el-button
-                    v-preventClick
-                    type="text"
-                    @click="updateFilialeWarehouse(scope.row)"
-                    >修改</el-button
-                  >
-                  <el-button
-                    type="text"
-                    v-preventClick
-                    @click="delFilialeWarehouse(scope.row)"
-                    >刪除</el-button
-                  >
-                </div>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
-      </div>
-      <div v-if="activeName == 3">
-        <div class="title">
-          普通管理賬號
-        </div>
-        <div>
-          <el-form :model="normalAdminListAddData" inline>
-            <el-form-item prop="name">
-              <el-input
-                v-model="normalAdminListAddData.name"
-                placeholder="請輸入賬號名稱"
-              ></el-input>
-            </el-form-item>
-            <el-form-item prop="psw">
-              <el-input
-                v-model="normalAdminListAddData.psw"
-                placeholder="請輸入賬號密碼"
-              ></el-input>
-            </el-form-item>
-            <el-form-item>
-              <el-button type="primary" v-preventClick @click="addNormalAdmin"
-                >添加</el-button
-              >
-            </el-form-item>
-          </el-form>
-          <el-table
-            ref="normalAdminTable"
-            :data="normalAdminList"
-            style="width: 100%"
-          >
-            <el-table-column prop="name" label="名稱" align="center">
-            </el-table-column>
-            <el-table-column label="操作" align="center">
-              <template slot-scope="scope">
-                <div>
-                  <el-button
-                    type="text"
-                    v-preventClick
-                    @click="updateNormalAdmin(scope.row)"
-                    >修改</el-button
-                  >
-                  <el-button
-                    type="text"
-                    v-preventClick
-                    @click="delNormalAdmin(scope.row)"
-                    >刪除</el-button
-                  >
-                  <el-button
-                    type="text"
-                    v-preventClick
-                    @click="warehouseBinding(scope.row)"
-                    >倉庫綁定</el-button
-                  >
-                </div>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
-      </div>
     </div>
     <el-dialog
       title="修改倉庫信息"
@@ -459,15 +474,12 @@
         <el-button
           v-preventClick
           @click="dialogUpdateCompanyWarehouseVisible = false"
-          style="width:100px;color:#9695f3;margin-right:10px;"
           >取 消</el-button
         >
         <el-button
           v-preventClick
           type="primary"
           @click="updateCompanyWarehouseSure"
-          class="sure-button"
-          style="background:#9695f3;color:#fff;"
           >確 定</el-button
         >
       </div>
@@ -484,15 +496,99 @@
         <el-button
           v-preventClick
           @click="dialogDelCompanyWarehouseVisible = false"
-          style="width:100px;color:#9695f3;margin-right:10px;"
           >取 消</el-button
         >
         <el-button
           v-preventClick
           type="primary"
           @click="delCompanyWarehouseSure"
-          class="sure-button"
-          style="background:#9695f3;color:#fff;"
+          >確 定</el-button
+        >
+      </div>
+    </el-dialog>
+
+    <el-dialog
+      title="修改賬號信息"
+      :visible.sync="dialogUpdateAccountNumberVisible"
+      width="500px"
+    >
+      <div>
+        <el-form label-width="90px">
+          <el-form-item prop="username" label="賬號名稱：">
+            <el-input
+              v-model="updateAccountNumberMsg.username"
+              placeholder="請輸入賬號名稱"
+            ></el-input>
+          </el-form-item>
+          <el-form-item prop="password" label="賬號密碼：">
+            <el-input
+              v-model="updateAccountNumberMsg.password"
+              placeholder="請輸入賬號密碼"
+            ></el-input>
+          </el-form-item>
+        </el-form>
+      </div>
+      <div slot="footer">
+        <el-button
+          v-preventClick
+          @click="dialogUpdateAccountNumberVisible = false"
+          >取 消</el-button
+        >
+        <el-button v-preventClick type="primary" @click="updateAccountNumber"
+          >確 定</el-button
+        >
+      </div>
+    </el-dialog>
+    <el-dialog
+      title="刪除賬號信息"
+      :visible.sync="dialogDelAccountNumberVisible"
+      width="500px"
+    >
+      <div style="text-align: center;font-size: 16px;">
+        確定刪除該賬號信息？刪除後不能恢復
+      </div>
+      <div slot="footer">
+        <el-button v-preventClick @click="dialogDelAccountNumberVisible = false"
+          >取 消</el-button
+        >
+        <el-button v-preventClick type="primary" @click="delAccountNumberSure"
+          >確 定</el-button
+        >
+      </div>
+    </el-dialog>
+
+    <el-dialog
+      title="绑定仓库"
+      :visible.sync="dialogNormalWarehouseAdminVisible"
+      width="500px"
+    >
+      <div>
+        <el-form label-width="85px">
+          <el-form-item label="倉庫選擇：">
+            <el-select
+              multiple
+              v-model="normalWarehouseList"
+              placeholder="可多選"
+              style="width: 100%;"
+            >
+              <el-option
+                v-for="item in allWarehouseList"
+                :key="item.id"
+                :label="item.warehouseName"
+                :value="item.id"
+              >
+              </el-option>
+            </el-select>
+          </el-form-item>
+        </el-form>
+      </div>
+      <div slot="footer">
+        <el-button
+          v-preventClick
+          @click="dialogNormalWarehouseAdminVisible = false"
+          >取 消</el-button
+        >
+        <el-button v-preventClick type="primary" @click="warehouseBindingSure"
           >確 定</el-button
         >
       </div>
@@ -506,7 +602,8 @@ export default {
     return {
       companyList: [],
       companyAddData: {
-        headCompanyName: ""
+        headCompanyName: "",
+        currencyId: null
       },
       selCompanyMsg: {},
       dialogUpdateCompanyVisible: false,
@@ -514,10 +611,10 @@ export default {
       dialogDelCompanyVisible: false,
       delCompanyId: null,
 
-      activeName: "1",
       branchCompanyList: [], // 分公司列表
       branchCompanyAddData: {
-        branchName: ""
+        branchName: "",
+        currencyId: null
       },
       selBranchCompanyMsg: {},
       dialogUpdateBranchCompanyVisible: false,
@@ -537,8 +634,14 @@ export default {
       companyAdminList: [],
       companyAdministratorAddData: {
         username: "",
-        psw: ""
+        password: ""
       },
+      dialogUpdateAccountNumberVisible: false,
+      updateAccountNumberMsg: {},
+      dialogDelAccountNumberVisible: false,
+      delAccountNumberId: null,
+      isNormalAdmin: false,
+
       companyId: null,
       filialeWarehouseList: [],
       filialeWarehouseAddData: {
@@ -547,39 +650,89 @@ export default {
       normalAdminList: [],
       normalAdminListAddData: {
         username: "",
-        psw: ""
-      }
+        password: ""
+      },
+      normalAdminId: null,
+      dialogNormalWarehouseAdminVisible: false,
+      allWarehouseList: [],
+      normalWarehouseList: [],
+
+      activePatchName: "1",
+      activePatchNameSel: "1",
+      currencyIds: [
+        {
+          value: 1,
+          label: "CNY人民币"
+        },
+        {
+          value: 2,
+          label: "HKD港币"
+        },
+        {
+          value: 3,
+          label: "USD美元"
+        },
+        {
+          value: 4,
+          label: "EUR欧元"
+        },
+        {
+          value: 5,
+          label: "GBP英镑"
+        },
+        {
+          value: 6,
+          label: "AUD澳元"
+        }
+      ],
+
+      middleSel: {},
+      middleSureSel: {}
     };
   },
-  mounted() {
-    this.tableSelValue(0);
+  async mounted() {
+    await this.getAllData();
+    this.tableSelSureValue(0);
   },
   methods: {
     // 添加總公司信息
     addCompany() {
-      this.$axios
-        .post(this.$store.state.baseCompanyUrl + "/company/companySave", {
-          companyName: this.companyAddData.headCompanyName
-        })
-        .then(res => {
-          console.log("添加總公司");
-          console.log(res);
-          this.$message.success({
-            message: "添加成功",
-            showClose: true,
-            duration: 2000
-          });
-          this.companyAddData.headCompanyName = "";
-          this.tableSelValue(0);
-        })
-        .catch(err => {
-          console.log(err);
-          this.$message.error({
-            message: err.data.status,
-            showClose: true,
-            duration: 2000
-          });
+      if (
+        this.companyAddData.headCompanyName == "" ||
+        this.companyAddData.currencyId == "" ||
+        this.companyAddData.currencyId == null
+      ) {
+        this.$message.error({
+          message: "請輸入公司名稱/選擇幣種"
         });
+      } else {
+        this.$axios
+          .post(this.$store.state.baseCompanyUrl + "/company/companySave", {
+            companyName: this.companyAddData.headCompanyName,
+            currencyId: this.companyAddData.currencyId
+          })
+          .then(async res => {
+            console.log("添加總公司");
+            console.log(res);
+            this.$message.success({
+              message: "添加成功",
+              showClose: true,
+              duration: 2000
+            });
+            this.companyAddData.headCompanyName = "";
+            this.companyAddData.currencyId = null;
+            await this.getAllData();
+            this.tableSelSureValue(0);
+          })
+          .catch(err => {
+            console.log(err);
+            this.$message.error({
+              message: err.data.status,
+              showClose: true,
+              duration: 2000
+            });
+          });
+      }
     },
     // 修改總公司信息
     updateCompany(row) {
@@ -592,7 +745,8 @@ export default {
       this.$axios
         .post(this.$store.state.baseCompanyUrl + "/company/companySave", {
           id: this.updateCompanyMsg.id,
-          companyName: this.updateCompanyMsg.headCompanyName
+          companyName: this.updateCompanyMsg.headCompanyName,
+          currencyId: this.updateCompanyMsg.currencyId
         })
         .then(res => {
           console.log("修改總公司");
@@ -602,7 +756,7 @@ export default {
             showClose: true,
             duration: 2000
           });
-          this.tableSelValue(0);
+          this.tableSelValue();
           this.dialogUpdateCompanyVisible = false;
         })
         .catch(err => {
@@ -628,7 +782,7 @@ export default {
             "/company/companyDel?id=" +
             this.delCompanyId
         )
-        .then(res => {
+        .then(async res => {
           console.log("刪除總公司");
           console.log(res);
           this.$message.success({
@@ -636,7 +790,8 @@ export default {
             showClose: true,
             duration: 2000
           });
-          this.tableSelValue(0);
+          await this.getAllData();
+          this.tableSelSureValue(0);
           this.dialogDelCompanyVisible = false;
         })
         .catch(err => {
@@ -649,50 +804,75 @@ export default {
         });
     },
     // 選中某個總公司,查看其下管理倉庫、分公司、管理賬號等
-    selCompany(row) {
+    selCompanyChange(row) {
+      console.log("總公司");
       console.log(row);
-      this.activeName = "1";
+
       if (row != null) {
         this.selCompanyMsg = row;
-        this.branchCompanyList = row.branchCompanyList;
+        this.branchCompanyList = [
+          {
+            id: this.selCompanyMsg.id,
+            branchName: this.selCompanyMsg.headCompanyName,
+            warehouseList: this.selCompanyMsg.warehouseList,
+            companyAdminList: this.selCompanyMsg.companyAdminList
+          }
+        ];
+
+        this.branchCompanyList = this.branchCompanyList.concat(
+          row.branchCompanyList
+        );
         this.$refs.branchCompanyListTable.setCurrentRow(
           this.branchCompanyList[0]
         );
         if (this.branchCompanyList.length > 0) {
           this.filialeWarehouseList = this.branchCompanyList[0].warehouseList;
+        } else {
+          this.filialeWarehouseList = [];
         }
-
-        this.companyWarehouseList = row.warehouseList;
-        this.companyAdminList = row.companyAdminList;
+        this.normalAdminList = this.selCompanyMsg.normalAdminList;
+        this.allWarehouseList = this.selCompanyMsg.allWarehouseList;
       }
     },
 
     // 添加分公司信息
     addBranchCompany() {
-      this.$axios
-        .post(this.$store.state.baseCompanyUrl + "/company/companySave", {
-          parentId: this.selCompanyMsg.id,
-          companyName: this.branchCompanyAddData.branchName
-        })
-        .then(res => {
-          console.log("添加分公司");
-          console.log(res);
-          this.$message.success({
-            message: "添加成功",
-            showClose: true,
-            duration: 2000
-          });
-          this.branchCompanyAddData.branchName = "";
-          this.tableSelValue(0);
-        })
-        .catch(err => {
-          console.log(err);
-          this.$message.error({
-            message: err.data.status,
-            showClose: true,
-            duration: 2000
-          });
+      if (
+        this.branchCompanyAddData.branchName == "" ||
+        this.branchCompanyAddData.currencyId == "" ||
+        this.branchCompanyAddData.currencyId == null
+      ) {
+        this.$message.error({
+          message: "請輸入公司名稱/選擇幣種"
         });
+      } else {
+        this.$axios
+          .post(this.$store.state.baseCompanyUrl + "/company/companySave", {
+            parentId: this.selCompanyMsg.id,
+            companyName: this.branchCompanyAddData.branchName,
+            currencyId: this.branchCompanyAddData.currencyId
+          })
+          .then(res => {
+            console.log("添加分公司");
+            console.log(res);
+            this.$message.success({
+              message: "添加成功",
+              showClose: true,
+              duration: 2000
+            });
+            this.branchCompanyAddData.branchName = "";
+            this.branchCompanyAddData.currencyId = null;
+            this.tableSelValue();
+          })
+          .catch(err => {
+            console.log(err);
+            this.$message.error({
+              message: err.data.status,
+              showClose: true,
+              duration: 2000
+            });
+          });
+      }
     },
     // 修改分公司信息
     updateBranchCompany(row) {
@@ -706,7 +886,8 @@ export default {
         .post(this.$store.state.baseCompanyUrl + "/company/companySave", {
           id: this.updateBranchCompanyMsg.id,
           companyName: this.updateBranchCompanyMsg.branchName,
-          parentId: this.selCompanyMsg.id
+          parentId: this.selCompanyMsg.id,
+          currencyId: this.updateBranchCompanyMsg.currencyId
         })
         .then(res => {
           console.log("修改分公司");
@@ -716,7 +897,7 @@ export default {
             showClose: true,
             duration: 2000
           });
-          this.tableSelValue(0);
+          this.tableSelValue();
           this.dialogUpdateBranchCompanyVisible = false;
         })
         .catch(err => {
@@ -750,7 +931,7 @@ export default {
             showClose: true,
             duration: 2000
           });
-          this.tableSelValue(0);
+          this.tableSelValue();
           this.dialogDelBranchCompanyVisible = false;
         })
         .catch(err => {
@@ -763,44 +944,65 @@ export default {
         });
     },
     // 選中某個分公司,查看其下管理倉庫
-    selBranchCompany(row) {
+    selBranchCompany(row, old) {
+      console.log("分公司改變");
       console.log(row);
+      console.log(old);
+      this.middleSel = row;
+      console.log(this.middleSel.id, this.middleSureSel.id);
+
+      if (this.middleSel.id != this.middleSureSel.id) {
+        this.activePatchName = "1";
+      } else {
+        this.activePatchName = this.activePatchNameSel;
+      }
+
       if (row != null) {
         this.companyId = row.id;
         this.filialeWarehouseList = row.warehouseList;
+        this.companyAdminList = row.companyAdminList;
       }
     },
 
     // 添加倉庫信息
     addWarehouse(id, name) {
-      this.$axios
-        .post(
-          this.$store.state.baseCompanyUrl + "/warehouse/companyWarehouseSave",
-          {
-            companyId: id,
-            warehouseName: name
-          }
-        )
-        .then(res => {
-          console.log("添加總公司倉庫");
-          console.log(res);
-          this.$message.success({
-            message: "添加成功",
-            showClose: true,
-            duration: 2000
-          });
-          this.companyWarehouseAddData.warehouseName = "";
-          this.filialeWarehouseAddData.warehouseName = "";
-          this.tableSelValue(0);
-        })
-        .catch(err => {
-          console.log(err);
-          this.$message.error({
-            message: err.data.status,
-            showClose: true,
-            duration: 2000
-          });
+      console.log(name);
+      if (!name) {
+        this.$message.error({
+          message: "請輸入倉庫名稱"
         });
+      } else {
+        this.$axios
+          .post(
+            this.$store.state.baseCompanyUrl +
+              "/warehouse/companyWarehouseSave",
+            {
+              companyId: id,
+              warehouseName: name
+            }
+          )
+          .then(res => {
+            console.log("添加總公司倉庫");
+            console.log(res);
+            this.$message.success({
+              message: "添加成功",
+              showClose: true,
+              duration: 2000
+            });
+            this.companyWarehouseAddData.warehouseName = "";
+            this.filialeWarehouseAddData.warehouseName = "";
+            this.middleSureSel = this.middleSel;
+            this.tableSelValue();
+          })
+          .catch(err => {
+            console.log(err);
+            this.$message.error({
+              message: err.data.status,
+              showClose: true,
+              duration: 2000
+            });
+          });
+      }
     },
     // 修改倉庫信息
     updateWarehouse(id, companyId, name) {
@@ -821,8 +1023,9 @@ export default {
             showClose: true,
             duration: 2000
           });
-          this.tableSelValue(0);
           this.dialogUpdateCompanyWarehouseVisible = false;
+          this.middleSureSel = this.middleSel;
+          this.tableSelValue();
         })
         .catch(err => {
           console.log(err);
@@ -847,8 +1050,9 @@ export default {
             showClose: true,
             duration: 2000
           });
-          this.tableSelValue(0);
           this.dialogDelCompanyWarehouseVisible = false;
+          this.middleSureSel = this.middleSel;
+          this.tableSelValue();
         })
         .catch(err => {
           console.log(err);
@@ -860,34 +1064,13 @@ export default {
         });
     },
 
-    // 添加總公司下倉庫信息
-    addCompanyWarehouse() {
-      this.addWarehouse(
-        this.selCompanyMsg.id,
-        this.companyWarehouseAddData.warehouseName
-      );
-    },
-    // 修改總公司下倉庫信息
-    updateCompanyWarehouse(row) {
-      console.log(row);
-      this.updateWarehouseMsg = JSON.parse(JSON.stringify(row));
-      this.dialogUpdateCompanyWarehouseVisible = true;
-    },
     // 確定修改
     updateCompanyWarehouseSure() {
-      if (this.activeName == "1") {
-        this.updateWarehouse(
-          this.updateWarehouseMsg.id,
-          this.selCompanyMsg.id,
-          this.updateWarehouseMsg.warehouseName
-        );
-      } else if (this.activeName == "2") {
-        this.updateWarehouse(
-          this.updateWarehouseMsg.id,
-          this.companyId,
-          this.updateWarehouseMsg.warehouseName
-        );
-      }
+      this.updateWarehouse(
+        this.updateWarehouseMsg.id,
+        this.companyId,
+        this.updateWarehouseMsg.warehouseName
+      );
     },
     // 刪除總公司下倉庫
     delCompanyWarehouse(row) {
@@ -900,22 +1083,150 @@ export default {
       this.delWarehouse(this.delCompanyWarehouseId);
     },
 
+    // 添加管理員賬號
+    addAdmin(companyId, password, role, username) {
+      if (username == "" || password == "") {
+        this.$message.error({
+          message: "用戶名/密碼不能為空"
+        });
+      } else {
+        this.$axios
+          .post(this.$store.state.baseCompanyUrl + "/company/adminMsgSave", {
+            companyId: companyId,
+            password: password,
+            role: role,
+            username: username
+          })
+          .then(res => {
+            console.log("添加管理賬號");
+            console.log(res);
+            this.$message.success({
+              message: "添加成功",
+              showClose: true,
+              duration: 2000
+            });
+            this.companyAdministratorAddData.username = "";
+            this.companyAdministratorAddData.password = "";
+            this.normalAdminListAddData.username = "";
+            this.normalAdminListAddData.password = "";
+            this.middleSureSel = this.middleSel;
+            this.tableSelValue();
+          })
+          .catch(err => {
+            console.log(err);
+            this.$message.error({
+              message: err.data.status,
+              showClose: true,
+              duration: 2000
+            });
+          });
+      }
+    },
+    // 修改管理員賬號
+    updateAccountNumber() {
+      if (this.isNormalAdmin == false) {
+        this.updateAccountNumberSure(
+          this.updateAccountNumberMsg.id,
+          this.companyId,
+          this.updateAccountNumberMsg.password,
+          "admin",
+          this.updateAccountNumberMsg.username
+        );
+      } else {
+        this.updateAccountNumberSure(
+          this.updateAccountNumberMsg.id,
+          this.selCompanyMsg.id,
+          this.updateAccountNumberMsg.password,
+          "normal_admin",
+          this.updateAccountNumberMsg.username
+        );
+      }
+    },
+    // 確定修改
+    updateAccountNumberSure(id, companyId, password, role, username) {
+      this.$axios
+        .post(this.$store.state.baseCompanyUrl + "/company/adminMsgSave", {
+          id: id,
+          companyId: companyId,
+          password: password,
+          role: role,
+          username: username
+        })
+        .then(res => {
+          console.log("修改管理賬號");
+          console.log(res);
+          this.$message.success({
+            message: "修改成功",
+            showClose: true,
+            duration: 2000
+          });
+          this.dialogUpdateAccountNumberVisible = false;
+          this.middleSureSel = this.middleSel;
+          this.middleSureSel = this.middleSel;
+          this.tableSelValue();
+        })
+        .catch(err => {
+          console.log(err);
+          this.$message.error({
+            message: err.data.status,
+            showClose: true,
+            duration: 2000
+          });
+        });
+    },
+    // 刪除管理員賬號
+    delAccountNumberSure() {
+      this.$axios
+        .delete(
+          this.$store.state.baseCompanyUrl +
+            "/company/adminDel?id=" +
+            this.delAccountNumberId
+        )
+        .then(res => {
+          console.log("刪除賬號");
+          console.log(res);
+          this.$message.success({
+            message: "刪除成功",
+            showClose: true,
+            duration: 2000
+          });
+          this.dialogDelAccountNumberVisible = false;
+          this.middleSureSel = this.middleSel;
+          this.tableSelValue();
+        })
+        .catch(err => {
+          console.log(err);
+          this.$message.error({
+            message: err.data.status,
+            showClose: true,
+            duration: 2000
+          });
+        });
+    },
     // 添加公司管理員賬號
-    addCompanyAdministrator() {},
+    addCompanyAdministrator() {
+      this.addAdmin(
+        this.companyId,
+        this.companyAdministratorAddData.password,
+        "admin",
+        this.companyAdministratorAddData.username
+      );
+    },
     // 修改公司管理員賬號信息
     updateCompanyAdministrator(row) {
       console.log(row);
+      this.updateAccountNumberMsg = JSON.parse(JSON.stringify(row));
+      this.isNormalAdmin = false;
+      this.dialogUpdateAccountNumberVisible = true;
     },
     // 刪除公司管理員賬號
     delCompanyAdministrator(row) {
       console.log(row);
-    },
-    // 選中某個公司賬號,查看其下普通管理賬號等
-    selCompanyAdministrator(row) {
-      console.log(row);
+      this.delAccountNumberId = row.id;
+      this.dialogDelAccountNumberVisible = true;
     },
 
-    // 添加分公司下倉庫信息
+    // 添加總分公司下倉庫信息
     addfilialeWarehouse() {
       this.addWarehouse(
         this.companyId,
@@ -936,34 +1247,72 @@ export default {
     },
 
     // 添加普通管理員賬號
-    addNormalAdmin() {},
+    addNormalAdmin() {
+      this.addAdmin(
+        this.selCompanyMsg.id,
+        this.normalAdminListAddData.password,
+        "normal_admin",
+        this.normalAdminListAddData.username
+      );
+    },
     // 修改普通管理員賬號信息
     updateNormalAdmin(row) {
       console.log(row);
+      this.updateAccountNumberMsg = JSON.parse(JSON.stringify(row));
+      this.isNormalAdmin = true;
+      this.dialogUpdateAccountNumberVisible = true;
     },
     // 刪除普通管理員賬號
     delNormalAdmin(row) {
       console.log(row);
+      this.delAccountNumberId = row.id;
+      this.dialogDelAccountNumberVisible = true;
     },
     // 普通賬號其下管理仓库
     warehouseBinding(row) {
       console.log(row);
+      this.normalAdminId = row.id;
+      this.normalWarehouseList = row.warehouseList.map(item => item.id);
+      console.log("普通管理倉庫");
+      console.log(this.normalWarehouseList);
+      this.dialogNormalWarehouseAdminVisible = true;
+    },
+    // 綁定倉庫的管理
+    warehouseBindingSure() {
+      console.log(this.normalWarehouseList);
+      this.$axios
+        .post(
+          this.$store.state.baseCompanyUrl + "/warehouse/normalWarehouseSave",
+          {
+            id: this.normalAdminId,
+            warehouseIdList: this.normalWarehouseList
+          }
+        )
+        .then(res => {
+          console.log("修改普通賬戶管理倉庫");
+          console.log(res);
+          this.$message.success({
+            message: "修改成功",
+            showClose: true,
+            duration: 2000
+          });
+          this.dialogNormalWarehouseAdminVisible = false;
+          this.tableSelValue();
+        })
+        .catch(err => {
+          console.log(err);
+          this.$message.error({
+            message: err.data.status,
+            showClose: true,
+            duration: 2000
+          });
+        });
     },
 
     // 折疊面板切換
-    collapseChange(val) {
-      console.log(val);
-      if (val == 1) {
-        this.$refs.branchCompanyListTable.setCurrentRow(
-          this.branchCompanyList[0]
-        );
-        this.filialeWarehouseList = this.branchCompanyList[0].warehouseList;
-      } else if (val == 3) {
-        this.$refs.companyAdministratorTable.setCurrentRow(
-          this.companyAdminList[0]
-        );
-        this.normalAdminList = this.companyList[0].normalAdminList;
-      }
+    patchCollapseChange(val) {
+      console.log("-------", val);
+      this.activePatchNameSel = val;
     },
     // 獲取所有數據
     async getAllData() {
@@ -979,18 +1328,57 @@ export default {
         });
     },
     // table選中
-    async tableSelValue(index) {
+    async tableSelValue() {
       await this.getAllData();
+      console.log("右邊", this.activePatchNameSel);
+      this.activePatchName = this.activePatchNameSel;
+
+      if (this.companyList.length > 0) {
+        for (const index in this.companyList) {
+          if (this.companyList[index].id == this.selCompanyMsg.id) {
+            this.tableSelSureValue(index);
+          }
+        }
+      }
+    },
+    tableSelSureValue(index) {
       console.log(index);
       if (this.companyList.length > 0) {
         this.$refs.companyListTable.setCurrentRow(this.companyList[index]);
-        this.branchCompanyList = this.companyList[index].branchCompanyList;
-        this.$refs.branchCompanyListTable.setCurrentRow(
-          this.branchCompanyList[index]
+
+        this.branchCompanyList = [
+          {
+            id: this.companyList[index].id,
+            branchName: this.companyList[index].headCompanyName,
+            warehouseList: this.companyList[index].warehouseList,
+            companyAdminList: this.companyList[index].companyAdminList
+          }
+        ];
+
+        this.branchCompanyList = this.branchCompanyList.concat(
+          this.companyList[index].branchCompanyList
         );
-        this.filialeWarehouseList = this.branchCompanyList[index].warehouseList;
-        this.companyWarehouseList = this.companyList[index].warehouseList;
-        this.companyAdminList = this.companyList[index].companyAdminList;
+
+        this.$refs.branchCompanyListTable.setCurrentRow(
+          this.branchCompanyList[0]
+        );
+
+        if (this.branchCompanyList.length > 0) {
+          this.filialeWarehouseList = this.branchCompanyList[0].warehouseList;
+          for (const i in this.branchCompanyList) {
+            if (this.branchCompanyList[i].id == this.middleSureSel.id) {
+              console.log("yyyyyyyyyyyyyyyy");
+              this.$refs.branchCompanyListTable.setCurrentRow(
+                this.branchCompanyList[i]
+              );
+              this.filialeWarehouseList = this.branchCompanyList[
+                i
+              ].warehouseList;
+            }
+          }
+        } else {
+          this.filialeWarehouseList = [];
+        }
       }
     }
   }
@@ -999,7 +1387,9 @@ export default {
 
 <style lang="scss" scoped>
 .system-admin-container {
-  margin: 40px 10px 0;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 6px;
   display: flex;
   justify-content: space-between;
 
@@ -1012,7 +1402,7 @@ export default {
     border-radius: 5px;
 
     .title {
-      padding: 20px;
+      padding: 0 20px 20px;
       font-size: 20px;
       font-weight: bold;
     }

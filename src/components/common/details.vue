@@ -21,20 +21,44 @@
       </el-form-item>
       <el-form-item label="库存地" required>
         <el-select
-          v-model="stockLoc"
-          filterable
-          allow-create
-          default-first-option
+          v-if="sold == 8"
+          v-model="stockLocId"
           placeholder="请选择"
-          style="width: 50%;"
           clearable
+          style="width:50%;"
+          value-key="warehouseId"
         >
           <el-option
             v-for="item in stockLocs"
-            :key="item"
-            :label="item"
+            :key="item.warehouseId"
+            :label="item.warehouseName"
             :value="item"
           >
+            <span style="float: left">{{ item.warehouseName }}</span>
+            <span style="float: right; color: #8492a6; font-size: 13px">{{
+              item.companyName
+            }}</span>
+          </el-option>
+        </el-select>
+        <el-select
+          v-else
+          v-model="stockLocId"
+          placeholder="请选择"
+          clearable
+          style="width:50%;"
+          value-key="warehouseId"
+        >
+          <el-option
+            v-for="item in stockLocs"
+            :key="item.warehouseId"
+            :label="item.warehouseName"
+            :value="item"
+            v-show="item.companyId == companyId"
+          >
+            <span style="float: left">{{ item.warehouseName }}</span>
+            <span style="float: right; color: #8492a6; font-size: 13px">{{
+              item.companyName
+            }}</span>
           </el-option>
         </el-select>
       </el-form-item>
@@ -70,7 +94,7 @@
       <el-form-item
         label="入库时间"
         required
-        v-if="sold == 1 || sold == 2 || sold == 3"
+        v-if="sold == 1 || sold == 2 || sold == 3 || sold == 8"
       >
         <el-date-picker
           style="width:50%;"
@@ -166,7 +190,7 @@
           <div style="margin-bottom:15px;">
             <span style="font-size:15px;">内部图：(最多上传30张图片)</span>
             <span
-              style="cursor: pointer;color: #9695f3;font-size:15px;"
+              style="cursor: pointer;color: #409EFF;font-size:15px;"
               @click="showImgSel"
               >查看图片</span
             >
@@ -216,41 +240,22 @@
         </div>
         <el-form ref="form" label-width="80px">
           <el-form-item label="款式" required>
-            <el-select
-              v-model="model"
-              placeholder="请选择"
-              value-key="name"
+            <el-autocomplete
               style="width: 50%;"
-              clearable
-              @change="sizeSel"
-            >
-              <el-option
-                v-for="item in modelSize"
-                :key="item.id"
-                :label="item.name"
-                :value="item"
-              >
-              </el-option>
-            </el-select>
+              v-model="model"
+              :fetch-suggestions="queryModelSearch"
+              placeholder="请选择/输入款式"
+              @select="handleModelSelect"
+            ></el-autocomplete>
           </el-form-item>
           <el-form-item label="大小" :required="isRequire == 0 ? true : false">
-            <el-select
+            <el-autocomplete
+              style="width: 50%;"
               v-model="size"
-              filterable
-              allow-create
-              default-first-option
-              placeholder="请选择"
-              clearable
-              style="width:50%;"
-            >
-              <el-option
-                v-for="items in sizes"
-                :key="items"
-                :label="items"
-                :value="items"
-              >
-              </el-option>
-            </el-select>
+              :fetch-suggestions="querySizeSearch"
+              placeholder="请选择/输入大小"
+              @select="handleSizeSelect"
+            ></el-autocomplete>
           </el-form-item>
           <el-form-item label="材质" :required="isRequire == 0 ? true : false">
             <el-cascader
@@ -389,7 +394,7 @@
           <el-form-item label="是否付款完成">
             <el-switch v-model="isPayCheck"></el-switch>
           </el-form-item>
-          <el-form-item label="入库价(HKD)">
+          <el-form-item :label="'入库价(' + currencyGlobal + ')'">
             <el-input-number
               style="width:50%;"
               type="text"
@@ -400,7 +405,7 @@
               @change="costCalculate"
             ></el-input-number>
           </el-form-item>
-          <el-form-item label="物流费(HKD)">
+          <el-form-item :label="'物流费(' + currencyGlobal + ')'">
             <el-input-number
               style="width:50%;"
               type="text"
@@ -411,7 +416,7 @@
               @change="costCalculate"
             ></el-input-number>
           </el-form-item>
-          <el-form-item label="总成本(HKD)">
+          <el-form-item :label="'总成本(' + currencyGlobal + ')'">
             <el-input-number
               style="width:50%;"
               type="text"
@@ -421,7 +426,7 @@
               :controls="false"
             ></el-input-number>
           </el-form-item>
-          <el-form-item label="同行价(HKD)">
+          <el-form-item :label="'同行价(' + currencyGlobal + ')'">
             <el-input-number
               :controls="false"
               style="width:50%;"
@@ -430,7 +435,7 @@
               clearable
             ></el-input-number>
           </el-form-item>
-          <el-form-item label="散客价(HKD)">
+          <el-form-item :label="'散客价(' + currencyGlobal + ')'">
             <el-input-number
               :controls="false"
               style="width:50%;"
@@ -500,7 +505,7 @@
               <el-table-column
                 align="center"
                 prop="totalHkPrice"
-                label="港幣金額"
+                :label="currencyFontRgx(currencyGlobal) + '金額'"
               >
                 <template slot-scope="scope">
                   <div>
@@ -508,7 +513,9 @@
                       scope.row.totalHkPrice == "" ||
                       scope.row.totalHkPrice == 0
                         ? "/"
-                        : formatNumberRgx(scope.row.totalHkPrice) + " HKD"
+                        : formatNumberRgx(scope.row.totalHkPrice) +
+                          " " +
+                          currencyGlobal
                     }}
                   </div>
                 </template>
@@ -542,19 +549,23 @@
           </el-form-item>
         </el-form>
       </el-tab-pane>
-      <el-tab-pane label="销售信息" name="third" v-if="sold == 2 || sold == 3">
+      <el-tab-pane
+        :label="sold == 8 ? '寄卖信息' : '销售信息'"
+        name="third"
+        v-if="sold == 2 || sold == 3 || sold == 8"
+      >
         <el-form ref="saleForm" label-width="110px">
           <el-form-item
             label="账单号"
-            :required="isStock == 0 ? false : true"
-            v-if="sold == 3"
+            :required="isStock == 1 || sold == 8 ? true : false"
+            v-if="sold == 3 || sold == 8"
           >
             <el-input v-model="bill" style="width: 50%;"></el-input>
           </el-form-item>
           <el-form-item
-            label="出售时间"
-            :required="isStock == 0 ? false : true"
-            v-if="sold == 3"
+            :label="sold == 8 ? '寄卖时间' : '出售时间'"
+            :required="isStock == 1 || sold == 8 ? true : false"
+            v-if="sold == 3 || sold == 8"
           >
             <el-date-picker
               v-model="soldTime"
@@ -565,12 +576,14 @@
               style="width:50%;"
             ></el-date-picker>
           </el-form-item>
-          <el-form-item label="出售外币金额">
+          <el-form-item :label="sold == 8 ? '寄卖外币金额' : '出售外币金额'">
             <div style="width: 50%;display: flex;">
               <el-input
                 type="text"
                 style="flex: 1;"
-                placeholder="请输入出售外币金额"
+                :placeholder="
+                  sold == 8 ? '请输入寄卖外币金额' : '请输入出售外币金额'
+                "
                 v-model="priceTran"
                 clearable
                 @change="isSellHKD"
@@ -591,36 +604,45 @@
               </el-select>
             </div>
           </el-form-item>
-          <el-form-item label="是否收款完成" v-if="sold == 3">
+          <el-form-item label="是否收款完成" v-if="sold == 3 || sold == 8">
             <el-switch v-model="isReceiveCheck"></el-switch>
           </el-form-item>
           <!-- 物流费/银行手续费送货(HKD) -->
-          <el-form-item label="物流费/手续费" v-if="sold == 3">
+          <el-form-item label="物流费/手续费" v-if="sold == 3 || sold == 8">
             <div style="width: 50%;display: flex;">
               <el-input
                 style="flex: 1;"
                 v-model="saleLogHkPrice"
                 placeholder="请输入物流费/银行手续费送货"
               ></el-input>
-              <span>HKD</span>
+              <span>{{ currencyGlobal }}</span>
             </div>
           </el-form-item>
           <el-form-item
-            label="出售港币金额"
-            :required="isStock == 0 ? false : true"
-            v-if="sold == 3"
+            :label="
+              sold == 8
+                ? '寄卖' + currencyFontRgx(currencyGlobal) + '金额'
+                : '出售' + currencyFontRgx(currencyGlobal) + '金额'
+            "
+            :required="isStock == 1 || sold == 8 ? true : false"
+            v-if="sold == 3 || sold == 8"
           >
             <div style="width: 50%;display: flex;">
               <el-input
                 style="flex: 1;"
                 v-model="saleTotalHkPrice"
-                placeholder="请输入出售港币金额"
+                :placeholder="
+                  sold == 8
+                    ? '请输入寄卖' + currencyFontRgx(currencyGlobal) + '金额'
+                    : '请输入出售' + currencyFontRgx(currencyGlobal) + '金额'
+                "
               ></el-input>
             </div>
           </el-form-item>
           <el-form-item
             label="客户姓名"
             :required="isStock == 1 || sold == 2 ? true : false"
+            v-show="sold != 8"
           >
             <el-autocomplete
               style="width: 50%;"
@@ -630,6 +652,19 @@
               @select="handleSelect"
             ></el-autocomplete>
           </el-form-item>
+          <el-form-item label="接收仓库" v-show="sold == 8" required>
+            <el-cascader
+              style="width: 50%;"
+              v-model="receiveWarehouseId"
+              :options="companyAndWarehouseList"
+              :props="{
+                value: 'id',
+                label: 'name',
+                children: 'warehouseList'
+              }"
+            ></el-cascader>
+          </el-form-item>
+
           <el-form-item
             label="是否同时出库"
             label-width="110px"
@@ -715,7 +750,7 @@
               <el-table-column
                 align="center"
                 prop="totalHkPrice"
-                label="港幣金額"
+                :label="currencyFontRgx(currencyGlobal) + '金額'"
               >
                 <template slot-scope="scope">
                   <div>
@@ -723,7 +758,9 @@
                       scope.row.totalHkPrice == "" ||
                       scope.row.totalHkPrice == 0
                         ? "/"
-                        : formatNumberRgx(scope.row.totalHkPrice) + " HKD"
+                        : formatNumberRgx(scope.row.totalHkPrice) +
+                          " " +
+                          currencyGlobal
                     }}
                   </div>
                 </template>
@@ -824,13 +861,19 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column align="center" prop="totalHkPrice" label="港幣金額">
+          <el-table-column
+            align="center"
+            prop="totalHkPrice"
+            :label="currencyFontRgx(currencyGlobal) + '金額'"
+          >
             <template slot-scope="scope">
               <div>
                 {{
                   scope.row.totalHkPrice == "" || scope.row.totalHkPrice == 0
                     ? "/"
-                    : formatNumberRgx(scope.row.totalHkPrice) + " HKD"
+                    : formatNumberRgx(scope.row.totalHkPrice) +
+                      " " +
+                      currencyGlobal
                 }}
               </div>
             </template>
@@ -873,9 +916,10 @@
     </el-tabs>
 
     <el-button
+      type="primary"
+      v-preventClick
       @click="basicInfoUpdateSure"
       class="update-sure-button"
-      style="background:#9695f3;color:#fff;"
       >确 定
     </el-button>
   </div>
@@ -908,8 +952,8 @@ export default {
       pricePeer: "", //同行价
       priceIndi: "", //散客价
       source: "", //买手
-      stockLoc: "", //库存地
-      model: {}, //款式
+      stockLocId: "", //库存地
+      model: "", //款式
       size: "", //大小
       leather: "", //材质
       metal: "", //金属质感
@@ -928,6 +972,8 @@ export default {
       stockOutTime: "", // 出库时间
       imgsUpload: "", //上传图片
       dialogImageUrl: "",
+      receiveWarehouseId: null,
+      companyAndWarehouseList: [],
 
       sold: 0,
       currencyIds: [
@@ -937,7 +983,7 @@ export default {
         },
         {
           value: "2",
-          label: "HKD港元"
+          label: "HKD港币"
         },
         {
           value: "3",
@@ -958,7 +1004,7 @@ export default {
       ],
 
       stockLocs: [],
-      sizes: [],
+      sizeList: [],
       leathers: [],
       clrs: [],
       metals: [],
@@ -976,7 +1022,7 @@ export default {
 
       stockOutTime: null,
       stockLocList: [],
-      stockLoc: "",
+
       isInput: 1,
       isSelect: 1,
       isColor: 0,
@@ -1002,6 +1048,10 @@ export default {
         {
           label: "购入退货",
           value: "6"
+        },
+        {
+          label: "已寄卖",
+          value: "8"
         },
         {
           label: "遗失",
@@ -1042,6 +1092,10 @@ export default {
           value: "6"
         },
         {
+          label: "已寄卖",
+          value: "8"
+        },
+        {
           label: "遗失",
           value: "7"
         },
@@ -1067,15 +1121,75 @@ export default {
       customerList: [],
       buyPaymentList: [],
       sellPaymentList: [],
-      allPaymentList: []
+      allPaymentList: [],
+
+      isUpdateOrDel: null,
+      companyId: null,
+      currencyGlobal: ""
     };
   },
   props: ["updatesId"],
   created() {
+    this.currencyGlobal = sessionStorage.getItem("currencyGlobal");
     this.getData();
     this.getCustomerList();
+    this.getDataStock();
+    this.getCompanyAndWarehouseList();
   },
   methods: {
+    // 款式輸入/匹配
+    queryModelSearch(queryString, cb) {
+      console.log(typeof queryString);
+      let restaurants = this.modelSize;
+
+      for (let items of restaurants) {
+        items.value = items.name;
+      }
+
+      let results = queryString
+        ? restaurants.filter(this.createModelFilter(queryString))
+        : restaurants;
+      // 调用 callback 返回建议列表的数据
+      cb(results);
+    },
+    createModelFilter(queryString) {
+      return restaurant => {
+        return (
+          restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+        );
+      };
+    },
+    handleModelSelect(item) {
+      console.log(item);
+      this.model = item.name;
+      this.sizeSel(item);
+    },
+    // 大小輸入/選擇
+    querySizeSearch(queryString, cb) {
+      console.log(typeof queryString);
+      let restaurants = this.sizeList;
+
+      for (let items of restaurants) {
+        items.value = items.name;
+      }
+
+      let results = queryString
+        ? restaurants.filter(this.createSizeFilter(queryString))
+        : restaurants;
+      // 调用 callback 返回建议列表的数据
+      cb(results);
+    },
+    createSizeFilter(queryString) {
+      return restaurant => {
+        return (
+          restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+        );
+      };
+    },
+    handleSizeSelect(item) {
+      console.log(item);
+      this.size = item.name;
+    },
     // 获取产品信息
     getDetails() {
       this.showImg = false;
@@ -1114,7 +1228,20 @@ export default {
           this.pricePeer = data.pricePeer == 0 ? "" : data.pricePeer;
           this.priceIndi = data.priceIndi == 0 ? "" : data.priceIndi;
           this.source = data.source;
-          this.stockLoc = data.stockLoc;
+          for (const item of this.stockLocs) {
+            if (
+              item.warehouseId == data.stockLocId &&
+              item.companyId == data.companyId
+            ) {
+              this.stockLocId = {
+                warehouseId: Number(data.stockLocId),
+                warehouseName: item.warehouseName,
+                companyId: Number(data.companyId)
+              };
+            }
+          }
+
+          this.companyId = data.companyId;
 
           if (data.modelId > 100) {
             this.isRequire = 1;
@@ -1122,14 +1249,22 @@ export default {
             this.isRequire = 0;
           }
 
-          this.model = {
-            name: data.model
-          };
+          this.model = data.model;
 
           this.size = data.size;
+          this.sizeList = [];
+          let list = [];
           for (let i = 0; i < this.modelSize.length; i++) {
-            if (this.model.name == this.modelSize[i].name) {
-              this.sizes = this.modelSize[i].size;
+            if (this.model == this.modelSize[i].name) {
+              list = this.modelSize[i].size;
+              break;
+            }
+          }
+          if (list.length > 0) {
+            for (const index in list) {
+              this.sizeList.push({
+                name: list[index]
+              });
             }
           }
           this.leather = data.leather;
@@ -1175,10 +1310,20 @@ export default {
           this.saleLogHkPrice = data.saleLogHkPrice;
           this.saleTotalHkPrice = data.saleTotalHkPrice;
 
+          this.isUpdateOrDel = data.companyId;
+
           if (data.sold == 3) {
             this.isStock = 0;
           } else if (data.sold == 4) {
             this.isStock = 1;
+          }
+          if (data.sold == 8) {
+            this.receiveWarehouseId = [
+              data.receiveCompanyId,
+              data.receiveWarehouseId
+            ];
+          } else {
+            this.receiveWarehouseId = null;
           }
 
           this.activeName = "first";
@@ -1262,6 +1407,23 @@ export default {
           });
           return 1;
         }
+      } else if (this.sold == 8) {
+        if (
+          this.soldTime == "" ||
+          this.soldTime == null ||
+          this.receiveWarehouseId == null ||
+          this.receiveWarehouseId == "" ||
+          this.bill == "" ||
+          this.saleTotalHkPrice == "" ||
+          this.saleTotalHkPrice == undefined
+        ) {
+          this.$message.error({
+            message: "数据不能为空，请检查数据填写",
+            showClose: true,
+            duration: 2000
+          });
+          return 1;
+        }
       }
     },
     data1() {
@@ -1276,7 +1438,7 @@ export default {
       if (
         this.$store.state.imgUrl == "" ||
         this.productCode == "" ||
-        this.stockLoc == "" ||
+        this.stockLocId == "" ||
         this.model == ""
       ) {
         console.log("------");
@@ -1327,9 +1489,19 @@ export default {
     },
     // 确认编辑
     basicInfoUpdateSure() {
-      if (this.data1() !== 1 && this.dataCheck() !== 1) {
-        console.log(this.productCode);
-        this.updateData();
+      let companys = sessionStorage.getItem("companyId");
+      if (this.isUpdateOrDel != companys) {
+        this.$message.error({
+          message: "该商品不在您所管理的仓库中，不可进行修改",
+          showClose: true,
+          duration: 2000
+        });
+      } else {
+        if (this.data1() !== 1 && this.dataCheck() !== 1) {
+          console.log(this.productCode);
+          console.log(this.stockLocId);
+          this.updateData();
+        }
       }
     },
     updateData() {
@@ -1337,7 +1509,7 @@ export default {
       if (this.metal == "") {
         if (this.isRequire == 1) {
           name =
-            this.model.name +
+            this.model +
             " " +
             this.size +
             " " +
@@ -1359,7 +1531,7 @@ export default {
       } else {
         if (this.isRequire == 1) {
           name =
-            this.model.name +
+            this.model +
             " " +
             this.size +
             " " +
@@ -1398,8 +1570,9 @@ export default {
           pricePeer: this.pricePeer,
           priceIndi: this.priceIndi,
           source: this.source,
-          stockLoc: this.stockLoc,
-          model: this.model.name,
+          stockLocId: this.stockLocId.warehouseId,
+          companyId: this.stockLocId.companyId,
+          model: this.model,
           size: this.size,
           leather: this.leather,
           metal: this.metal,
@@ -1427,7 +1600,8 @@ export default {
           saleLogHkPrice: this.saleLogHkPrice,
           saleTotalHkPrice: this.saleTotalHkPrice,
           isPayCheck: this.isPayCheck == false ? 0 : 1,
-          isReceiveCheck: this.isReceiveCheck == false ? 0 : 1
+          isReceiveCheck: this.isReceiveCheck == false ? 0 : 1,
+          receiveWarehouseId: this.sold == 8 ? this.receiveWarehouseId[1] : null
         })
         .then(res => {
           console.log(res);
@@ -1455,23 +1629,6 @@ export default {
     },
     stateChange() {
       this.activeName = "first";
-      // this.estimateTime = "";
-      // this.createTime = "";
-      // this.stockOutTime = "";
-      // this.bill = "";
-      // this.isPayCheck = false;
-      // this.isReceiveCheck = false;
-      // if (this.sold != 2 && this.sold != 3) {
-      //   this.priceTran = "";
-      //   this.customer = "";
-      //   this.soldTime = "";
-      //   this.sellCurrencyId = "";
-      //   this.saleLogHkPrice = "";
-      //   this.saleTotalHkPrice = "";
-      // } else {
-      //   this.soldTime = "";
-      //   this.isStock = 0;
-      // }
     },
     // 获取客户列表
     getCustomerList() {
@@ -1541,11 +1698,21 @@ export default {
       } else {
         this.isRequire = 0;
       }
-
+      console.log(this.model);
       this.size = "";
+      this.sizeList = [];
+      let list = [];
       for (let i = 0; i < this.modelSize.length; i++) {
-        if (this.model.name == this.modelSize[i].name) {
-          this.sizes = this.modelSize[i].size;
+        if (this.model == this.modelSize[i].name) {
+          list = this.modelSize[i].size;
+          break;
+        }
+      }
+      if (list.length > 0) {
+        for (const index in list) {
+          this.sizeList.push({
+            name: list[index]
+          });
         }
       }
     },
@@ -1650,6 +1817,16 @@ export default {
         this.stockStats = res.data.stockStats;
         this.clrs = res.data.clrs;
         this.getDetails();
+      });
+    },
+    getDataStock() {
+      this.$axios.get(this.baseUrl + "/stockLocList").then(res => {
+        console.log("库存地");
+        console.log(res);
+        this.stockLocs = res.data;
+        if (this.stockLocs.length > 0) {
+          this.stockLocs.splice(0, 1);
+        }
       });
     },
 
@@ -1796,6 +1973,8 @@ export default {
       this.uploadImg(formdata1);
     },
     uploadImg(formdata1) {
+      console.log("查看上传数据");
+      console.log(formdata1);
       if (this.imgSrc.length > 8) {
         this.$message.error({
           message: "最多上传9张图片",
@@ -2030,6 +2209,28 @@ export default {
             });
           });
       }
+    },
+    // 獲取接收公司及倉庫列表
+    getCompanyAndWarehouseList() {
+      this.$axios
+        .get(this.$store.state.baseCompanyUrl + "/sell/receiveCompanyMsgGet")
+        .then(res => {
+          console.log("接收公司及倉庫");
+          console.log(res);
+          this.companyAndWarehouseList = res.data;
+
+          let list = [];
+          for (const item of this.companyAndWarehouseList) {
+            if (item.warehouseList.length > 0) {
+              list.push(item);
+            }
+          }
+
+          this.companyAndWarehouseList = list;
+        })
+        .catch(err => {
+          console.log(err);
+        });
     }
   }
 };
@@ -2037,7 +2238,9 @@ export default {
 
 <style lang="scss" scoped>
 .update-container {
-  margin: 40px;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 6px;
 
   .upload-imgs {
     width: 100%;

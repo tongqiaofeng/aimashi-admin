@@ -11,10 +11,10 @@ import global from '@/components/global.js'
 
 import Viewer from 'v-viewer'
 import 'viewerjs/dist/viewer.css'
+import Print from 'vue-print-nb'
 
 Vue.config.productionTip = false
 
-// axios.defaults.withCredentials = true
 Vue.prototype.$axios = axios
 
 // 全局函数
@@ -28,6 +28,8 @@ Vue.use(functions)
 Vue.use(preventClick)
 
 Vue.use(ElementUI)
+
+Vue.use(Print); //注册
 
 Vue.use(Viewer)
 Viewer.setDefaults({

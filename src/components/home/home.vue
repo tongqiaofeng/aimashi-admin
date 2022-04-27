@@ -1,222 +1,521 @@
 <template>
-  <div class="container">
-    <el-container class="container">
-      <el-container class="container">
-        <el-aside class="aside" style="width: 218px;min-height: 100vh;">
-          <div class="aside-container">
-            <div class="aside-one">
-              <div class="aside-top">爱马仕包包</div>
-              <div class="aside-top-admin">后台管理系统</div>
-            </div>
-            <ul class="person-ul">
-              <li>
-                <div
-                  style="display: flex;justify-content: center;line-height:16px;"
-                >
-                  <img
-                    class="icon"
-                    style="width: 17px;height: 16px;"
-                    src="../../assets/imgs/ge.png"
-                  />
-                  <span class="icon" style="color:#fff;" @click="closeAndOpen1"
-                    >个人数据</span
-                  >
-                  <i id="arrows1" class="el-icon-arrow-up"></i>
-                </div>
-                <ul id="openOrClose1" class="open">
-                  <li
-                    @click="selected5"
-                    ref="onWarehouse"
-                    class="font"
-                    style="background-color: #000;"
-                  >
-                    库存查询
-                  </li>
-                  <li @click="selected2" ref="sold" class="font">
-                    已出售商品
-                  </li>
-                  <li @click="selected1" ref="onsale" class="font">
-                    价格未录入
-                  </li>
-                  <li @click="selected3" ref="export" class="font">
-                    导出数据
-                  </li>
-                </ul>
-              </li>
-              <li class="person-li" @click="selected4" ref="publish">
-                <img
-                  class="icon"
-                  style="width: 17px;height: 16px;"
-                  src="../../assets/imgs/fa.png"
-                />
-                <span class="publish icon">发布商品</span>
-                <div style="width: 16px;"></div>
-              </li>
-              <li style=" margin-top: 30px;" v-show="role == 'admin'">
-                <div
-                  style="display: flex;justify-content: center;line-height:16px;"
-                >
-                  <img
-                    class="icon"
-                    style="width: 17px;height: 16px;"
-                    src="../../assets/imgs/ge.png"
-                  />
-                  <span class="icon" style="color:#fff;" @click="closeAndOpen2"
-                    >账单管理</span
-                  >
-                  <i id="arrows2" class="el-icon-arrow-down"></i>
-                </div>
-                <ul id="openOrClose2" class="close">
-                  <li class="person-li" @click="selected6" ref="billEntry">
-                    账单录入
-                    <!-- <img
-                      class="icon"
-                      style="width: 17px;height: 16px;"
-                      src="../../assets/imgs/fa.png"
-                    />
-                    <span class="publish icon">账单录入</span>
-                    <div style="width: 16px;"></div> -->
-                  </li>
-                  <li class="person-li" @click="selected7" ref="billReport">
-                    账单查询
-                    <!-- <img
-                      class="icon"
-                      style="width: 17px;height: 16px;"
-                      src="../../assets/imgs/search2.png"
-                    />
-                    <span class="publish icon">账单查询</span>
-                    <div style="width: 16px;"></div> -->
-                  </li>
-                </ul>
-              </li>
-              <li
-                class="person-li"
-                @click="selected8"
-                ref="companyAdmin"
-                v-show="role == 'system_admin' || role == 'admin'"
-              >
-                <img
-                  class="icon"
-                  style="width: 17px;height: 16px;"
-                  src="../../assets/imgs/fa.png"
-                />
-                <span class="publish icon">公司管理</span>
-                <div style="width: 16px;"></div>
-              </li>
-              <li style=" margin-top: 30px;" v-show="role == 'admin'">
-                <div
-                  style="display: flex;justify-content: center;line-height:16px;"
-                >
-                  <img
-                    class="icon"
-                    style="width: 17px;height: 16px;"
-                    src="../../assets/imgs/ge.png"
-                  />
-                  <span class="icon" style="color:#fff;" @click="closeAndOpen3"
-                    >人員管理</span
-                  >
-                  <i id="arrows3" class="el-icon-arrow-down"></i>
-                </div>
-                <ul id="openOrClose3" class="close">
-                  <li
-                    class="person-li"
-                    @click="selected9"
-                    ref="departmentAdmin"
-                  >
-                    部門管理
-                  </li>
-                  <li class="person-li" @click="selected10" ref="userAdmin">
-                    人員管理
-                  </li>
-                </ul>
-              </li>
-            </ul>
+  <div class="home-container" id="home-container" @click="otherClick">
+    <el-container ref="homePage">
+      <el-header height="78px">
+        <div class="main-top-right">
+          <div class="left-con">
+            <img
+              src="../../assets/imgs/logo_white.png"
+              style="width: 65px;height: 65px;object-fit: cover;"
+            />
+            <p class="left-font-one">愛馬仕後台管理系統</p>
           </div>
-        </el-aside>
-        <el-main class="main">
-          <el-col :span="24" class="main-top">
-            <el-row>
-              <div class="main-top-left">
-                <span
-                  style="cursor:pointer;"
-                  class="first-fint-size"
-                  @click="jump"
-                  >首页</span
-                >
-                <span>
-                  <span v-if="selected == 1" class="fint-size">
-                    <i class="el-icon-arrow-right"></i>个人数据
-                    <i class="el-icon-arrow-right"></i>价格未录入
-                  </span>
-                  <span v-if="selected == 2" class="fint-size">
-                    <i class="el-icon-arrow-right"></i>个人数据
-                    <i class="el-icon-arrow-right"></i>已出售商品
-                  </span>
-                  <span v-if="selected == 3" class="fint-size">
-                    <i class="el-icon-arrow-right"></i>个人数据
-                    <i class="el-icon-arrow-right"></i>数据导出
-                  </span>
-                  <span v-if="selected == 5" class="fint-size">
-                    <i class="el-icon-arrow-right"></i>个人数据
-                    <i class="el-icon-arrow-right"></i>库存查询
-                  </span>
-                  <span v-if="selected == 4" class="fint-size">
-                    <i class="el-icon-arrow-right"></i>发布商品
-                  </span>
-                  <span v-if="selected == 6" class="fint-size">
-                    <i class="el-icon-arrow-right"></i>账单管理
-                    <i class="el-icon-arrow-right"></i>账单录入
-                  </span>
-                  <span v-if="selected == 7" class="fint-size">
-                    <i class="el-icon-arrow-right"></i>账单管理
-                    <i class="el-icon-arrow-right"></i>账单查询
-                  </span>
-                  <span v-if="selected == 8" class="fint-size">
-                    <i class="el-icon-arrow-right"></i>公司管理
-                  </span>
-                  <span v-if="selected == 9" class="fint-size">
-                    <i class="el-icon-arrow-right"></i>人員管理
-                    <i class="el-icon-arrow-right"></i>部門管理
-                  </span>
-                  <span v-if="selected == 10" class="fint-size">
-                    <i class="el-icon-arrow-right"></i>人員管理
-                  </span>
-                </span>
+          <div style="display: flex;">
+            <div class="right-div" @click="updateUserClick">
+              <span class="span1">{{ username }}</span>
+              <div class="span-img">
+                <img src="../../assets/imgs/home/down.png" class="img-self" />
               </div>
-              <div class="main-top-right">
-                <span style="font-size:16px;">
-                  您好{{
-                    role == "admin"
-                      ? "，管理员"
-                      : role == "peer"
-                      ? "，同行"
-                      : ""
-                  }}
-                  !
-                </span>
-                <div class="logout" @click="logoutSure">退出登录</div>
-              </div>
-            </el-row>
-          </el-col>
-          <el-col :span="24" class="main-container">
-            <div class="main-center">
-              <onSale v-if="selected == 1"></onSale>
-              <sold v-if="selected == 2"></sold>
-              <export v-if="selected == 3"></export>
-              <publish v-if="selected == 4"></publish>
-              <warehouse v-if="selected == 5"></warehouse>
-              <bill-entry v-if="selected == 6"></bill-entry>
-              <bill-report v-if="selected == 7"></bill-report>
-              <system-company-admin
-                v-if="selected == 8 && role == 'system_admin'"
-              ></system-company-admin>
-              <company-admin
-                v-if="selected == 8 && role == 'admin'"
-              ></company-admin>
-              <department-admin v-if="selected == 9"></department-admin>
-              <user-admin v-if="selected == 10"></user-admin>
             </div>
-          </el-col>
+          </div>
+          <div class="downbtn" v-if="updateUser == 1">
+            <div class="logout-div" @click="logoutSure">
+              <div class="logout-img">
+                <img
+                  src="../../assets/imgs/logOut.png"
+                  style="width: 17px;height: 18px;"
+                />
+              </div>
+              <span>退出登录</span>
+            </div>
+          </div>
+        </div>
+      </el-header>
+      <el-container>
+        <el-aside width="218px" :style="defaultHeight">
+          <ul class="aside-ul-dad">
+            <li class="dad-li" v-show="role != 'system_admin'">
+              <div style="width: 100%;">
+                <p class="dad-li-font">庫存管理</p>
+              </div>
+              <ul class="aside-ul-son">
+                <li
+                  class="son-li"
+                  @click="selectedPage(4)"
+                  :style="{
+                    backgroundColor: selected == 4 ? '#303e53' : 'transparent'
+                  }"
+                >
+                  <p class="son-li-line" v-if="selected == 4"></p>
+                  <div
+                    class="son-li-center"
+                    :style="{ marginLeft: selected == 4 ? '-38px' : '32px' }"
+                  >
+                    <div class="center-img-div">
+                      <img
+                        class="center-img"
+                        src="../../assets/imgs/home/04.png"
+                      />
+                    </div>
+                    <p class="center-font">商品入庫</p>
+                  </div>
+                  <div class="son-li-right">
+                    <img
+                      class="right-img"
+                      src="../../assets/imgs/home/right.png"
+                    />
+                  </div>
+                </li>
+                <li
+                  class="son-li"
+                  @click="selectedPage(5)"
+                  :style="{
+                    backgroundColor: selected == 5 ? '#303e53' : 'transparent'
+                  }"
+                >
+                  <p class="son-li-line" v-if="selected == 5"></p>
+                  <div
+                    class="son-li-center"
+                    :style="{ marginLeft: selected == 5 ? '-38px' : '32px' }"
+                  >
+                    <div class="center-img-div">
+                      <img
+                        class="center-img"
+                        src="../../assets/imgs/home/01.png"
+                      />
+                    </div>
+                    <p class="center-font">庫存查詢</p>
+                  </div>
+                  <div class="son-li-right">
+                    <img
+                      class="right-img"
+                      src="../../assets/imgs/home/right.png"
+                    />
+                  </div>
+                </li>
+                <li
+                  class="son-li"
+                  @click="selectedPage(2)"
+                  :style="{
+                    backgroundColor: selected == 2 ? '#303e53' : 'transparent'
+                  }"
+                >
+                  <p class="son-li-line" v-if="selected == 2"></p>
+                  <div
+                    class="son-li-center"
+                    :style="{ marginLeft: selected == 2 ? '-38px' : '32px' }"
+                  >
+                    <div class="center-img-div">
+                      <img
+                        class="center-img"
+                        src="../../assets/imgs/home/sold.png"
+                      />
+                    </div>
+                    <p class="center-font">已售商品</p>
+                  </div>
+                  <div class="son-li-right">
+                    <img
+                      class="right-img"
+                      src="../../assets/imgs/home/right.png"
+                    />
+                  </div>
+                </li>
+                <li
+                  class="son-li"
+                  @click="selectedPage(1)"
+                  :style="{
+                    backgroundColor: selected == 1 ? '#303e53' : 'transparent'
+                  }"
+                >
+                  <p class="son-li-line" v-if="selected == 1"></p>
+                  <div
+                    class="son-li-center"
+                    :style="{ marginLeft: selected == 1 ? '-24px' : '32px' }"
+                  >
+                    <div class="center-img-div">
+                      <img
+                        class="center-img"
+                        src="../../assets/imgs/home/not.png"
+                      />
+                    </div>
+                    <p class="center-font">售價未錄入</p>
+                  </div>
+                  <div class="son-li-right">
+                    <img
+                      class="right-img"
+                      src="../../assets/imgs/home/right.png"
+                    />
+                  </div>
+                </li>
+                <li
+                  class="son-li"
+                  @click="selectedPage(15)"
+                  :style="{
+                    backgroundColor: selected == 15 ? '#303e53' : 'transparent'
+                  }"
+                >
+                  <p class="son-li-line" v-if="selected == 15"></p>
+                  <div
+                    class="son-li-center"
+                    :style="{ marginLeft: selected == 15 ? '-24px' : '32px' }"
+                  >
+                    <div class="center-img-div">
+                      <img
+                        class="center-img"
+                        src="../../assets/imgs/home/not.png"
+                      />
+                    </div>
+                    <p class="center-font">成本未錄入</p>
+                  </div>
+                  <div class="son-li-right">
+                    <img
+                      class="right-img"
+                      src="../../assets/imgs/home/right.png"
+                    />
+                  </div>
+                </li>
+                <li
+                  class="son-li"
+                  @click="selectedPage(3)"
+                  :style="{
+                    backgroundColor: selected == 3 ? '#303e53' : 'transparent'
+                  }"
+                >
+                  <p class="son-li-line" v-if="selected == 3"></p>
+                  <div
+                    class="son-li-center"
+                    :style="{ marginLeft: selected == 3 ? '-38px' : '32px' }"
+                  >
+                    <div class="center-img-div">
+                      <img
+                        class="center-img"
+                        src="../../assets/imgs/home/export.png"
+                      />
+                    </div>
+                    <p class="center-font">導出數據</p>
+                  </div>
+                  <div class="son-li-right">
+                    <img
+                      class="right-img"
+                      src="../../assets/imgs/home/right.png"
+                    />
+                  </div>
+                </li>
+              </ul>
+            </li>
+            <li class="dad-li" v-show="role != 'system_admin'">
+              <div style="width: 100%;">
+                <p class="dad-li-font">銷售與寄賣</p>
+              </div>
+              <ul class="aside-ul-son">
+                <li
+                  class="son-li"
+                  @click="selectedPage(10)"
+                  :style="{
+                    backgroundColor: selected == 10 ? '#303e53' : 'transparent'
+                  }"
+                >
+                  <p class="son-li-line" v-if="selected == 10"></p>
+                  <div
+                    class="son-li-center"
+                    :style="{ marginLeft: selected == 10 ? '-38px' : '32px' }"
+                  >
+                    <div class="center-img-div">
+                      <img
+                        class="center-img"
+                        src="../../assets/imgs/home/sales.png"
+                      />
+                    </div>
+                    <p class="center-font">銷售開單</p>
+                  </div>
+                  <div class="son-li-right">
+                    <img
+                      class="right-img"
+                      src="../../assets/imgs/home/right.png"
+                    />
+                  </div>
+                </li>
+                <li
+                  class="son-li"
+                  @click="selectedPage(11)"
+                  :style="{
+                    backgroundColor: selected == 11 ? '#303e53' : 'transparent'
+                  }"
+                >
+                  <p class="son-li-line" v-if="selected == 11"></p>
+                  <div
+                    class="son-li-center"
+                    :style="{ marginLeft: selected == 11 ? '-38px' : '32px' }"
+                  >
+                    <div class="center-img-div">
+                      <img
+                        class="center-img"
+                        src="../../assets/imgs/home/history.png"
+                      />
+                    </div>
+                    <p class="center-font">銷售歷史</p>
+                  </div>
+                  <div class="son-li-right">
+                    <img
+                      class="right-img"
+                      src="../../assets/imgs/home/right.png"
+                    />
+                  </div>
+                </li>
+
+                <li
+                  class="son-li"
+                  @click="selectedPage(13)"
+                  :style="{
+                    backgroundColor: selected == 13 ? '#303e53' : 'transparent'
+                  }"
+                >
+                  <p class="son-li-line" v-if="selected == 13"></p>
+                  <div
+                    class="son-li-center"
+                    :style="{ marginLeft: selected == 13 ? '-38px' : '32px' }"
+                  >
+                    <div class="center-img-div">
+                      <img
+                        class="center-img"
+                        src="../../assets/imgs/home/sales.png"
+                      />
+                    </div>
+                    <p class="center-font">新增寄賣</p>
+                  </div>
+                  <div class="son-li-right">
+                    <img
+                      class="right-img"
+                      src="../../assets/imgs/home/right.png"
+                    />
+                  </div>
+                </li>
+                <li
+                  class="son-li"
+                  @click="selectedPage(14)"
+                  :style="{
+                    backgroundColor: selected == 14 ? '#303e53' : 'transparent'
+                  }"
+                >
+                  <p class="son-li-line" v-if="selected == 14"></p>
+                  <div
+                    class="son-li-center"
+                    :style="{ marginLeft: selected == 14 ? '-38px' : '32px' }"
+                  >
+                    <div class="center-img-div">
+                      <img
+                        class="center-img"
+                        src="../../assets/imgs/home/history.png"
+                      />
+                    </div>
+                    <p class="center-font">寄賣記錄</p>
+                  </div>
+                  <div class="son-li-right">
+                    <img
+                      class="right-img"
+                      src="../../assets/imgs/home/right.png"
+                    />
+                  </div>
+                </li>
+              </ul>
+            </li>
+            <li class="dad-li" v-show="role != 'system_admin'">
+              <div style="width: 100%;">
+                <p class="dad-li-font">銷售報表</p>
+              </div>
+              <ul class="aside-ul-son">
+                <li
+                  class="son-li"
+                  @click="selectedPage(12)"
+                  :style="{
+                    backgroundColor: selected == 12 ? '#303e53' : 'transparent'
+                  }"
+                >
+                  <p class="son-li-line" v-if="selected == 12"></p>
+                  <div
+                    class="son-li-center"
+                    :style="{ marginLeft: selected == 12 ? '-38px' : '32px' }"
+                  >
+                    <div class="center-img-div">
+                      <img
+                        class="center-img"
+                        src="../../assets/imgs/home/12.png"
+                      />
+                    </div>
+                    <p class="center-font">銷售報表</p>
+                  </div>
+                  <div class="son-li-right">
+                    <img
+                      class="right-img"
+                      src="../../assets/imgs/home/right.png"
+                    />
+                  </div>
+                </li>
+              </ul>
+            </li>
+            <li class="dad-li" v-show="role == 'admin'">
+              <div style="width: 100%;">
+                <p class="dad-li-font">賬單管理</p>
+              </div>
+              <ul class="aside-ul-son">
+                <li
+                  class="son-li"
+                  @click="selectedPage(6)"
+                  :style="{
+                    backgroundColor: selected == 6 ? '#303e53' : 'transparent'
+                  }"
+                >
+                  <p class="son-li-line" v-if="selected == 6"></p>
+                  <div
+                    class="son-li-center"
+                    :style="{ marginLeft: selected == 6 ? '-38px' : '32px' }"
+                  >
+                    <div class="center-img-div">
+                      <img
+                        class="center-img"
+                        src="../../assets/imgs/home/bill_add.png"
+                      />
+                    </div>
+                    <p class="center-font">賬單錄入</p>
+                  </div>
+                  <div class="son-li-right">
+                    <img
+                      class="right-img"
+                      src="../../assets/imgs/home/right.png"
+                    />
+                  </div>
+                </li>
+                <li
+                  class="son-li"
+                  @click="selectedPage(7)"
+                  :style="{
+                    backgroundColor: selected == 7 ? '#303e53' : 'transparent'
+                  }"
+                >
+                  <p class="son-li-line" v-if="selected == 7"></p>
+                  <div
+                    class="son-li-center"
+                    :style="{ marginLeft: selected == 7 ? '-38px' : '32px' }"
+                  >
+                    <div class="center-img-div">
+                      <img
+                        class="center-img"
+                        src="../../assets/imgs/home/search.png"
+                      />
+                    </div>
+                    <p class="center-font">賬單查詢</p>
+                  </div>
+                  <div class="son-li-right">
+                    <img
+                      class="right-img"
+                      src="../../assets/imgs/home/right.png"
+                    />
+                  </div>
+                </li>
+              </ul>
+            </li>
+            <li
+              class="dad-li"
+              v-show="
+                role == 'system_admin' ||
+                  role == 'admin' ||
+                  role == 'normal_admin'
+              "
+            >
+              <div style="width: 100%;">
+                <p class="dad-li-font">公司管理</p>
+              </div>
+              <ul class="aside-ul-son">
+                <li
+                  class="son-li"
+                  @click="selectedPage(8)"
+                  :style="{
+                    backgroundColor: selected == 8 ? '#303e53' : 'transparent'
+                  }"
+                  v-show="isHeadCompanyAdmin != -1"
+                >
+                  <p class="son-li-line" v-if="selected == 8"></p>
+                  <div
+                    class="son-li-center"
+                    :style="{ marginLeft: selected == 8 ? '-38px' : '32px' }"
+                  >
+                    <div class="center-img-div">
+                      <img
+                        class="center-img"
+                        src="../../assets/imgs/home/company_admin.png"
+                      />
+                    </div>
+                    <p class="center-font">公司管理</p>
+                  </div>
+                  <div class="son-li-right">
+                    <img
+                      class="right-img"
+                      src="../../assets/imgs/home/right.png"
+                    />
+                  </div>
+                </li>
+                <li
+                  v-show="role == 'admin'"
+                  class="son-li"
+                  @click="selectedPage(9)"
+                  :style="{
+                    backgroundColor: selected == 9 ? '#303e53' : 'transparent'
+                  }"
+                >
+                  <p class="son-li-line" v-if="selected == 9"></p>
+                  <div
+                    class="son-li-center"
+                    :style="{ marginLeft: selected == 9 ? '-38px' : '32px' }"
+                  >
+                    <div class="center-img-div">
+                      <img
+                        class="center-img"
+                        src="../../assets/imgs/home/08.png"
+                      />
+                    </div>
+                    <p class="center-font">人員管理</p>
+                  </div>
+                  <div class="son-li-right">
+                    <img
+                      class="right-img"
+                      src="../../assets/imgs/home/right.png"
+                    />
+                  </div>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </el-aside>
+        <el-main
+          :style="defaultHeight"
+          class="home-container-main"
+          id="mainContainer"
+        >
+          <onSale v-if="selected == 1"></onSale>
+          <sold v-if="selected == 2"></sold>
+          <export v-if="selected == 3"></export>
+          <publish v-if="selected == 4"></publish>
+          <warehouse v-if="selected == 5"></warehouse>
+          <bill-entry v-if="selected == 6"></bill-entry>
+          <bill-report v-if="selected == 7"></bill-report>
+          <system-company-admin
+            v-if="selected == 8 && role == 'system_admin'"
+          ></system-company-admin>
+          <company-admin
+            v-if="selected == 8 && role == 'admin'"
+          ></company-admin>
+          <normal-admin
+            v-if="selected == 8 && role == 'normal_admin'"
+          ></normal-admin>
+          <user-admin v-if="selected == 9"></user-admin>
+          <sales-ticket-admin v-if="selected == 10"></sales-ticket-admin>
+          <sales-history v-if="selected == 11"></sales-history>
+          <sales-report v-if="selected == 12"></sales-report>
+          <send-documents-add v-if="selected == 13"></send-documents-add>
+          <send-documents-history
+            v-if="selected == 14"
+          ></send-documents-history>
+          <cost-not v-if="selected == 15"></cost-not>
         </el-main>
       </el-container>
     </el-container>
@@ -226,324 +525,264 @@
 export default {
   data() {
     return {
-      selected: 5,
-      role: ""
+      selected: 4,
+      role: "",
+      updateUser: 0,
+      defaultHeight: {
+        height: ""
+      },
+      isHeadCompanyAdmin: null,
+      username: sessionStorage.getItem("username")
     };
   },
   created() {
     this.role = sessionStorage.getItem("role");
+    this.isHeadCompanyAdmin = sessionStorage.getItem("isHeadCompanyAdmin");
+    if (this.role == "system_admin") {
+      this.selected = 8;
+    }
+    this.$nextTick(() => {
+      if (this.role == "system_admin") {
+        this.selectedPage(8);
+      }
+    });
+
+    //页面创建时执行一次getHeight进行赋值，顺道绑定resize事件
+    window.addEventListener("resize", this.getHeight);
+    this.getHeight();
   },
   methods: {
-    // 侧边栏
-    closeAndOpen1() {
-      if (openOrClose1.className == "close") {
-        openOrClose1.className = "open";
-        arrows1.className = "el-icon-arrow-up";
-        this.selected5();
-      } else if (openOrClose1.className == "open") {
-        openOrClose1.className = "close";
-        arrows1.className = "el-icon-arrow-down";
-      }
-      openOrClose2.className = "close";
-      arrows2.className = "el-icon-arrow-down";
-      openOrClose3.className = "close";
-      arrows3.className = "el-icon-arrow-down";
+    //定义方法，获取高度减去头尾
+    getHeight() {
+      this.defaultHeight.height = window.innerHeight - 78 + "px";
     },
-    closeAndOpen2() {
-      if (openOrClose2.className == "close") {
-        openOrClose2.className = "open";
-        arrows2.className = "el-icon-arrow-up";
-        this.selected6();
-      } else if (openOrClose2.className == "open") {
-        openOrClose2.className = "close";
-        arrows2.className = "el-icon-arrow-down";
-      }
-      openOrClose1.className = "close";
-      arrows1.className = "el-icon-arrow-down";
-      openOrClose3.className = "close";
-      arrows3.className = "el-icon-arrow-down";
-    },
-    closeAndOpen3() {
-      if (openOrClose3.className == "close") {
-        openOrClose3.className = "open";
-        arrows3.className = "el-icon-arrow-up";
-        this.selected9();
-      } else if (openOrClose3.className == "open") {
-        openOrClose3.className = "close";
-        arrows3.className = "el-icon-arrow-down";
-      }
-      openOrClose1.className = "close";
-      arrows1.className = "el-icon-arrow-down";
-      openOrClose2.className = "close";
-      arrows2.className = "el-icon-arrow-down";
-    },
-    jump() {
-      if (openOrClose1.className == "close") {
-        openOrClose1.className = "open";
-        arrows1.className = "el-icon-arrow-up";
-      }
-      if (openOrClose2.className == "open") {
-        openOrClose2.className = "close";
-        arrows2.className = "el-icon-arrow-down";
-      }
-      this.selected5();
-    },
-    selected1() {
-      this.selected = 1;
+    selectedPage(sel) {
       this.$store.state.imgUrl = "";
       this.$store.state.imgUrl2 = "";
-
-      this.$refs.onWarehouse.style.backgroundColor = "transparent";
-      this.$refs.onsale.style.backgroundColor = "#000";
-      this.$refs.export.style.backgroundColor = "transparent";
-      this.$refs.publish.style.backgroundColor = "transparent";
-      this.$refs.sold.style.backgroundColor = "transparent";
-      this.$refs.billEntry.style.backgroundColor = "transparent";
-      this.$refs.billReport.style.backgroundColor = "transparent";
-      this.$refs.companyAdmin.style.backgroundColor = "transparent";
-      this.$refs.departmentAdmin.style.backgroundColor = "transparent";
-      this.$refs.userAdmin.style.backgroundColor = "transparent";
-
-      (function smoothscroll() {
-        var currentScroll =
-          document.documentElement.scrollTop || document.body.scrollTop;
-        if (currentScroll > 0) {
-          window.requestAnimationFrame(smoothscroll);
-          window.scrollTo(0, currentScroll - currentScroll / 5);
-        }
-      })();
+      this.selected = sel;
     },
-    selected2() {
-      this.selected = 2;
-
-      this.$refs.sold.style.backgroundColor = "#000";
-      this.$refs.onWarehouse.style.backgroundColor = "transparent";
-      this.$refs.onsale.style.backgroundColor = "transparent";
-      this.$refs.export.style.backgroundColor = "transparent";
-      this.$refs.publish.style.backgroundColor = "transparent";
-      this.$refs.billEntry.style.backgroundColor = "transparent";
-      this.$refs.billReport.style.backgroundColor = "transparent";
-      this.$refs.companyAdmin.style.backgroundColor = "transparent";
-      this.$refs.departmentAdmin.style.backgroundColor = "transparent";
-      this.$refs.userAdmin.style.backgroundColor = "transparent";
-
-      (function smoothscroll() {
-        var currentScroll =
-          document.documentElement.scrollTop || document.body.scrollTop;
-        if (currentScroll > 0) {
-          window.requestAnimationFrame(smoothscroll);
-          window.scrollTo(0, currentScroll - currentScroll / 5);
-        }
-      })();
+    // 退出登录
+    updateUserClick() {
+      if (this.updateUser == 1) {
+        this.updateUser = 0;
+      } else if (this.updateUser == 0) {
+        this.updateUser = 1;
+      }
     },
-    selected3() {
-      this.selected = 3;
-      this.$refs.onWarehouse.style.backgroundColor = "transparent";
-      this.$refs.onsale.style.backgroundColor = "transparent";
-      this.$refs.export.style.backgroundColor = "#000";
-      this.$refs.publish.style.backgroundColor = "transparent";
-      this.$refs.sold.style.backgroundColor = "transparent";
-      this.$refs.billEntry.style.backgroundColor = "transparent";
-      this.$refs.billReport.style.backgroundColor = "transparent";
-      this.$refs.companyAdmin.style.backgroundColor = "transparent";
-      this.$refs.departmentAdmin.style.backgroundColor = "transparent";
-      this.$refs.userAdmin.style.backgroundColor = "transparent";
-    },
-    selected4() {
-      this.selected = 4;
-      this.$store.state.imgUrl = "";
-      this.$store.state.imgUrl2 = "";
-
-      this.$refs.onWarehouse.style.backgroundColor = "transparent";
-      this.$refs.onsale.style.backgroundColor = "transparent";
-      this.$refs.export.style.backgroundColor = "transparent";
-      this.$refs.publish.style.backgroundColor = "#000";
-      this.$refs.sold.style.backgroundColor = "transparent";
-      this.$refs.billEntry.style.backgroundColor = "transparent";
-      this.$refs.billReport.style.backgroundColor = "transparent";
-      this.$refs.companyAdmin.style.backgroundColor = "transparent";
-      this.$refs.departmentAdmin.style.backgroundColor = "transparent";
-      this.$refs.userAdmin.style.backgroundColor = "transparent";
-
-      openOrClose1.className = "close";
-      arrows1.className = "el-icon-arrow-down";
-      openOrClose2.className = "close";
-      arrows2.className = "el-icon-arrow-down";
-
-      (function smoothscroll() {
-        var currentScroll =
-          document.documentElement.scrollTop || document.body.scrollTop;
-        if (currentScroll > 0) {
-          window.requestAnimationFrame(smoothscroll);
-          window.scrollTo(0, currentScroll - currentScroll / 5);
+    otherClick() {
+      let e = e || window.event;
+      let className = e.target.className;
+      if (
+        className !== "downbtn" &&
+        className !== "right-div" &&
+        className !== "span1" &&
+        className !== "span-img" &&
+        className !== "img-self"
+      ) {
+        if (this.updateUser == 1) {
+          this.updateUser = 0;
         }
-      })();
-    },
-    selected5() {
-      this.selected = 5;
-      this.$refs.onWarehouse.style.backgroundColor = "#000";
-      this.$refs.onsale.style.backgroundColor = "transparent";
-      this.$refs.export.style.backgroundColor = "transparent";
-      this.$refs.publish.style.backgroundColor = "transparent";
-      this.$refs.sold.style.backgroundColor = "transparent";
-      this.$refs.billEntry.style.backgroundColor = "transparent";
-      this.$refs.billReport.style.backgroundColor = "transparent";
-      this.$refs.companyAdmin.style.backgroundColor = "transparent";
-      this.$refs.departmentAdmin.style.backgroundColor = "transparent";
-      this.$refs.userAdmin.style.backgroundColor = "transparent";
-
-      (function smoothscroll() {
-        var currentScroll =
-          document.documentElement.scrollTop || document.body.scrollTop;
-        if (currentScroll > 0) {
-          window.requestAnimationFrame(smoothscroll);
-          window.scrollTo(0, currentScroll - currentScroll / 5);
-        }
-      })();
-    },
-    selected6() {
-      this.selected = 6;
-
-      this.$refs.billEntry.style.backgroundColor = "#000";
-      this.$refs.onWarehouse.style.backgroundColor = "transparent";
-      this.$refs.onsale.style.backgroundColor = "transparent";
-      this.$refs.export.style.backgroundColor = "transparent";
-      this.$refs.publish.style.backgroundColor = "transparent";
-      this.$refs.sold.style.backgroundColor = "transparent";
-      this.$refs.billReport.style.backgroundColor = "transparent";
-      this.$refs.companyAdmin.style.backgroundColor = "transparent";
-      this.$refs.departmentAdmin.style.backgroundColor = "transparent";
-      this.$refs.userAdmin.style.backgroundColor = "transparent";
-
-      (function smoothscroll() {
-        var currentScroll =
-          document.documentElement.scrollTop || document.body.scrollTop;
-        if (currentScroll > 0) {
-          window.requestAnimationFrame(smoothscroll);
-          window.scrollTo(0, currentScroll - currentScroll / 5);
-        }
-      })();
-    },
-    selected7() {
-      this.selected = 7;
-
-      this.$refs.billEntry.style.backgroundColor = "transparent";
-      this.$refs.onWarehouse.style.backgroundColor = "transparent";
-      this.$refs.onsale.style.backgroundColor = "transparent";
-      this.$refs.export.style.backgroundColor = "transparent";
-      this.$refs.publish.style.backgroundColor = "transparent";
-      this.$refs.sold.style.backgroundColor = "transparent";
-      this.$refs.billReport.style.backgroundColor = "#000";
-      this.$refs.companyAdmin.style.backgroundColor = "transparent";
-      this.$refs.departmentAdmin.style.backgroundColor = "transparent";
-      this.$refs.userAdmin.style.backgroundColor = "transparent";
-
-      (function smoothscroll() {
-        var currentScroll =
-          document.documentElement.scrollTop || document.body.scrollTop;
-        if (currentScroll > 0) {
-          window.requestAnimationFrame(smoothscroll);
-          window.scrollTo(0, currentScroll - currentScroll / 5);
-        }
-      })();
-    },
-    selected8() {
-      this.selected = 8;
-
-      this.$refs.billEntry.style.backgroundColor = "transparent";
-      this.$refs.onWarehouse.style.backgroundColor = "transparent";
-      this.$refs.onsale.style.backgroundColor = "transparent";
-      this.$refs.export.style.backgroundColor = "transparent";
-      this.$refs.publish.style.backgroundColor = "transparent";
-      this.$refs.sold.style.backgroundColor = "transparent";
-      this.$refs.billReport.style.backgroundColor = "transparent";
-      this.$refs.companyAdmin.style.backgroundColor = "#000";
-      this.$refs.departmentAdmin.style.backgroundColor = "transparent";
-      this.$refs.userAdmin.style.backgroundColor = "transparent";
-
-      openOrClose1.className = "close";
-      arrows1.className = "el-icon-arrow-down";
-      openOrClose2.className = "close";
-      arrows2.className = "el-icon-arrow-down";
-
-      (function smoothscroll() {
-        var currentScroll =
-          document.documentElement.scrollTop || document.body.scrollTop;
-        if (currentScroll > 0) {
-          window.requestAnimationFrame(smoothscroll);
-          window.scrollTo(0, currentScroll - currentScroll / 5);
-        }
-      })();
-    },
-    selected9() {
-      this.selected = 9;
-
-      this.$refs.billEntry.style.backgroundColor = "transparent";
-      this.$refs.onWarehouse.style.backgroundColor = "transparent";
-      this.$refs.onsale.style.backgroundColor = "transparent";
-      this.$refs.export.style.backgroundColor = "transparent";
-      this.$refs.publish.style.backgroundColor = "transparent";
-      this.$refs.sold.style.backgroundColor = "transparent";
-      this.$refs.billReport.style.backgroundColor = "transparent";
-      this.$refs.companyAdmin.style.backgroundColor = "transparent";
-      this.$refs.departmentAdmin.style.backgroundColor = "#000";
-      this.$refs.userAdmin.style.backgroundColor = "transparent";
-
-      openOrClose1.className = "close";
-      arrows1.className = "el-icon-arrow-down";
-      openOrClose2.className = "close";
-      arrows2.className = "el-icon-arrow-down";
-
-      (function smoothscroll() {
-        var currentScroll =
-          document.documentElement.scrollTop || document.body.scrollTop;
-        if (currentScroll > 0) {
-          window.requestAnimationFrame(smoothscroll);
-          window.scrollTo(0, currentScroll - currentScroll / 5);
-        }
-      })();
-    },
-    selected10() {
-      this.selected = 10;
-
-      this.$refs.billEntry.style.backgroundColor = "transparent";
-      this.$refs.onWarehouse.style.backgroundColor = "transparent";
-      this.$refs.onsale.style.backgroundColor = "transparent";
-      this.$refs.export.style.backgroundColor = "transparent";
-      this.$refs.publish.style.backgroundColor = "transparent";
-      this.$refs.sold.style.backgroundColor = "transparent";
-      this.$refs.billReport.style.backgroundColor = "transparent";
-      this.$refs.companyAdmin.style.backgroundColor = "transparent";
-      this.$refs.departmentAdmin.style.backgroundColor = "transparent";
-      this.$refs.userAdmin.style.backgroundColor = "#000";
-
-      openOrClose1.className = "close";
-      arrows1.className = "el-icon-arrow-down";
-      openOrClose2.className = "close";
-      arrows2.className = "el-icon-arrow-down";
-
-      (function smoothscroll() {
-        var currentScroll =
-          document.documentElement.scrollTop || document.body.scrollTop;
-        if (currentScroll > 0) {
-          window.requestAnimationFrame(smoothscroll);
-          window.scrollTo(0, currentScroll - currentScroll / 5);
-        }
-      })();
+      }
     },
 
     // 退出登录
     logoutSure() {
       this.$router.push("/");
       this.$store.dispatch("setRole", null);
+      this.$store.dispatch("setToken", null);
+      this.$store.dispatch("setType", "");
       sessionStorage.setItem("username", "");
       sessionStorage.setItem("role", "");
       sessionStorage.setItem("token", "");
+      sessionStorage.setItem("userId", null);
+      sessionStorage.setItem("type", "");
+      sessionStorage.setItem("companyId", "");
+      sessionStorage.setItem("currencyGlobal", "");
+      sessionStorage.setItem("isHeadCompanyAdmin", "");
     }
   }
 };
 </script>
+<style lang="scss" scoped>
+ul li {
+  list-style: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+ul li a {
+  text-decoration: none;
+}
+
+.font {
+  width: 57px;
+  margin: 0;
+  margin-right: 10px;
+  font-size: 14px;
+  line-height: 40px;
+}
+
+.update-nick {
+  width: 390px;
+  height: 38px;
+  line-height: 38px;
+  padding: 0;
+  padding-left: 20px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  outline: none;
+}
+
+.home-container {
+  height: 100%;
+  position: relative;
+
+  .main-top-right {
+    width: 100%;
+    height: 78px;
+    position: relative;
+
+    .left-con {
+      position: absolute;
+      left: 40px;
+      display: flex;
+      align-items: center;
+
+      .left-font-one {
+        margin: 0;
+        margin-left: 15px;
+        line-height: 78px;
+        font-size: 23px;
+        font-weight: 600;
+        color: #fff;
+      }
+    }
+
+    .right-div {
+      // width: 150px;
+      position: absolute;
+      top: 0;
+      right: 175px;
+      height: 60px;
+      line-height: 78px;
+      padding: 0;
+
+      display: flex;
+      cursor: pointer;
+
+      .span1 {
+        display: inline-block;
+        font-size: 18px;
+        color: #fff;
+        overflow: hidden;
+        word-break: keep-all;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+
+      .span-img {
+        img {
+          width: 15px;
+          margin-left: 10px;
+        }
+      }
+    }
+
+    .downbtn {
+      width: 120px;
+      height: 50px;
+      padding: 0;
+      line-height: 50px;
+      position: absolute;
+      top: 78px;
+      right: 155px;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      z-index: 999;
+
+      .logout-div {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+
+        .logout-img {
+          display: flex;
+          align-items: center;
+          margin-right: 5px;
+        }
+
+        span {
+          font-size: 15px;
+        }
+      }
+    }
+  }
+
+  .aside-ul-dad {
+    padding: 30px 0 30px 10px;
+    margin: 0;
+    color: #fff;
+
+    p {
+      margin: 0;
+    }
+
+    .dad-li {
+      margin-top: 30px;
+
+      .dad-li-font {
+        font-size: 12px;
+        color: #6f84a8;
+      }
+
+      .aside-ul-son {
+        padding: 20px 0 0 0;
+
+        .son-li {
+          height: 46px;
+          line-height: 46px;
+          padding-right: 20px;
+          display: flex;
+          justify-content: space-between;
+
+          .son-li-line {
+            width: 4px;
+            height: 46px;
+            background-color: #3d81fd;
+          }
+
+          .son-li-center {
+            display: flex;
+
+            .center-img-div {
+              padding-top: 3px;
+              margin-right: 10px;
+
+              .center-img {
+                width: 18px;
+                height: 18px;
+              }
+            }
+
+            .center-font {
+              font-size: 14px;
+              color: #b7bdc6;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+</style>
 <style lang="scss">
+.handle-button {
+  color: #409eff;
+  font-size: 15px;
+}
+
 .el-message {
   z-index: 99999 !important;
 }
@@ -552,175 +791,16 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+
+  // overflow: hidden;
+  // text-overflow: ellipsis;
+  // display: -webkit-box;
+  // -webkit-line-clamp: 4;
+  // -webkit-box-orient: vertical;
 }
 
-.container {
-  width: 100%;
-
-  .aside {
-    position: fixed;
-    top: 0;
-    left: 0;
-    background-color: #282828;
-
-    .open {
-      padding-left: 0;
-      text-align: center;
-
-      li {
-        height: 46px;
-        line-height: 46px;
-        margin-top: 20px;
-        list-style: none;
-        cursor: pointer;
-        color: #fff;
-      }
-    }
-
-    ul {
-      padding-left: 0;
-      text-align: center;
-
-      li {
-        list-style: none;
-        cursor: pointer;
-        color: #fff;
-      }
-    }
-
-    .aside-container {
-      height: 100%;
-
-      .aside-one {
-        height: 80px;
-        display: flex;
-        justify-content: center;
-        flex-direction: column;
-
-        .aside-top,
-        .aside-top-admin {
-          font-size: 18px;
-          color: #fff;
-          text-align: center;
-        }
-      }
-
-      .person-ul {
-        margin-top: 30px;
-
-        .person-li {
-          margin-top: 30px;
-          height: 46px;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-
-        .icon {
-          margin-right: 20px;
-          font-size: 18px;
-        }
-
-        .font {
-          font-size: 14px;
-        }
-      }
-    }
-  }
-
-  .main {
-    margin-left: 218px;
-    padding: 0;
-
-    .main-top {
-      height: 80px;
-      padding-left: 40px;
-      line-height: 80px;
-      position: fixed;
-      top: 0;
-      left: 218px;
-      right: 0;
-      border-bottom: 1px solid #dedede;
-      background-color: #fff;
-      box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-      z-index: 3333;
-
-      .main-top-left {
-        display: flex;
-
-        .first-fint-size {
-          font-size: 16px;
-        }
-
-        .fint-size {
-          font-size: 16px;
-          color: #aaa;
-        }
-      }
-
-      .main-top-right {
-        display: flex;
-        position: absolute;
-        top: 0;
-        right: 300px;
-
-        .logout {
-          margin-left: 20px;
-          font-size: 16px;
-          cursor: pointer;
-        }
-      }
-    }
-
-    .main-container {
-      min-height: 100vh;
-      padding: 0 10px;
-      padding-top: 80px;
-      z-index: 0;
-      background-color: #fafdff;
-
-      .onsale-top {
-        margin-top: 38px;
-        margin-left: 0;
-      }
-
-      table {
-        background-color: #fff;
-
-        tr > th {
-          padding: 3px 0;
-          line-height: 41px;
-          background-color: #f6f6f6;
-          font-size: 16px !important;
-          font-weight: normal;
-          color: #000;
-        }
-
-        tr > td {
-          padding: 10px 0 !important;
-          font-size: 14px !important;
-        }
-
-        /*设置奇数行颜色*/
-        // tr:nth-child(odd) {
-        //   background-color: #fff;
-        // }
-
-        /*设置偶数行颜色*/
-        // tr:nth-child(even) {
-        //   background-color: #f6f6f6;
-        // }
-      }
-    }
-  }
-}
-
-.close {
-  display: none;
-}
-
-.open {
-  display: block;
+.tooltipWarp {
+  max-width: 300px;
 }
 
 .el-input-number .el-input__inner {
@@ -757,5 +837,174 @@ export default {
 
 img {
   object-fit: cover;
+}
+
+#home-container {
+  .el-dialog__body {
+    padding-bottom: 30px;
+  }
+
+  .el-header {
+    position: relative;
+    width: 100%;
+    height: 78px;
+    padding: 0;
+    background-color: #26303c;
+  }
+
+  .el-aside {
+    position: absolute;
+    height: 80vh;
+    left: 0;
+    top: 78px;
+    bottom: 0;
+    display: block;
+    background-color: #202732;
+  }
+
+  .el-aside::-webkit-scrollbar {
+    width: 0;
+  }
+
+  .el-main {
+    // height: fit-content;
+    position: absolute;
+    left: 218px;
+    right: 0;
+    top: 78px;
+    bottom: 0;
+    overflow-y: scroll;
+    padding: 20px;
+    background-color: #ececec;
+  }
+
+  .el-pagination__editor.el-input .el-input__inner {
+    height: 28px;
+  }
+
+  .el-input__inner {
+    height: 40px;
+  }
+}
+
+.el-dialog {
+  width: 520px;
+  border-radius: 10px !important;
+}
+
+.el-dialog__header {
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  background-color: #3d82fe;
+}
+
+.el-dialog__title {
+  color: #fff;
+  font-weight: bold;
+}
+
+.el-dialog__headerbtn {
+  font-size: 18px;
+}
+
+.el-dialog__headerbtn .el-dialog__close {
+  color: #fff;
+}
+
+.el-dialog__headerbtn .el-dialog__close:hover {
+  color: #000;
+}
+
+[class*=" el-icon-"],
+[class^="el-icon-"] {
+  font-weight: bolder;
+}
+
+.el-dialog__body {
+  text-align: left;
+}
+
+.el-dialog__footer {
+  padding: 10px 20px 30px 0;
+  text-align: right;
+}
+
+.el-button + .el-button {
+  margin-left: 20px;
+}
+
+.el-table--border:after,
+.el-table--group:after,
+.el-table:before {
+  background-color: #ccc;
+}
+
+.el-table--border,
+.el-table--group {
+  border-color: #ccc;
+}
+
+.el-table td {
+  padding: 5px 0;
+}
+
+.el-table td,
+.el-table th.is-leaf {
+  border-bottom: 1px solid #ccc;
+}
+
+.el-table--border th,
+.el-table--border th.gutter:last-of-type {
+  border-bottom: 1px solid #ccc;
+}
+
+.el-table--border td,
+.el-table--border th {
+  border-right: 1px solid #ccc;
+}
+
+.el-table th {
+  background-color: #f2f2f2;
+}
+
+.el-table {
+  color: #666;
+}
+
+.el-table thead {
+  color: #666;
+}
+
+.el-button--primary {
+  color: #fff;
+  background-color: #3d81fd;
+  border-color: #3d81fd;
+}
+
+.el-drawer__header {
+  text-align: left;
+}
+
+.el-drawer__header > :first-child {
+  flex: 1;
+  outline: 0;
+}
+
+.el-table__body,
+.el-table__footer,
+.el-table__header {
+  width: 100% !important;
+}
+
+.el-table--border::after,
+.el-table--group::after {
+  top: 0;
+  right: 0;
+  width: 1px;
+  height: 100%;
+}
+
+.el-drawer {
+  overflow: scroll;
 }
 </style>

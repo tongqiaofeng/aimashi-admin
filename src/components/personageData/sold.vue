@@ -1,381 +1,403 @@
 <template>
-  <div>
-    <div class="onsale-top" style="padding-left: 10px;">
-      <span>用户：</span>
-      <el-select v-model="userId" @change="radioChange">
-        <el-option
-          v-for="item in userList"
-          :key="item.id"
-          :label="item.username"
-          :value="item.id"
-        >
-        </el-option>
-      </el-select>
-      <span>库存地：</span>
-      <el-select
-        v-model="stockLoc"
-        placeholder="请选择"
-        @change="radioChange"
-        style="margin-bottom: 10px;margin-right: 10px;"
-      >
-        <el-option
-          v-for="(item, index) in stockLocList"
-          :key="index"
-          :label="item"
-          :value="item"
-        >
-        </el-option>
-      </el-select>
-      <span>库存状态：</span>
-      <el-select v-model="soldSel" @change="radioChange">
-        <el-option
-          v-for="item in soldList"
-          :key="item.value"
-          :label="item.label"
-          :value="item.value"
-        >
-        </el-option>
-      </el-select>
-      <input
-        placeholder="输入款式，尺寸，材质，色号，色系，客户，货号可搜索，如：H000001、000001、1"
-        class="el-input__inner"
-        v-model="searchKey"
-        @focus="radioChange"
-      />
-      <el-button
-        type="primary"
-        style="background-color: #9695f3;border: 1px solid #9695f3;"
-        @click="searchProducts"
-        >查询</el-button
-      >
-    </div>
-    <table border="0" cellspacing="0" cellpadding="0" width="100%">
-      <tr align="center">
-        <th class="th-style">货号</th>
-        <th class="th-style">商品展示图</th>
-        <th class="th-style">内部图</th>
-        <th class="th-style">账单号</th>
-        <th class="th-style">商品信息</th>
-        <th class="th-style">库存点</th>
-        <th class="th-style" style="width: 136px;">库存状态</th>
-        <th class="th-style" style="width: 200px;">时间</th>
-        <th class="th-style" style="width: 136px;">港币销售价</th>
-        <th class="th-style">总成本</th>
-        <th class="th-style">利润</th>
-        <th class="th-style">在库时长</th>
-      </tr>
-      <tr v-show="onSaleProducts.length == 0" align="center">
-        <td colspan="12" style="font-size:20px;color:#ddd;">
-          没有数据要展示哦~
-        </td>
-      </tr>
-      <tr v-for="(item, index) in onSaleProducts" :key="index" align="center">
-        <td>{{ item.productCode }}</td>
-        <td>
-          <div>
-            <el-image
-              style="width: 100px; height: 100px"
-              :src="item.pic.trim()"
-              :preview-src-list="bigImg(item.pics)"
-              :z-index="5000"
-            >
-            </el-image>
-          </div>
-        </td>
-        <td>
-          <div v-if="item.privateImg !== '' && item.privateImg !== null">
-            <el-image
-              style="width: 100px; height: 100px"
-              :src="item.privatePic.trim()"
-              :preview-src-list="bigImg(item.privateImg)"
-              :z-index="5000"
-            >
-            </el-image>
-          </div>
-        </td>
-        <td>{{ item.bill }}</td>
-        <td>{{ item.name }}</td>
-        <td>{{ item.stockLoc }}</td>
-        <td style="cursor: pointer;" @click="stateupdate(item)">
-          <span class="handle-button">{{
-            item.sold == 3 ? "未出库" : "已出库"
-          }}</span>
-          <img
-            src="../../assets/imgs/update.png"
-            style="width: 15px;height: 18px;"
-          />
-        </td>
-        <td>
-          <p v-if="item.createTime">入库时间：{{ item.createTime }}</p>
-          <p v-if="item.soldTime">出售时间：{{ item.soldTime }}</p>
-          <p v-if="item.stockOutTime">出库时间：{{ item.stockOutTime }}</p>
-        </td>
-        <td>
-          {{ "HKD " + formatNumberRgx(item.saleTotalHkPrice) }}
-          <p v-if="item.customer">客户名称：{{ item.customer }}</p>
-        </td>
-        <td>
-          {{ "HKD " + formatNumberRgx(item.cost) }}
-        </td>
-        <td>
-          {{ "HKD " + money(item.cost, item.saleTotalHkPrice) }}
-        </td>
-        <td>{{ timeLong(item.createTime) }}</td>
-      </tr>
-    </table>
-
-    <el-dialog
-      title="库存数据"
-      v-if="dialogStateVisible"
-      :visible.sync="dialogStateVisible"
-      width="800px"
-      :close-on-press-escape="false"
-      :close-on-click-modal="false"
-      :modal-append-to-body="false"
-      :append-to-body="false"
-    >
-      <div>
-        <el-form label-width="110px">
-          <el-form-item label="库存状态" required>
-            <el-select v-model="sold" placeholder="请选择" style="width:100%;">
-              <el-option
-                v-for="item in soldList2"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-              >
-              </el-option>
-            </el-select>
-          </el-form-item>
-          <el-form-item label="账单号" :required="sold == 3 ? false : true">
-            <el-input v-model="bill"></el-input>
-          </el-form-item>
-          <el-form-item label="出售时间" :required="sold == 3 ? false : true">
-            <el-date-picker
-              v-model="soldTime"
-              type="date"
-              placeholder="请选择日期"
-              value-format="yyyy-MM-dd"
-              format="yyyy-MM-dd"
-              style="width:100%;"
-            ></el-date-picker>
-          </el-form-item>
-          <el-form-item label="出售外币金额">
-            <div style="width:100%;display: flex;">
-              <el-input
-                type="text"
-                style="flex: 1;"
-                placeholder="请输入出售外币金额"
-                v-model="priceTran"
+  <div style="margin-top: -20px;overflow: hidden;" id="soldContainer">
+    <div class="sold-container">
+      <div v-if="pageSel == 0">
+        <div>
+          <el-form inline>
+            <el-form-item label="库存地：">
+              <el-cascader
+                v-model="stockLocId"
+                :options="stockLocList"
+                :props="{
+                  value: 'id',
+                  label: 'name',
+                  children: 'warehouseList',
+                  checkStrictly: true
+                }"
+                @change="radioChange"
                 clearable
-                @change="isSellHKD"
-              ></el-input>
-              <el-select
-                v-model="sellCurrencyId"
-                placeholder="请选择"
-                clearable
-                @change="isSellHKD"
-              >
+                popper-class="disableFirstLevel"
+              ></el-cascader>
+            </el-form-item>
+            <el-form-item label="库存状态：">
+              <el-select v-model="soldSel" @change="radioChange">
                 <el-option
-                  v-for="item in currencyIds"
+                  v-for="item in soldList"
                   :key="item.value"
                   :label="item.label"
                   :value="item.value"
                 >
                 </el-option>
               </el-select>
-            </div>
-          </el-form-item>
-          <el-form-item label="是否收款完成">
-            <el-switch v-model="isReceiveCheck"></el-switch>
-          </el-form-item>
-          <!-- 物流费/银行手续费送货(HKD) -->
-          <el-form-item label="物流费/手续费">
-            <div style="display: flex;">
+            </el-form-item>
+            <el-form-item label="">
               <el-input
-                style="flex: 1;"
-                v-model="saleLogHkPrice"
-                placeholder="请输入物流费/银行手续费送货"
+                style="width: 600px;"
+                placeholder="输入款式，尺寸，材质，色号，色系，客户，货号可搜索，如：H000001、000001、1"
+                v-model="searchKey"
+                @focus="radioChange"
               ></el-input>
-              <span>HKD</span>
-            </div>
-          </el-form-item>
-          <el-form-item
-            label="出售港币金额"
-            :required="sold == 3 ? false : true"
+            </el-form-item>
+            <el-form-item label="">
+              <el-button type="primary" @click="searchProducts">查询</el-button>
+            </el-form-item>
+          </el-form>
+        </div>
+        <el-table :data="onSaleProducts" style="width: 100%" border>
+          <el-table-column align="center" prop="productCode" label="货号">
+          </el-table-column>
+          <el-table-column align="center" prop="pic" label="图片">
+            <template slot-scope="scope">
+              <div>
+                <el-image
+                  style="width: 100px; height: 100px"
+                  :src="scope.row.pic.trim()"
+                  :preview-src-list="bigImg(scope.row.pics)"
+                  :z-index="5000"
+                >
+                </el-image>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column
+            width="300px"
+            align="center"
+            prop="name"
+            label="商品信息"
           >
-            <div style="display: flex;">
-              <el-input
-                style="flex: 1;"
-                v-model="saleTotalHkPrice"
-                placeholder="请输入出售港币金额"
-              ></el-input>
-            </div>
-          </el-form-item>
+            <template slot-scope="scope">
+              <div>
+                <el-tooltip
+                  class="item"
+                  effect="light"
+                  :content="scope.row.name"
+                  placement="bottom"
+                >
+                  <div class="font-warp">{{ scope.row.name }}</div>
+                </el-tooltip>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column align="center" prop="stockLocId" label="库存点">
+            <template slot-scope="scope">
+              <div>
+                {{ stockReg(scope.row.stockLocId) }}
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column align="center" prop="bill" label="账单号">
+          </el-table-column>
+          <el-table-column align="center" prop="customer" label="客户名称">
+            <template slot-scope="scope">
+              <div>
+                {{ scope.row.customer ? scope.row.customer : "-" }}
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column align="center" prop="sold" label="库存状态">
+            <template slot-scope="scope">
+              <div>
+                <div style="cursor: pointer;" @click="stateupdate(scope.row)">
+                  <span class="handle-button">{{
+                    scope.row.sold == 3 ? "未出库" : "已出库"
+                  }}</span>
+                  <img
+                    src="../../assets/imgs/update.png"
+                    style="width: 15px;height: 18px;"
+                  />
+                </div>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column width="130px" align="center" label="操作">
+            <template slot-scope="scope">
+              <div>
+                <el-button type="text" @click="editProduct(scope.row.id)"
+                  >编辑</el-button
+                >
+              </div>
+            </template>
+          </el-table-column>
+        </el-table>
 
-          <el-form-item label="客户姓名" :required="sold == 3 ? false : true">
-            <el-autocomplete
-              style="width: 100%;"
-              v-model="customer"
-              :fetch-suggestions="querySearch"
-              placeholder="请选择/输入客户姓名"
-              @select="handleSelect"
-            ></el-autocomplete>
-          </el-form-item>
-          <el-form-item label="出库时间" required v-if="sold == 4">
-            <el-date-picker
-              v-model="stockOutTime"
-              type="date"
-              style="width:100%;"
-              placeholder="请选择日期"
-              value-format="yyyy-MM-dd"
-              format="yyyy-MM-dd"
-            ></el-date-picker>
-          </el-form-item>
-          <el-form-item label="备注">
-            <el-input
-              type="textarea"
-              style="width:100%;"
-              v-model="note"
-            ></el-input>
-          </el-form-item>
-          <el-form-item label="出售记录" v-show="sellPaymentList.length > 0">
-            <el-table :data="sellPaymentList" style="width: 100%;">
-              <el-table-column
-                align="center"
-                prop="time"
-                label="日期"
-                width="200px"
-              >
-                <template slot-scope="scope">
-                  <div>
-                    <div>
-                      {{ scope.row.time }}
-                    </div>
-                    <div>
-                      {{ "【" + scope.row.personName + "】" }}
-                    </div>
-                  </div>
-                </template>
-              </el-table-column>
-              <el-table-column
-                width="200px"
-                align="center"
-                prop="productDes"
-                label="產品描述"
-              >
-                <template slot-scope="scope">
-                  <div>
-                    <el-tooltip
-                      class="item"
-                      effect="light"
-                      :content="scope.row.productDes"
-                      placement="top-end"
-                    >
-                      <div class="font-warp">{{ scope.row.productDes }}</div>
-                    </el-tooltip>
-                  </div>
-                </template>
-              </el-table-column>
-              <el-table-column align="center" prop="money" label="外幣金額">
-                <template slot-scope="scope">
-                  <div>
-                    {{
-                      scope.row.money == "" || scope.row.money == 0
-                        ? "/"
-                        : formatNumberRgx(scope.row.money) +
-                          " " +
-                          scope.row.currency
-                    }}
-                  </div>
-                </template>
-              </el-table-column>
-              <el-table-column align="center" prop="totalToHkRate" label="匯率">
-                <template slot-scope="scope">
-                  <div>
-                    {{
-                      scope.row.totalToHkRate == "" ||
-                      scope.row.totalToHkRate == 0
-                        ? "/"
-                        : scope.row.totalToHkRate
-                    }}
-                  </div>
-                </template>
-              </el-table-column>
-              <el-table-column
-                align="center"
-                prop="totalHkPrice"
-                label="港幣金額"
-              >
-                <template slot-scope="scope">
-                  <div>
-                    {{
-                      scope.row.totalHkPrice == "" ||
-                      scope.row.totalHkPrice == 0
-                        ? "/"
-                        : formatNumberRgx(scope.row.totalHkPrice) + " HKD"
-                    }}
-                  </div>
-                </template>
-              </el-table-column>
-              <el-table-column
-                align="center"
-                prop="receiveType"
-                label="交易方式"
-              >
-              </el-table-column>
-              <el-table-column
-                width="200px"
-                align="center"
-                prop="remark"
-                label="Remarks"
-              >
-                <template slot-scope="scope">
-                  <div>
-                    <el-tooltip
-                      class="item"
-                      effect="light"
-                      :content="scope.row.remark"
-                      placement="top-end"
-                    >
-                      <div class="font-warp">{{ scope.row.remark }}</div>
-                    </el-tooltip>
-                  </div>
-                </template>
-              </el-table-column>
-            </el-table>
-          </el-form-item>
-        </el-form>
-      </div>
-      <div slot="footer">
-        <el-button
-          @click="dialogStateVisible = false"
-          style="width:100px;color:#9695f3;margin-right:10px;"
-          >取 消</el-button
+        <el-dialog
+          title="库存数据"
+          v-if="dialogStateVisible"
+          :visible.sync="dialogStateVisible"
+          width="800px"
+          :close-on-press-escape="false"
+          :close-on-click-modal="false"
+          :modal-append-to-body="false"
+          :append-to-body="false"
         >
-        <el-button
-          style="width:100px;background:#9695f3;color:#fff;"
-          @click="stateupdateSure"
-          >确 定
-        </el-button>
+          <div>
+            <el-form label-width="110px">
+              <el-form-item label="库存状态" required>
+                <el-select
+                  v-model="sold"
+                  placeholder="请选择"
+                  style="width:100%;"
+                >
+                  <el-option
+                    v-for="item in soldList2"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  >
+                  </el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item label="账单号" :required="sold == 3 ? false : true">
+                <el-input v-model="bill"></el-input>
+              </el-form-item>
+              <el-form-item
+                label="出售时间"
+                :required="sold == 3 ? false : true"
+              >
+                <el-date-picker
+                  v-model="soldTime"
+                  type="date"
+                  placeholder="请选择日期"
+                  value-format="yyyy-MM-dd"
+                  format="yyyy-MM-dd"
+                  style="width:100%;"
+                ></el-date-picker>
+              </el-form-item>
+              <el-form-item label="出售外币金额">
+                <div style="width:100%;display: flex;">
+                  <el-input
+                    type="text"
+                    style="flex: 1;"
+                    placeholder="请输入出售外币金额"
+                    v-model="priceTran"
+                    clearable
+                    @change="isSellHKD"
+                  ></el-input>
+                  <el-select
+                    v-model="sellCurrencyId"
+                    placeholder="请选择"
+                    clearable
+                    @change="isSellHKD"
+                  >
+                    <el-option
+                      v-for="item in currencyIds"
+                      :key="item.value"
+                      :label="item.label"
+                      :value="item.value"
+                    >
+                    </el-option>
+                  </el-select>
+                </div>
+              </el-form-item>
+              <el-form-item label="是否收款完成">
+                <el-switch v-model="isReceiveCheck"></el-switch>
+              </el-form-item>
+              <!-- 物流费/银行手续费送货(HKD) -->
+              <el-form-item label="物流费/手续费">
+                <div style="display: flex;">
+                  <el-input
+                    style="flex: 1;"
+                    v-model="saleLogHkPrice"
+                    placeholder="请输入物流费/银行手续费送货"
+                  ></el-input>
+                  <span>{{ currencyGlobal }}</span>
+                </div>
+              </el-form-item>
+              <el-form-item
+                :label="'出售' + currencyFontRgx(currencyGlobal) + '金额'"
+                :required="sold == 3 ? false : true"
+              >
+                <div style="display: flex;">
+                  <el-input
+                    style="flex: 1;"
+                    v-model="saleTotalHkPrice"
+                    :placeholder="
+                      '请输入出售' + currencyFontRgx(currencyGlobal) + '金额'
+                    "
+                  ></el-input>
+                </div>
+              </el-form-item>
+
+              <el-form-item
+                label="客户姓名"
+                :required="sold == 3 ? false : true"
+              >
+                <el-autocomplete
+                  style="width: 100%;"
+                  v-model="customer"
+                  :fetch-suggestions="querySearch"
+                  placeholder="请选择/输入客户姓名"
+                  @select="handleSelect"
+                ></el-autocomplete>
+              </el-form-item>
+              <el-form-item label="出库时间" required v-if="sold == 4">
+                <el-date-picker
+                  v-model="stockOutTime"
+                  type="date"
+                  style="width:100%;"
+                  placeholder="请选择日期"
+                  value-format="yyyy-MM-dd"
+                  format="yyyy-MM-dd"
+                ></el-date-picker>
+              </el-form-item>
+              <el-form-item label="备注">
+                <el-input
+                  type="textarea"
+                  style="width:100%;"
+                  v-model="note"
+                ></el-input>
+              </el-form-item>
+              <el-form-item
+                label="出售记录"
+                v-show="sellPaymentList.length > 0"
+              >
+                <el-table :data="sellPaymentList" style="width: 100%;">
+                  <el-table-column
+                    align="center"
+                    prop="time"
+                    label="日期"
+                    width="200px"
+                  >
+                    <template slot-scope="scope">
+                      <div>
+                        <div>
+                          {{ scope.row.time }}
+                        </div>
+                        <div>
+                          {{ "【" + scope.row.personName + "】" }}
+                        </div>
+                      </div>
+                    </template>
+                  </el-table-column>
+                  <el-table-column
+                    width="200px"
+                    align="center"
+                    prop="productDes"
+                    label="產品描述"
+                  >
+                    <template slot-scope="scope">
+                      <div>
+                        <el-tooltip
+                          class="item"
+                          effect="light"
+                          :content="scope.row.productDes"
+                          placement="top-end"
+                        >
+                          <div class="font-warp">
+                            {{ scope.row.productDes }}
+                          </div>
+                        </el-tooltip>
+                      </div>
+                    </template>
+                  </el-table-column>
+                  <el-table-column align="center" prop="money" label="外幣金額">
+                    <template slot-scope="scope">
+                      <div>
+                        {{
+                          scope.row.money == "" || scope.row.money == 0
+                            ? "/"
+                            : formatNumberRgx(scope.row.money) +
+                              " " +
+                              scope.row.currency
+                        }}
+                      </div>
+                    </template>
+                  </el-table-column>
+                  <el-table-column
+                    align="center"
+                    prop="totalToHkRate"
+                    label="匯率"
+                  >
+                    <template slot-scope="scope">
+                      <div>
+                        {{
+                          scope.row.totalToHkRate == "" ||
+                          scope.row.totalToHkRate == 0
+                            ? "/"
+                            : scope.row.totalToHkRate
+                        }}
+                      </div>
+                    </template>
+                  </el-table-column>
+                  <el-table-column
+                    align="center"
+                    prop="totalHkPrice"
+                    :label="currencyFontRgx(currencyGlobal) + '金額'"
+                  >
+                    <template slot-scope="scope">
+                      <div>
+                        {{
+                          scope.row.totalHkPrice == "" ||
+                          scope.row.totalHkPrice == 0
+                            ? "/"
+                            : formatNumberRgx(scope.row.totalHkPrice) +
+                              " " +
+                              currencyGlobal
+                        }}
+                      </div>
+                    </template>
+                  </el-table-column>
+                  <el-table-column
+                    align="center"
+                    prop="receiveType"
+                    label="交易方式"
+                  >
+                  </el-table-column>
+                  <el-table-column
+                    width="200px"
+                    align="center"
+                    prop="remark"
+                    label="Remarks"
+                  >
+                    <template slot-scope="scope">
+                      <div>
+                        <el-tooltip
+                          class="item"
+                          effect="light"
+                          :content="scope.row.remark"
+                          placement="top-end"
+                        >
+                          <div class="font-warp">{{ scope.row.remark }}</div>
+                        </el-tooltip>
+                      </div>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </el-form-item>
+            </el-form>
+          </div>
+          <div slot="footer">
+            <el-button @click="dialogStateVisible = false">取 消</el-button>
+            <el-button type="primary" @click="stateupdateSure"
+              >确 定
+            </el-button>
+          </div>
+        </el-dialog>
+        <div style="margin-top:15px;text-align: right;">
+          <el-pagination
+            @current-change="handleCurrentChange"
+            :current-page="page"
+            layout="total, prev, pager, next, jumper"
+            :total="total"
+          >
+          </el-pagination>
+        </div>
       </div>
-    </el-dialog>
-    <div
-      style="margin:15px 0;padding-bottom: 30px;position:absolute;right:10%;"
-    >
-      <el-pagination
-        @current-change="handleCurrentChange"
-        :current-page="page"
-        layout="total, prev, pager, next, jumper"
-        :total="total"
-      >
-      </el-pagination>
+      <div v-else>
+        <details-vue
+          :updatesId="updateId"
+          @goback="goback"
+          @updateSuccess="updateSuccess"
+        ></details-vue>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import detailsVue from "../common/details.vue";
 export default {
+  components: { detailsVue },
   data() {
     return {
       baseUrl: this.$store.state.baseUrl,
@@ -386,9 +408,7 @@ export default {
       onSaleProducts: [],
       myList: [],
 
-      userId: null,
-      userList: [],
-      stockLoc: "",
+      stockLocId: [],
       stockLocList: [],
       soldSel: "",
       sold: "",
@@ -423,7 +443,7 @@ export default {
         },
         {
           value: "2",
-          label: "HKD港元"
+          label: "HKD港币"
         },
         {
           value: "3",
@@ -456,14 +476,38 @@ export default {
       saleLogHkPrice: "",
       saleTotalHkPrice: "",
       isReceiveCheck: false,
-      sellPaymentList: []
+      sellPaymentList: [],
+
+      isUpdateOrDel: null,
+      updateId: null,
+      pageSel: 0,
+      currencyGlobal: ""
     };
   },
   created() {
+    this.currencyGlobal = sessionStorage.getItem("currencyGlobal");
     this.getStockLocList();
     this.getCustomerList();
   },
   methods: {
+    // 编辑
+    editProduct(id) {
+      this.updateId = id;
+      this.pageSel = 1;
+
+      document
+        .getElementById("soldContainer")
+        .scrollIntoView({ behavior: "smooth" });
+    },
+    // 编辑成功
+    updateSuccess(val) {
+      console.log(val);
+      this.pageSel = 0;
+      this.searchProducts();
+    },
+    goback() {
+      this.pageSel = 0;
+    },
     // 获取客户列表
     getCustomerList() {
       this.$axios
@@ -525,29 +569,40 @@ export default {
     stateupdate(item) {
       console.log("数据");
       console.log(item);
+      let companys = sessionStorage.getItem("companyId");
+      if (item.companyId != companys) {
+        this.$message.error({
+          message: "该商品不在您所管理的仓库中，不可进行修改",
+          showClose: true,
+          duration: 2000
+        });
+      } else {
+        this.updateStateId = item.id;
+        this.sold = item.sold;
+        this.bill = item.bill;
+        this.createTime = item.createTime;
+        this.priceTran = item.priceTran;
+        this.customer = item.customer;
+        this.soldTime = item.soldTime;
+        this.sellCurrencyId = item.sellCurrencyId;
 
-      this.updateStateId = item.id;
-      this.sold = item.sold;
-      this.bill = item.bill;
-      this.createTime = item.createTime;
-      this.priceTran = item.priceTran;
-      this.customer = item.customer;
-      this.soldTime = item.soldTime;
-      this.sellCurrencyId = item.sellCurrencyId;
+        this.stockOutTime = item.stockOutTime;
+        this.note = item.note;
+        this.saleLogHkPrice = item.saleLogHkPrice;
+        this.saleTotalHkPrice = item.saleTotalHkPrice;
 
-      this.stockOutTime = item.stockOutTime;
-      this.note = item.note;
-      this.saleLogHkPrice = item.saleLogHkPrice;
-      this.saleTotalHkPrice = item.saleTotalHkPrice;
+        this.sellPaymentList = item.sellPaymentList;
+        this.isUpdateOrDel = item.isUpdateOrDel;
 
-      this.sellPaymentList = item.sellPaymentList;
-      this.isReceiveCheck =
-        item.isReceiveCheck == 0 || item.isReceiveCheck == null ? false : true;
+        this.isReceiveCheck =
+          item.isReceiveCheck == 0 || item.isReceiveCheck == null
+            ? false
+            : true;
 
-      this.dialogStateVisible = true;
+        this.dialogStateVisible = true;
+      }
     },
     dataCheck() {
-      // console.log(this.sold);
       if (this.sold == null) {
         this.$message.error({
           message: "请选择库存状态",
@@ -586,43 +641,52 @@ export default {
     },
     // 确定修改
     stateupdateSure() {
-      if (this.dataCheck() !== 1) {
-        this.$axios
-          .put(this.baseUrl + "/stateSave", {
-            id: this.updateStateId,
-            sold: this.sold,
-            bill: this.bill,
-            createTime: this.createTime,
-            priceTran: this.priceTran,
-            customer: this.customer,
-            soldTime: this.soldTime,
-            sellCurrencyId: this.sellCurrencyId,
-            stockOutTime: this.stockOutTime,
-            note: this.note,
-            saleLogHkPrice: this.saleLogHkPrice,
-            saleTotalHkPrice: this.saleTotalHkPrice,
-            isReceiveCheck: this.isReceiveCheck == false ? 0 : 1
-          })
-          .then(res => {
-            console.log(res);
-            if (res.status == 200) {
-              this.$message.success({
-                message: "修改成功",
+      if (this.isUpdateOrDel === -1) {
+        this.$message.error({
+          message: "该商品不在您所管理的仓库中，不可进行修改",
+          showClose: true,
+          duration: 2000
+        });
+        this.dialogStateVisible = false;
+      } else {
+        if (this.dataCheck() !== 1) {
+          this.$axios
+            .put(this.baseUrl + "/stateSave", {
+              id: this.updateStateId,
+              sold: this.sold,
+              bill: this.bill,
+              createTime: this.createTime,
+              priceTran: this.priceTran,
+              customer: this.customer,
+              soldTime: this.soldTime,
+              sellCurrencyId: this.sellCurrencyId,
+              stockOutTime: this.sold == 8 ? this.soldTime : this.stockOutTime,
+              note: this.note,
+              saleLogHkPrice: this.saleLogHkPrice,
+              saleTotalHkPrice: this.saleTotalHkPrice,
+              isReceiveCheck: this.isReceiveCheck == false ? 0 : 1
+            })
+            .then(res => {
+              console.log(res);
+              if (res.status == 200) {
+                this.$message.success({
+                  message: "修改成功",
+                  showClose: true,
+                  duration: 2000
+                });
+                this.dialogStateVisible = false;
+                this.searchProducts();
+              }
+            })
+            .catch(err => {
+              console.log(err);
+              this.$message.error({
+                message: err.data.status,
                 showClose: true,
                 duration: 2000
               });
-              this.dialogStateVisible = false;
-              this.searchProducts();
-            }
-          })
-          .catch(err => {
-            console.log(err);
-            this.$message.error({
-              message: err.data.status,
-              showClose: true,
-              duration: 2000
             });
-          });
+        }
       }
     },
     // 大图
@@ -641,26 +705,9 @@ export default {
       console.log(this.page);
       this.searchProducts();
 
-      (function smoothscroll() {
-        var currentScroll =
-          document.documentElement.scrollTop || document.body.scrollTop;
-        if (currentScroll > 0) {
-          window.requestAnimationFrame(smoothscroll);
-          window.scrollTo(0, currentScroll - currentScroll / 5);
-        }
-      })();
-    },
-    // 计算时长
-    timeLong(time) {
-      if (time !== null && time !== "") {
-        let startTime = new Date(time); // 开始时间
-        let endTime = new Date(); // 结束时间
-        let times =
-          Math.floor((endTime - startTime) / 1000 / 60 / 60 / 24) + " 天";
-        return times;
-      } else {
-        return "-";
-      }
+      document
+        .getElementById("soldContainer")
+        .scrollIntoView({ behavior: "smooth" });
     },
     // 利润计算
     money(x, y) {
@@ -675,8 +722,16 @@ export default {
           keyword: this.searchKey,
           page: this.page,
           pageNum: 10,
-          stockLoc: this.stockLoc2,
-          userId: this.userId,
+          stockLocId: this.stockLocId
+            ? this.stockLocId.length == 2
+              ? this.stockLocId[1]
+              : null
+            : null,
+          companyId: this.stockLocId
+            ? this.stockLocId.length == 1 && this.stockLocId[0] != -1
+              ? this.stockLocId[0]
+              : null
+            : null,
           sold: this.soldSel
         })
         .then(res => {
@@ -690,94 +745,62 @@ export default {
     // 获取库存点
     getStockLocList() {
       this.$axios
-        .get(this.baseUrl + "/stockLocList")
+        .get(this.baseUrl + "/stockSearchLocList")
         .then(res => {
           console.log("库存列表");
           console.log(res);
           this.stockLocList = res.data;
-          this.stockLoc = this.stockLocList[0];
+          this.stockLocId = [];
 
-          this.getUserList();
+          if (this.stockLocList.length > 0) {
+            this.stockLocList[0].warehouseList = undefined;
+
+            let companyId = Number(sessionStorage.getItem("companyId"));
+
+            this.stockLocId.push(companyId);
+          }
+
+          this.searchProducts();
+          this.getStockLocSelfList();
         })
         .catch(err => {
           console.log(err);
         });
     },
-    // 获取用户列表
-    getUserList() {
+    // 获取所有公司库存点
+    getStockLocSelfList() {
       this.$axios
-        .get(this.baseUrl + "/userList")
+        .get(this.baseUrl + "/stockLocList")
         .then(res => {
-          console.log("用户列表");
+          console.log("自己公司库存地列表");
           console.log(res);
-          this.userList = res.data;
-          this.userId = sessionStorage.getItem("userId");
-          this.searchProducts();
+          this.stockLocs = res.data;
+          if (this.stockLocs.length > 0) {
+            this.stockLocs.splice(0, 1);
+          }
         })
         .catch(err => {
           console.log(err);
         });
+    },
+    // 库存地名称匹配
+    stockReg(item) {
+      for (let i = 0; i < this.stockLocs.length; ++i) {
+        if (item == this.stockLocs[i].warehouseId)
+          return this.stockLocs[i].warehouseName;
+      }
+      return "";
     }
   }
 };
 </script>
 
 <style lang="scss" scoped>
-.handle-button {
-  color: #9695f3;
-  font-size: 16px;
-}
-
-thead,
-th,
-td {
-  font-weight: normal;
-  padding: 5px 10px;
-  margin-right: 100px;
-}
-
-tr {
-  margin-top: 30px;
-}
-
-td {
-  width: 100px;
-  font-size: 16px;
-}
-
-.onsale-top {
-  margin-top: 38px;
-  margin-left: 40px;
-
-  .onsale-top-radio {
-    margin-right: 80px;
-    font-size: 16px;
-    color: #000;
-  }
-
-  .el-input__inner {
-    width: 670px;
-    height: 40px;
-    -webkit-appearance: none;
-    background-color: #fff;
-    background-image: url("../../assets/imgs/search2.png");
-    background-size: 20px;
-    background-repeat: no-repeat;
-    background-position: 15px center;
-    border-radius: 30px;
-    border: 1px solid #dcdfe6;
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
-    color: #606266;
-    display: inline-block;
-    font-size: inherit;
-    line-height: 40px;
-    outline: 0;
-    padding: 0 0 0 45px;
-    -webkit-transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
-    transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
-    font-size: 15px;
-  }
+.sold-container {
+  padding: 20px;
+  margin-top: 20px;
+  background-color: #fff;
+  border-radius: 6px;
 }
 
 .th-style {
@@ -808,7 +831,7 @@ td {
 }
 
 .el-pager li.active {
-  color: #9695f3;
+  color: #409eff;
   cursor: pointer;
 }
 </style>

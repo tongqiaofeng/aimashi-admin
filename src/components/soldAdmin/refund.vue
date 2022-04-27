@@ -58,7 +58,7 @@
         <table border="0" cellspacing="0" cellpadding="0" width="100%">
           <tr>
             <th>退款申请时间</th>
-            <th>商品展示图</th>
+            <th>图片</th>
             <th>商品信息</th>
             <th>联系电话</th>
             <th>收货状态</th>
@@ -121,16 +121,8 @@
           </el-form-item>
         </el-form>
         <div slot="footer">
-          <el-button
-            @click="dialogRefundVisible = false"
-            style="width:100px;color:#9695f3;margin-right:10px;"
-            >取 消</el-button
-          >
-          <el-button
-            style="width:100px;background:#9695f3;color:#fff;"
-            @click="returnMoneySure"
-            >确 定
-          </el-button>
+          <el-button @click="dialogRefundVisible = false">取 消</el-button>
+          <el-button type="primary" @click="returnMoneySure">确 定 </el-button>
         </div>
       </el-dialog>
     </div>
@@ -266,7 +258,7 @@ export default {
       padding-bottom: 2px;
       margin-bottom: 40px;
       background-color: #fff;
-      border: 1px solid #9695f3;
+      border: 1px solid #409eff;
       border-radius: 5px;
 
       .every-top {
@@ -294,7 +286,7 @@ export default {
         }
 
         .handle-button {
-          background-color: #9695f3;
+          background-color: #409eff;
           color: #fff;
           font-size: 14px;
         }
@@ -302,7 +294,7 @@ export default {
 
       table {
         tr th {
-          background-color: #9695f3;
+          background-color: #409eff;
           color: #fff;
         }
 

@@ -1,7 +1,7 @@
 <template>
   <div style="margin-top: -20px;overflow: hidden;" id="onsaleContainer">
     <div class="onsale-container">
-      <!-- 售价未录入 -->
+      <!-- 成本未录入 -->
       <div v-if="pageSel == 0">
         <el-table :data="onSaleProducts" style="width: 100%" border>
           <el-table-column align="center" prop="productCode" label="货号">
@@ -145,7 +145,7 @@ export default {
           this.$store.state.baseUrl +
             "/noPriceList?page=" +
             this.page +
-            "&pageNum=10&flag=2"
+            "&pageNum=10&flag=1"
         )
         .then(res => {
           console.log(res);

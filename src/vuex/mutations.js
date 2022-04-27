@@ -20,3 +20,11 @@ export const userToken = (state, token) => {
     state.token = null
   }
 }
+
+export const userType = (state, type) => {
+  if (type) {
+    state.type = type
+  } else {
+    state.type = null
+  }
+}

@@ -3,8 +3,17 @@
     <div class="login-main">
       <div class="login-form">
         <div class="login-font">
-          <div class="font-01">HERMES</div>
-          <div class="font-02">ta的名字本身像极了一封吸引力十足的邀请函</div>
+          <div>
+            <img
+              style="width: 120px;height: 120px;object-fit: cover;"
+              src="../../assets/imgs/logo_black.png"
+            />
+          </div>
+          <div class="font-02">
+            愛馬仕後台管理系統
+          </div>
+          <!-- <div class="font-01">HERMES</div>
+          <div class="font-02">ta的名字本身像极了一封吸引力十足的邀请函</div> -->
         </div>
         <div class="username">
           <input
@@ -33,7 +42,11 @@
           />
         </div>
         <div class="login-btn">
-          <img src="../../assets/imgs/login-button.png" @click="handleLogin" />
+          <!-- <img src="../../assets/imgs/login-button.png" @click="handleLogin" /> -->
+          <!-- <el-button class="btn-self" type="primary" @click="handleLogin"
+            >登錄</el-button
+          > -->
+          <div class="btn-self" @click="handleLogin">登錄</div>
         </div>
       </div>
       <div class="right-img">
@@ -61,7 +74,7 @@ export default {
     });
   },
   methods: {
-    handleLogin(loginForm) {
+    handleLogin() {
       if (this.loginForm.username == "" || this.loginForm.password == "") {
         this.$message.warning({
           message: "用户名或密码不能为空 !",
@@ -91,20 +104,29 @@ export default {
                   duration: 2000
                 });
                 sessionStorage.setItem("userId", res.data.id);
-                sessionStorage.setItem("username", this.loginForm.username);
                 // 将用户角色和token放入sessionStorage
                 sessionStorage.setItem("role", res.data.role);
                 sessionStorage.setItem("token", res.data.token);
+                sessionStorage.setItem("type", res.data.type);
+                sessionStorage.setItem("companyId", res.data.companyId);
+                sessionStorage.setItem("currencyGlobal", res.data.currency);
+                sessionStorage.setItem(
+                  "isHeadCompanyAdmin",
+                  res.data.isHeadCompanyAdmin
+                );
+                sessionStorage.setItem("username", res.data.username);
+
                 // 将用户角色及token放入vuex
                 this.$store.dispatch("setRole", res.data.role);
                 this.$store.dispatch("setToken", res.data.token);
-                // this.$store.dispatch('setToken',res.data.token);
+                this.$store.dispatch("setType", res.data.type);
+
                 // 打印login状态
                 console.log(this.$store.state.isLogin);
                 this.$router.push("/home");
               } else {
                 this.$message.error({
-                  message: "啊偶，登录失败，请检查用户名或密码输入是否正确",
+                  message: "啊哦，登录失败，请检查用户名或密码输入是否正确",
                   showClose: true,
                   duration: 2000
                 });
@@ -170,34 +192,45 @@ export default {
       text-align: center;
 
       .login-font {
-        margin-top: 169px;
+        // margin-top: 169px;
+        margin-top: 60px;
         font-family: "Arial";
 
         .font-01 {
-          font-size: 48px;
+          font-size: 30px;
         }
 
         .font-02 {
           font-size: 20px;
-          color: #e0e0e0;
+          // color: #e0e0e0;
+          color: #26303c;
           font-style: italic;
         }
       }
 
       .user-input,
       .pass-input {
+        // width: 372px;
+        // height: 57px;
+        // padding-left: 20px;
+        // border: 1px solid #e0e0e0;
+        // border-radius: 60px;
+        // background: #f8f8f8;
+        // font-size: 18px;
+        // color: #797979;
+
         width: 372px;
-        height: 57px;
+        height: 50px;
         padding-left: 20px;
-        border: 1px solid #e0e0e0;
-        border-radius: 60px;
-        background: #f8f8f8;
-        font-size: 18px;
+        border: 0;
+        background-color: #f8f8f8;
+        outline: none;
+        font-size: 16px;
         color: #797979;
       }
 
       .username {
-        margin-top: 36px;
+        margin-top: 50px;
       }
 
       .password {
@@ -205,7 +238,26 @@ export default {
       }
 
       .login-btn {
-        margin-top: 26px;
+        margin-top: 60px;
+
+        img {
+          width: 372px;
+          height: 50px;
+        }
+
+        .btn-self {
+          width: 372px;
+          height: 50px;
+          line-height: 50px;
+          margin: 0 auto;
+          font-size: 16px;
+          color: #fff;
+          background: url("../../assets/imgs/aside.png") no-repeat;
+          background-size: 100% 100%;
+          border: 0;
+          outline: none;
+          cursor: pointer;
+        }
       }
     }
 
