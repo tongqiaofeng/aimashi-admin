@@ -341,6 +341,30 @@
             <el-form-item label="是否收款完成" prop="isReceiveCheck">
               <el-switch v-model="addDataConsign.isReceiveCheck"></el-switch>
             </el-form-item>
+            <el-form-item label="銷售人員" prop="sellerId">
+              <el-select
+                style="width: 300px;"
+                v-model="addDataConsign.sellerId"
+                placeholder="請選擇銷售人員"
+              >
+                <el-option
+                  v-for="item in sellerList"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
+                >
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="客戶類型" prop="customerType">
+              <el-autocomplete
+                style="width: 300px;"
+                v-model="addDataConsign.customerType"
+                :fetch-suggestions="queryCustomerTypeSearch"
+                placeholder="請選擇/輸入客戶類型"
+                @select="handleCustomerTypeSelect"
+              ></el-autocomplete>
+            </el-form-item>
             <el-form-item prop="companyId" label="接收公司">
               <el-select
                 style="width: 300px;"
@@ -500,7 +524,7 @@
                       placeholder="请输入"
                       v-model="scope.row.saleTotalHkPrice"
                       clearable
-                      @input="getSubPrice"
+                      @change="getNumber(scope.row)"
                     ></el-input>
                   </div>
                 </template>
@@ -525,7 +549,7 @@
             </el-table>
             <div>
               <p style="text-align: right;">
-                總金額：{{ formatNumberRgx(subTotal) }}
+                總金額：{{ formatNumberRgx(subTotal) + " " + currencyGlobal }}
               </p>
             </div>
           </div>
@@ -977,8 +1001,12 @@ export default {
         companyId: null,
         receiveWarehouseId: null,
         soldTime: "",
-        sellCurrencyId: ""
+        sellCurrencyId: "",
+        sellerId: "",
+        customerType: "公司"
       },
+      sellerList: [],
+      customerTypeList: [],
       addDataRules: {
         sold: [
           {
@@ -992,6 +1020,20 @@ export default {
             required: false,
             message: "請輸入賬單號",
             trigger: "blur"
+          }
+        ],
+        sellerId: [
+          {
+            required: true,
+            message: "請選擇銷售人員",
+            trigger: "change"
+          }
+        ],
+        customerType: [
+          {
+            required: true,
+            message: "請選擇客戶類型",
+            trigger: "change"
           }
         ],
         companyId: [
@@ -1137,6 +1179,7 @@ export default {
 
     this.getSellOrderList();
     this.getConsignmentWarehouseList();
+    this.getSellerAndCustomerType();
   },
   mounted() {
     this.getCompanyAndWarehouseList();
@@ -1161,6 +1204,48 @@ export default {
         .getElementById("salesHistoryContainer")
         .scrollIntoView({ behavior: "smooth" });
     },
+
+    // 获取销售人员及客户类型
+    getSellerAndCustomerType() {
+      this.$axios
+        .get(this.baseUrl + "/sellerCustomerTypeList")
+        .then(res => {
+          console.log("销售人员及客户类型列表");
+          console.log(res);
+          this.sellerList = res.data.sellerList;
+          this.customerTypeList = res.data.customerTypeList;
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+    // 客户类型輸入/匹配
+    queryCustomerTypeSearch(queryString, cb) {
+      console.log(typeof queryString);
+      let restaurants = this.customerTypeList;
+
+      for (let items of restaurants) {
+        items.value = items.name;
+      }
+
+      let results = queryString
+        ? restaurants.filter(this.createCustomerTypeFilter(queryString))
+        : restaurants;
+      // 调用 callback 返回建议列表的数据
+      cb(results);
+    },
+    createCustomerTypeFilter(queryString) {
+      return restaurant => {
+        return (
+          restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+        );
+      };
+    },
+    handleCustomerTypeSelect(item) {
+      console.log(item);
+      this.addDataConsign.customerType = item.value;
+    },
+
     gobackAdd() {
       this.pageSel = 0;
     },
@@ -1168,8 +1253,13 @@ export default {
     getSubPrice() {
       this.subTotal = 0;
       for (const item of this.sellStockList) {
-        this.subTotal += item.saleTotalHkPrice;
+        this.subTotal += Number(item.saleTotalHkPrice);
       }
+    },
+    // 金額處理
+    getNumber(item) {
+      item.saleTotalHkPrice = this.getPriceNum(item.saleTotalHkPrice);
+      this.getSubPrice();
     },
     // 撤銷銷售單
     cancelSales(item) {
@@ -1313,6 +1403,9 @@ export default {
         ? val.sellCurrencyId + ""
         : "";
 
+      this.addDataConsign.sellerId = val.sellerId;
+      this.addDataConsign.customerType = val.customerType;
+
       this.sellStockList = val.stockList;
       let list = this.sellStockList.map(item => {
         return {
@@ -1442,7 +1535,9 @@ export default {
           isReceiveCheck: this.addDataConsign.isReceiveCheck == false ? 0 : 1,
           receiveWarehouseId: this.addDataConsign.receiveWarehouseId,
           sellCurrencyId: this.addDataConsign.sellCurrencyId,
-          sellStockList: this.sellStockList
+          sellStockList: this.sellStockList,
+          sellerId: this.addDataConsign.sellerId,
+          customerType: this.addDataConsign.customerType
         })
         .then(res => {
           console.log("修改銷售單信息");

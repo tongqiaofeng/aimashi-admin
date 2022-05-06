@@ -331,12 +331,13 @@
           :append-to-body="true"
         >
           <div>
-            <el-form label-width="110px">
+            <el-form label-width="121px">
               <el-form-item label="库存状态" required>
                 <el-select
                   v-model="sold"
                   placeholder="请选择"
                   style="width:100%;"
+                  @change="soldChange"
                 >
                   <el-option
                     v-for="item in stateList"
@@ -467,13 +468,18 @@
                   <span>{{ currencyGlobal }}</span>
                 </div>
               </el-form-item>
+
               <el-form-item
                 :label="
                   sold == 8
                     ? '寄卖' + currencyFontRgx(currencyGlobal) + '金额'
                     : '出售' + currencyFontRgx(currencyGlobal) + '金额'
                 "
-                :required="isStock == 1 || sold == 8 ? true : false"
+                :required="
+                  isHeadConsigns == 0 && (isStock == 1 || sold == 8)
+                    ? true
+                    : false
+                "
                 v-if="sold == 3 || sold == 8"
               >
                 <div style="display: flex;">
@@ -493,6 +499,44 @@
                 </div>
               </el-form-item>
               <el-form-item
+                :label="'出售' + currencyFontRgx(headCurrency) + '金额'"
+                :required="isStock == 1 ? true : false"
+                v-if="sold == 3 && isHeadConsigns"
+              >
+                <div style="display: flex;">
+                  <el-input
+                    style="flex: 1;"
+                    v-model="headSellMoney"
+                    :placeholder="
+                      '请输入出售' +
+                        currencyFontRgx(headCurrency) +
+                        '金额，用于与总公司结算'
+                    "
+                  ></el-input>
+                </div>
+              </el-form-item>
+              <el-form-item
+                label="
+                销售人员
+              "
+                :required="isStock == 1 || sold == 8 ? true : false"
+                v-if="sold == 3 || sold == 8"
+              >
+                <el-select
+                  style="width: 100%;"
+                  v-model="sellerId"
+                  placeholder="请选择销售人员"
+                >
+                  <el-option
+                    v-for="item in sellerList"
+                    :key="item.id"
+                    :label="item.name"
+                    :value="item.id"
+                  >
+                  </el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item
                 label="客户姓名"
                 :required="isStock == 1 || sold == 2 ? true : false"
                 v-if="sold == 2 || sold == 3"
@@ -503,6 +547,21 @@
                   :fetch-suggestions="querySearch"
                   placeholder="请选择/输入客户姓名"
                   @select="handleSelect"
+                ></el-autocomplete>
+              </el-form-item>
+              <el-form-item
+                label="
+                客户类型
+              "
+                :required="isStock == 1 || sold == 8 ? true : false"
+                v-if="sold == 3 || sold == 8"
+              >
+                <el-autocomplete
+                  style="width: 100%;"
+                  v-model="customerType"
+                  :fetch-suggestions="queryCustomerTypeSearch"
+                  placeholder="请选择/输入客户类型"
+                  @select="handleCustomerTypeSelect"
                 ></el-autocomplete>
               </el-form-item>
               <el-form-item label="接收仓库" v-show="sold == 8" required>
@@ -771,28 +830,28 @@ export default {
           value: "1"
         },
         {
-          label: "客人预留",
-          value: "2"
-        },
-        {
           label: "已出售",
           value: "3"
-        },
-        {
-          label: "购入退货",
-          value: "6"
         },
         {
           label: "已寄卖",
           value: "8"
         },
         {
-          label: "遗失",
-          value: "7"
+          label: "客人预留",
+          value: "2"
+        },
+        {
+          label: "购入退货",
+          value: "6"
         },
         {
           label: "客人取回",
           value: "5"
+        },
+        {
+          label: "遗失",
+          value: "7"
         }
       ],
       dialogStateVisible: false,
@@ -811,25 +870,20 @@ export default {
           value: "1"
         },
         {
-          label: "客人预留",
-          value: "2"
-        },
-        {
           label: "已出售",
           value: "3"
         },
-        {
-          label: "购入退货",
-          value: "6"
-        },
-
         {
           label: "已寄卖",
           value: "8"
         },
         {
-          label: "遗失",
-          value: "7"
+          label: "客人预留",
+          value: "2"
+        },
+        {
+          label: "购入退货",
+          value: "6"
         },
         {
           label: "客人取回",
@@ -838,6 +892,10 @@ export default {
         {
           label: "客人寄卖",
           value: "9"
+        },
+        {
+          label: "遗失",
+          value: "7"
         }
       ],
       soldSel: "1",
@@ -849,6 +907,9 @@ export default {
       locUpdateId: null,
       saleLogHkPrice: "",
       saleTotalHkPrice: "",
+      headSellMoney: "",
+      isHeadConsigns: 0,
+      headCurrency: "",
       buyAllPrice: undefined,
       totalHkPrice: undefined,
       logHkPrice: undefined,
@@ -860,7 +921,12 @@ export default {
       isUpdateOrDel: null,
 
       companyId: null,
-      currencyGlobal: ""
+      currencyGlobal: "",
+
+      sellerId: "",
+      sellerList: [],
+      customerTypeList: [],
+      customerType: ""
     };
   },
   created() {
@@ -869,8 +935,16 @@ export default {
     this.getStockLocList();
     this.getCustomerList();
     this.getCompanyAndWarehouseList();
+    this.getSellerAndCustomerType();
   },
   methods: {
+    soldChange() {
+      if (this.sold == 8) {
+        this.customerType = "公司";
+      } else {
+        this.customerType = "";
+      }
+    },
     // 获取客户列表
     getCustomerList() {
       this.$axios
@@ -910,6 +984,48 @@ export default {
       console.log(item);
       this.customer = item.value;
     },
+
+    // 获取销售人员及客户类型
+    getSellerAndCustomerType() {
+      this.$axios
+        .get(this.baseUrl + "/sellerCustomerTypeList")
+        .then(res => {
+          console.log("销售人员及客户类型列表");
+          console.log(res);
+          this.sellerList = res.data.sellerList;
+          this.customerTypeList = res.data.customerTypeList;
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+    // 客户类型輸入/匹配
+    queryCustomerTypeSearch(queryString, cb) {
+      console.log(typeof queryString);
+      let restaurants = this.customerTypeList;
+
+      for (let items of restaurants) {
+        items.value = items.name;
+      }
+
+      let results = queryString
+        ? restaurants.filter(this.createCustomerTypeFilter(queryString))
+        : restaurants;
+      // 调用 callback 返回建议列表的数据
+      cb(results);
+    },
+    createCustomerTypeFilter(queryString) {
+      return restaurant => {
+        return (
+          restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+        );
+      };
+    },
+    handleCustomerTypeSelect(item) {
+      console.log(item);
+      this.customerType = item.value;
+    },
+
     // 出售为港币
     isSellHKD() {
       if (this.sellCurrencyId == 2) {
@@ -1053,6 +1169,12 @@ export default {
         this.sellPayList = item.sellPaymentList;
         this.saleLogHkPrice = item.saleLogHkPrice;
         this.saleTotalHkPrice = item.saleTotalHkPrice;
+        this.headSellMoney = item.headSellMoney == 0 ? "" : item.headSellMoney;
+        this.isHeadConsigns =
+          item.isHeadConsigns == null || item.isHeadConsigns == -1
+            ? 0
+            : item.isHeadConsigns;
+        this.headCurrency = item.headCurrency;
 
         this.salePaymentList = item.salePaymentList;
         this.isUpdateOrDel = item.isUpdateOrDel;
@@ -1076,30 +1198,12 @@ export default {
         } else {
           this.receiveWarehouseId = null;
         }
+        this.sellerId = item.sellerId;
+        this.customerType = item.customerType;
 
         this.dialogStateVisible = true;
       }
     },
-    /*stateChange() {
-      this.estimateTime = "";
-      this.createTime = "";
-      this.stockOutTime = "";
-      this.bill = "";
-      this.isPayCheck = false;
-      this.isReceiveCheck = false;
-      if (this.sold != 2 && this.sold != 3) {
-        this.priceTran = "";
-        this.customer = "";
-        this.soldTime = "";
-        this.sellCurrencyId = "";
-        this.sellPayList = [];
-        this.saleLogHkPrice = "";
-        this.saleTotalHkPrice = "";
-      } else {
-        this.soldTime = "";
-        this.isStock = 0;
-      }
-    },*/
     dataCheck() {
       // console.log(this.sold);
       if (this.sold == 1) {
@@ -1130,9 +1234,18 @@ export default {
           this.stockOutTime == null ||
           this.bill == "" ||
           this.bill == null ||
-          this.saleTotalHkPrice == "" ||
-          this.saleTotalHkPrice == undefined ||
-          this.saleTotalHkPrice == null
+          ((this.saleTotalHkPrice == "" ||
+            this.saleTotalHkPrice == undefined ||
+            this.saleTotalHkPrice == null) &&
+            this.isHeadConsigns == 0) ||
+          ((this.headSellMoney == "" ||
+            this.headSellMoney == undefined ||
+            this.headSellMoney == null) &&
+            this.isHeadConsigns == 1) ||
+          this.sellerId == "" ||
+          this.sellerId == null ||
+          this.customerType == "" ||
+          this.customerType == null
         ) {
           this.$message.error({
             message: "数据不能为空，请检查数据填写",
@@ -1176,7 +1289,11 @@ export default {
           this.receiveWarehouseId == "" ||
           this.bill == "" ||
           this.saleTotalHkPrice == "" ||
-          this.saleTotalHkPrice == undefined
+          this.saleTotalHkPrice == undefined ||
+          this.sellerId == "" ||
+          this.sellerId == null ||
+          this.customerType == "" ||
+          this.customerType == null
         ) {
           this.$message.error({
             message: "数据不能为空，请检查数据填写",
@@ -1214,9 +1331,12 @@ export default {
               note: this.note,
               saleLogHkPrice: this.saleLogHkPrice,
               saleTotalHkPrice: this.saleTotalHkPrice,
+              headSellMoney: this.headSellMoney,
               isReceiveCheck: this.isReceiveCheck == false ? 0 : 1,
               receiveWarehouseId:
-                this.sold == 8 ? this.receiveWarehouseId[1] : null
+                this.sold == 8 ? this.receiveWarehouseId[1] : null,
+              sellerId: this.sellerId,
+              customerType: this.customerType
             })
             .then(res => {
               console.log(res);

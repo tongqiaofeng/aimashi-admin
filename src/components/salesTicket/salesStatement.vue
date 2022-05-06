@@ -674,8 +674,8 @@ export default {
       let yList = [];
       let xList = [];
 
-      this.pageSel = 1;
       if (this.dataSalesHistoryList.length > 0) {
+        this.pageSel = 1;
         for (let item of this.dataSalesHistoryList) {
           xList.push(item.soldTime);
           yList.push(item.sellTotalHkPrice);
@@ -717,6 +717,10 @@ export default {
           window.addEventListener("resize", () => {
             myChart.resize();
           });
+        });
+      } else {
+        this.$message.warning({
+          message: "該商品暫無歷史售價"
         });
       }
     },

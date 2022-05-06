@@ -41,6 +41,21 @@
             <el-form-item label="是否收款完成" prop="isReceiveCheck">
               <el-switch v-model="addDataConsign.isReceiveCheck"></el-switch>
             </el-form-item>
+            <el-form-item label="銷售人員" prop="sellerId">
+              <el-select
+                style="width: 300px;"
+                v-model="addDataConsign.sellerId"
+                placeholder="請選擇銷售人員"
+              >
+                <el-option
+                  v-for="item in sellerList"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
+                >
+                </el-option>
+              </el-select>
+            </el-form-item>
             <el-form-item label="客戶姓名" prop="customer">
               <el-autocomplete
                 style="width: 300px;"
@@ -48,6 +63,15 @@
                 :fetch-suggestions="querySearch"
                 placeholder="請選擇/輸入客戶姓名"
                 @select="handleSelect"
+              ></el-autocomplete>
+            </el-form-item>
+            <el-form-item label="客戶類型" prop="customerType">
+              <el-autocomplete
+                style="width: 300px;"
+                v-model="addDataConsign.customerType"
+                :fetch-suggestions="queryCustomerTypeSearch"
+                placeholder="請選擇/輸入客戶類型"
+                @select="handleCustomerTypeSelect"
               ></el-autocomplete>
             </el-form-item>
             <el-form-item prop="soldTime" label="出售日期">
@@ -127,7 +151,7 @@
               <el-table-column
                 align="center"
                 prop="saleLogHkPrice"
-                :label="'物流費/手續費('+currencyGlobal+')'"
+                :label="'物流費/手續費(' + currencyGlobal + ')'"
               >
                 <template slot-scope="scope">
                   <div>
@@ -144,8 +168,12 @@
                 <!-- eslint-disable-next-line -->
                 <template slot="header" slot-scope="scope">
                   <div>
-                    <span>出售{{currencyFontRgx(currencyGlobal)}}金額</span>
-                    <span v-show="addDataConsign.sold == 4" style="color: red;"
+                    <span>出售{{ currencyFontRgx(currencyGlobal) }}金額</span>
+                    <span
+                      v-show="
+                        addDataConsign.sold == 4 && getIsHeadConsigns() == 0
+                      "
+                      style="color: red;"
                       >*</span
                     >
                   </div>
@@ -157,11 +185,40 @@
                       placeholder="请输入"
                       v-model="scope.row.saleTotalHkPrice"
                       clearable
-                      @input="getSubPrice"
+                      @change="getNumber(scope.row)"
                     ></el-input>
                   </div>
                 </template>
               </el-table-column>
+
+              <el-table-column
+                align="center"
+                prop="saleTotalHkPrice"
+                v-if="getIsHeadConsigns()"
+              >
+                <!-- eslint-disable-next-line -->
+                <template slot="header" slot-scope="scope">
+                  <div>
+                    <span
+                      >出售{{ currencyFontRgx(getHeadCurrency()) }}金額</span
+                    >
+                    <span v-show="addDataConsign.sold == 4" style="color: red;"
+                      >*</span
+                    >
+                  </div>
+                </template>
+                <template slot-scope="scope">
+                  <div>
+                    <el-input
+                      type="text"
+                      placeholder="请输入"
+                      v-model="scope.row.headSellMoney"
+                      clearable
+                    ></el-input>
+                  </div>
+                </template>
+              </el-table-column>
+
               <el-table-column
                 width="250px"
                 align="center"
@@ -182,7 +239,7 @@
             </el-table>
             <div>
               <p style="text-align: right;">
-                總金額：{{ formatNumberRgx(subTotal) }}
+                總金額：{{ formatNumberRgx(subTotal) + " " + currencyGlobal }}
               </p>
             </div>
           </div>
@@ -239,22 +296,32 @@
             :row-key="getRowKeys"
             tooltip-effect="dark"
             border
-            @selection-change="handleSelectionChange"
           >
-            <el-table-column
-              type="selection"
-              :reserve-selection="true"
-              width="55"
-              align="center"
-            >
+            <el-table-column align="center" label="">
+              <template slot-scope="scope">
+                <div>
+                  <input
+                    class="selBtn"
+                    type="checkbox"
+                    v-model="hobby"
+                    :value="scope.row"
+                    @change="checkedChange($event, scope.row)"
+                  />
+                </div>
+              </template>
             </el-table-column>
             <el-table-column align="center" prop="productCode" label="貨號">
             </el-table-column>
-            <el-table-column align="center" prop="pic" label="圖片">
+            <el-table-column
+              width="100px"
+              align="center"
+              prop="pic"
+              label="圖片"
+            >
               <template slot-scope="scope">
                 <div>
                   <el-image
-                    style="width: 100px; height: 100px"
+                    style="width: 80px; height: 80px"
                     :src="scope.row.pic.trim()"
                     :preview-src-list="bigImg(scope.row.pics)"
                     :z-index="5000"
@@ -277,7 +344,7 @@
                     :content="scope.row.name"
                     placement="bottom"
                   >
-                    <div class="font-warp">{{ scope.row.name }}</div>
+                    <div class="font-warp">{{ scope.row.headCurrency }}</div>
                   </el-tooltip>
                 </div>
               </template>
@@ -337,8 +404,12 @@ export default {
         customer: "",
         soldTime: "",
         stockOutTime: "",
-        sellCurrencyId: ""
+        sellCurrencyId: "",
+        sellerId: "",
+        customerType: ""
       },
+      sellerList: [],
+      customerTypeList: [],
       addDataRules: {
         sold: [
           {
@@ -354,10 +425,24 @@ export default {
             trigger: "blur"
           }
         ],
+        sellerId: [
+          {
+            required: false,
+            message: "請選擇銷售人員",
+            trigger: "change"
+          }
+        ],
         customer: [
           {
             required: false,
             message: "請選擇客戶",
+            trigger: "change"
+          }
+        ],
+        customerType: [
+          {
+            required: false,
+            message: "請選擇客戶類型",
             trigger: "change"
           }
         ],
@@ -418,7 +503,8 @@ export default {
       customerList: [],
       subTotal: 0,
       companyIdZong: null,
-      currencyGlobal: ""
+      currencyGlobal: "",
+      hobby: []
     };
   },
   created() {
@@ -427,6 +513,7 @@ export default {
     this.companyIdZong = sessionStorage.getItem("companyId");
     this.getStockLocList();
     this.getNotSoldList();
+    this.getSellerAndCustomerType();
   },
   mounted() {
     this.getCustomerList();
@@ -439,15 +526,28 @@ export default {
         this.subTotal += Number(item.saleTotalHkPrice);
       }
     },
+    getIsHeadConsigns() {
+      for (const item of this.sellStockList) {
+        if (item.isHeadConsigns == 1) return 1;
+      }
+      return 0;
+    },
+    getHeadCurrency() {
+      for (const item of this.sellStockList) {
+        if (item.headCurrency.length == 3) return item.headCurrency;
+      }
+      return "";
+    },
+    // 金額處理
+    getNumber(item) {
+      item.saleTotalHkPrice = this.getPriceNum(item.saleTotalHkPrice);
+      this.getSubPrice();
+    },
     // 选择出售包包
-    handleSelectionChange(val) {
-      console.log("選中商品");
-      console.log(val);
-      this.sellStockList = val;
-      console.log(this.sellStockList);
-
-      let list = this.sellStockList.map(item => {
-        return {
+    checkedChange(e, item) {
+      console.log("22222222222=============");
+      if (e.target.checked == true) {
+        this.sellStockList.push({
           stockId: item.id,
           productCode: item.productCode,
           pic: item.pic,
@@ -456,14 +556,58 @@ export default {
           priceTran: "",
           saleLogHkPrice: "",
           saleTotalHkPrice: "",
-          note: item.note
-        };
-      });
-      this.sellStockList = list;
+          note: item.note,
+          headSellMoney: "",
+          isHeadConsigns: item.isHeadConsigns,
+          headCurrency: item.headCurrency
+        });
+      } else if (e.target.checked == false) {
+        for (let index in this.sellStockList) {
+          if (this.sellStockList[index].stockId == item.id) {
+            this.sellStockList.splice(index, 1);
+          }
+        }
+      }
+      this.getSubPrice();
+
+      console.log("99000----------");
       console.log(this.sellStockList);
+    },
+    dataCheck() {
+      for (const item of this.sellStockList) {
+        if (item.isHeadConsigns == 1 && item.headSellMoney == "") {
+          this.$message.error({
+            message:
+              "貨號 " +
+              item.productCode +
+              " 請輸入出售" +
+              this.currencyFontRgx(this.getHeadCurrency()) +
+              "金額，用於與總公司結算",
+            showClose: true,
+            duration: 2000
+          });
+          return 1;
+        }
+        if (item.isHeadConsigns == -1 && item.saleTotalHkPrice == "") {
+          this.$message.error({
+            message:
+              "貨號 " +
+              item.productCode +
+              " 請輸入出售" +
+              this.currencyFontRgx(this.currencyGlobal) +
+              "金額",
+            showClose: true,
+            duration: 2000
+          });
+          return 1;
+        }
+      }
+
+      return 0;
     },
     // 提交銷售單信息
     submitSales(formName) {
+      console.log(this.sellStockList);
       if (this.sellStockList.length == 0) {
         this.$message.error({
           message: "請選擇銷售商品",
@@ -482,17 +626,8 @@ export default {
               );
             });
             if (this.addDataConsign.sold == 4) {
-              let arr = this.sellStockList.map(item => {
-                return item.saleTotalHkPrice;
-              });
-              if (!arr.includes("")) {
+              if (this.dataCheck() != 1) {
                 this.submitRequest();
-              } else {
-                this.$message.error({
-                  message: "請填寫出售"+this.currencyFontRgx(this.currencyGlobal)+"金額",
-                  showClose: true,
-                  duration: 2000
-                });
               }
             } else {
               this.submitRequest();
@@ -511,8 +646,7 @@ export default {
         .post(this.$store.state.baseCompanyUrl + "/sell/sellOrderSave", {
           sold: this.addDataConsign.sold,
           bill: this.addDataConsign.bill,
-          customer:
-            this.addDataConsign.sold == 8 ? null : this.addDataConsign.customer,
+          customer: this.addDataConsign.customer,
           soldTime: this.addDataConsign.soldTime,
           stockOutTime:
             this.addDataConsign.sold == 4
@@ -520,7 +654,9 @@ export default {
               : null,
           isReceiveCheck: this.addDataConsign.isReceiveCheck == false ? 0 : 1,
           sellCurrencyId: this.addDataConsign.sellCurrencyId,
-          sellStockList: this.sellStockList
+          sellStockList: this.sellStockList,
+          sellerId: this.addDataConsign.sellerId,
+          customerType: this.addDataConsign.customerType
         })
         .then(res => {
           console.log("添加銷售單");
@@ -579,18 +715,64 @@ export default {
       console.log(item);
       this.addDataConsign.customer = item.value;
     },
+
+    // 获取销售人员及客户类型
+    getSellerAndCustomerType() {
+      this.$axios
+        .get(this.baseUrl + "/sellerCustomerTypeList")
+        .then(res => {
+          console.log("销售人员及客户类型列表");
+          console.log(res);
+          this.sellerList = res.data.sellerList;
+          this.customerTypeList = res.data.customerTypeList;
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+    // 客户类型輸入/匹配
+    queryCustomerTypeSearch(queryString, cb) {
+      console.log(typeof queryString);
+      let restaurants = this.customerTypeList;
+
+      for (let items of restaurants) {
+        items.value = items.name;
+      }
+
+      let results = queryString
+        ? restaurants.filter(this.createCustomerTypeFilter(queryString))
+        : restaurants;
+      // 调用 callback 返回建议列表的数据
+      cb(results);
+    },
+    createCustomerTypeFilter(queryString) {
+      return restaurant => {
+        return (
+          restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+        );
+      };
+    },
+    handleCustomerTypeSelect(item) {
+      console.log(item);
+      this.addDataConsign.customerType = item.value;
+    },
+
     stateChange() {
       console.log(this.addDataConsign.sold);
       if (this.addDataConsign.sold == 3) {
         console.log("33333333");
         // this.addDataRules.bill[0].required = false;
         this.addDataRules.customer[0].required = false;
+        this.addDataRules.sellerId[0].required = false;
+        this.addDataRules.customerType[0].required = false;
         this.addDataRules.soldTime[0].required = false;
         this.addDataRules.stockOutTime[0].required = false;
       } else if (this.addDataConsign.sold == 4) {
         console.log("4444444444");
         // this.addDataRules.bill[0].required = true;
         this.addDataRules.customer[0].required = true;
+        this.addDataRules.sellerId[0].required = true;
+        this.addDataRules.customerType[0].required = true;
         this.addDataRules.soldTime[0].required = true;
         this.addDataRules.stockOutTime[0].required = true;
       }
@@ -653,6 +835,12 @@ export default {
       this.page = val;
       console.log(this.page);
       this.getNotSoldList();
+
+      let selectedIs = document.getElementsByClassName("selBtn");
+      for (let i = 0; i < selectedIs.length; i++) {
+        console.log(selectedIs[i].checked);
+        // selectedIs[i].checked = false;
+      }
     },
     radioChange() {
       this.page = 1;
@@ -705,12 +893,18 @@ export default {
   margin-top: 20px;
   border-radius: 6px;
 
+  .selBtn {
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+  }
+
   .sales-ticket-main {
     display: flex;
     justify-content: space-between;
 
     .sales-ticket-left {
-      width: 53%;
+      width: 55%;
       padding: 20px;
       margin-right: 15px;
       background-color: #fff;
@@ -718,7 +912,7 @@ export default {
     }
 
     .sales-ticket-right {
-      width: 45%;
+      width: 40%;
       padding: 20px;
       background-color: #fff;
       border-radius: 6px;

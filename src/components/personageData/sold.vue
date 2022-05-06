@@ -131,7 +131,7 @@
           :append-to-body="false"
         >
           <div>
-            <el-form label-width="110px">
+            <el-form label-width="121px">
               <el-form-item label="库存状态" required>
                 <el-select
                   v-model="sold"
@@ -217,7 +217,43 @@
                   ></el-input>
                 </div>
               </el-form-item>
-
+              <el-form-item
+                :label="'出售' + currencyFontRgx(headCurrency) + '金额'"
+                :required="sold == 3 ? false : true"
+                v-if="isHeadConsigns == 1"
+              >
+                <div style="display: flex;">
+                  <el-input
+                    style="flex: 1;"
+                    v-model="headSellMoney"
+                    :placeholder="
+                      '请输入出售' +
+                        currencyFontRgx(headCurrency) +
+                        '金额，用于与总公司结算'
+                    "
+                  ></el-input>
+                </div>
+              </el-form-item>
+              <el-form-item
+                label="
+                销售人员
+              "
+                :required="sold == 3 ? false : true"
+              >
+                <el-select
+                  style="width: 100%;"
+                  v-model="sellerId"
+                  placeholder="请选择销售人员"
+                >
+                  <el-option
+                    v-for="item in sellerList"
+                    :key="item.id"
+                    :label="item.name"
+                    :value="item.id"
+                  >
+                  </el-option>
+                </el-select>
+              </el-form-item>
               <el-form-item
                 label="客户姓名"
                 :required="sold == 3 ? false : true"
@@ -228,6 +264,20 @@
                   :fetch-suggestions="querySearch"
                   placeholder="请选择/输入客户姓名"
                   @select="handleSelect"
+                ></el-autocomplete>
+              </el-form-item>
+              <el-form-item
+                label="
+                客户类型
+              "
+                :required="sold == 3 ? false : true"
+              >
+                <el-autocomplete
+                  style="width: 100%;"
+                  v-model="customerType"
+                  :fetch-suggestions="queryCustomerTypeSearch"
+                  placeholder="请选择/输入客户类型"
+                  @select="handleCustomerTypeSelect"
                 ></el-autocomplete>
               </el-form-item>
               <el-form-item label="出库时间" required v-if="sold == 4">
@@ -475,19 +525,28 @@ export default {
 
       saleLogHkPrice: "",
       saleTotalHkPrice: "",
+      headSellMoney: "",
+      isHeadConsigns: 0,
+      headCurrency: "",
       isReceiveCheck: false,
       sellPaymentList: [],
 
       isUpdateOrDel: null,
       updateId: null,
       pageSel: 0,
-      currencyGlobal: ""
+      currencyGlobal: "",
+
+      sellerId: "",
+      sellerList: [],
+      customerTypeList: [],
+      customerType: ""
     };
   },
   created() {
     this.currencyGlobal = sessionStorage.getItem("currencyGlobal");
     this.getStockLocList();
     this.getCustomerList();
+    this.getSellerAndCustomerType();
   },
   methods: {
     // 编辑
@@ -547,6 +606,48 @@ export default {
       console.log(item);
       this.customer = item.value;
     },
+
+    // 获取销售人员及客户类型
+    getSellerAndCustomerType() {
+      this.$axios
+        .get(this.baseUrl + "/sellerCustomerTypeList")
+        .then(res => {
+          console.log("销售人员及客户类型列表");
+          console.log(res);
+          this.sellerList = res.data.sellerList;
+          this.customerTypeList = res.data.customerTypeList;
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+    // 客户类型輸入/匹配
+    queryCustomerTypeSearch(queryString, cb) {
+      console.log(typeof queryString);
+      let restaurants = this.customerTypeList;
+
+      for (let items of restaurants) {
+        items.value = items.name;
+      }
+
+      let results = queryString
+        ? restaurants.filter(this.createCustomerTypeFilter(queryString))
+        : restaurants;
+      // 调用 callback 返回建议列表的数据
+      cb(results);
+    },
+    createCustomerTypeFilter(queryString) {
+      return restaurant => {
+        return (
+          restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+        );
+      };
+    },
+    handleCustomerTypeSelect(item) {
+      console.log(item);
+      this.customerType = item.value;
+    },
+
     // 出售为港币
     isSellHKD() {
       if (this.sellCurrencyId == 2) {
@@ -590,6 +691,9 @@ export default {
         this.note = item.note;
         this.saleLogHkPrice = item.saleLogHkPrice;
         this.saleTotalHkPrice = item.saleTotalHkPrice;
+        this.headSellMoney = item.headSellMoney == 0 ? "" : item.headSellMoney;
+        this.isHeadConsigns = item.isHeadConsigns;
+        this.headCurrency = item.headCurrency;
 
         this.sellPaymentList = item.sellPaymentList;
         this.isUpdateOrDel = item.isUpdateOrDel;
@@ -598,6 +702,8 @@ export default {
           item.isReceiveCheck == 0 || item.isReceiveCheck == null
             ? false
             : true;
+        this.sellerId = item.sellerId;
+        this.customerType = item.customerType;
 
         this.dialogStateVisible = true;
       }
@@ -623,7 +729,15 @@ export default {
             this.bill == null ||
             this.saleTotalHkPrice == "" ||
             this.saleTotalHkPrice == undefined ||
-            this.saleTotalHkPrice == null
+            this.saleTotalHkPrice == null ||
+            ((this.headSellMoney == "" ||
+              this.headSellMoney == undefined ||
+              this.headSellMoney == null) &&
+              this.isHeadConsigns == 1) ||
+            this.sellerId == "" ||
+            this.sellerId == null ||
+            this.customerType == "" ||
+            this.customerType == null
           ) {
             this.$message.error({
               message: "数据不能为空，请检查数据填写",
@@ -664,7 +778,10 @@ export default {
               note: this.note,
               saleLogHkPrice: this.saleLogHkPrice,
               saleTotalHkPrice: this.saleTotalHkPrice,
-              isReceiveCheck: this.isReceiveCheck == false ? 0 : 1
+              headSellMoney: this.headSellMoney,
+              isReceiveCheck: this.isReceiveCheck == false ? 0 : 1,
+              sellerId: this.sellerId,
+              customerType: this.customerType
             })
             .then(res => {
               console.log(res);

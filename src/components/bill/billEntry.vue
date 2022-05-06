@@ -714,79 +714,25 @@ export default {
     },
     // 提交數據
     submitData() {
-      if (
-        this.isClick == true &&
-        this.billData.stockList[0].productCode != ""
-      ) {
-        this.$message.error({
-          message: "有貨號查詢產品描述失敗，請檢查貨號是否正確",
-          showClose: true,
-          duration: 5000
-        });
-      } else {
-        this.billData.id = null;
-        this.isKong();
-        if (this.productCodeIsKong == false) {
-          console.log("通過");
-          this.submitFormData();
-        } else {
-          console.log("不通過");
-          if (this.billData.stockList.length == 0) {
-            this.billData.stockList = [
-              {
-                stockId: null,
-                productCode: "",
-                money: this.billData.money,
-                totalHkPrice: this.billData.totalHkPrice,
-                saleTotalHkMoney: 0
-              }
-            ];
-          }
-        }
-      }
-    },
-    // 确定提交数据
-    submitFormData() {
       this.$refs["billForm"].validate(valid => {
         if (valid) {
-          this.$axios
-            .post(this.baseUrl + "/billSave", this.billData)
-            .then(res => {
-              console.log("提交賬單信息");
-              console.log(res);
-              if (res.status === 200) {
-                this.$message.success({
-                  message: "賬單錄入成功",
-                  showClose: true,
-                  duration: 2000
-                });
-
-                let name = this.billData.personId;
-
-                this.$refs.billForm.resetFields();
-                this.billData.currencyId = "";
-                this.billData.totalToHkRate = "";
-                this.billData.stockList = [
-                  {
-                    stockId: null,
-                    productCode: "",
-                    money: "",
-                    totalHkPrice: "",
-                    saleTotalHkMoney: 0
-                  }
-                ];
-
-                this.billData.personId = name;
-
-                this.getBillList();
-
-                document
-                  .getElementById("billEntryContainer")
-                  .scrollIntoView({ behavior: "smooth" });
-              }
-            })
-            .catch(err => {
-              console.log(err);
+          if (
+            this.isClick == true &&
+            this.billData.stockList[0].productCode != ""
+          ) {
+            this.$message.error({
+              message: "有貨號查詢產品描述失敗，請檢查貨號是否正確",
+              showClose: true,
+              duration: 5000
+            });
+          } else {
+            this.billData.id = null;
+            this.isKong();
+            if (this.productCodeIsKong == false) {
+              console.log("通過");
+              this.submitFormData();
+            } else {
+              console.log("不通過");
               if (this.billData.stockList.length == 0) {
                 this.billData.stockList = [
                   {
@@ -798,17 +744,71 @@ export default {
                   }
                 ];
               }
-              this.$message.error({
-                message: err.data.status,
-                showClose: true,
-                duration: 3000
-              });
-            });
+            }
+          }
         } else {
           console.log("error submit!!");
           return false;
         }
       });
+    },
+    // 确定提交数据
+    submitFormData() {
+      this.$axios
+        .post(this.baseUrl + "/billSave", this.billData)
+        .then(res => {
+          console.log("提交賬單信息");
+          console.log(res);
+          if (res.status === 200) {
+            this.$message.success({
+              message: "賬單錄入成功",
+              showClose: true,
+              duration: 2000
+            });
+
+            let name = this.billData.personId;
+
+            this.$refs.billForm.resetFields();
+            this.billData.currencyId = "";
+            this.billData.totalToHkRate = "";
+            this.billData.stockList = [
+              {
+                stockId: null,
+                productCode: "",
+                money: "",
+                totalHkPrice: "",
+                saleTotalHkMoney: 0
+              }
+            ];
+
+            this.billData.personId = name;
+
+            this.getBillList();
+
+            document
+              .getElementById("billEntryContainer")
+              .scrollIntoView({ behavior: "smooth" });
+          }
+        })
+        .catch(err => {
+          console.log(err);
+          if (this.billData.stockList.length == 0) {
+            this.billData.stockList = [
+              {
+                stockId: null,
+                productCode: "",
+                money: this.billData.money,
+                totalHkPrice: this.billData.totalHkPrice,
+                saleTotalHkMoney: 0
+              }
+            ];
+          }
+          this.$message.error({
+            message: err.data.status,
+            showClose: true,
+            duration: 3000
+          });
+        });
     },
     // 驗證數據
     isKong() {

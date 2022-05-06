@@ -16,16 +16,6 @@
                 end-placeholder="結束日期"
               >
               </el-date-picker>
-              <!-- <el-date-picker
-                v-model="time"
-                type="monthrange"
-                range-separator="至"
-                format="yyyy-MM"
-                value-format="yyyy-MM"
-                start-placeholder="開始日期"
-                end-placeholder="結束日期"
-              >
-              </el-date-picker> -->
             </el-form-item>
             <el-form-item label="賬戶">
               <el-select
@@ -1300,62 +1290,24 @@ export default {
     },
     // 確定修改
     updateBillSure() {
-      if (
-        this.isClick == true &&
-        this.billData.stockList[0].productCode != ""
-      ) {
-        this.$message.error({
-          message: "有貨號查詢產品描述失敗，請檢查貨號是否正確",
-          showClose: true,
-          duration: 5000
-        });
-      } else {
-        this.isKong();
-        if (!this.productCodeIsKong) {
-          console.log("通過");
-          this.updateData();
-        } else {
-          console.log("不通過");
-          if (this.billData.stockList.length == 0) {
-            this.billData.stockList = [
-              {
-                stockId: null,
-                productCode: "",
-                money: this.billData.money,
-                totalHkPrice: this.billData.totalHkPrice,
-                saleTotalHkMoney: 0
-              }
-            ];
-          }
-        }
-      }
-    },
-    updateData() {
       this.$refs["billForm"].validate(valid => {
         if (valid) {
-          this.$axios
-            .post(this.baseUrl + "/billSave", this.billData)
-            .then(res => {
-              console.log("修改賬單信息");
-              console.log(res);
-              if (res.status === 200) {
-                this.$message.success({
-                  message: "賬單信息修改成功",
-                  showClose: true,
-                  duration: 2000
-                });
-
-                this.pageSel = 0;
-                this.page = 1;
-                this.getBillList();
-
-                document
-                  .getElementById("billReportContainer")
-                  .scrollIntoView({ behavior: "smooth" });
-              }
-            })
-            .catch(err => {
-              console.log(err);
+          if (
+            this.isClick == true &&
+            this.billData.stockList[0].productCode != ""
+          ) {
+            this.$message.error({
+              message: "有貨號查詢產品描述失敗，請檢查貨號是否正確",
+              showClose: true,
+              duration: 5000
+            });
+          } else {
+            this.isKong();
+            if (!this.productCodeIsKong) {
+              console.log("通過");
+              this.updateData();
+            } else {
+              console.log("不通過");
               if (this.billData.stockList.length == 0) {
                 this.billData.stockList = [
                   {
@@ -1367,17 +1319,55 @@ export default {
                   }
                 ];
               }
-              this.$message.error({
-                message: err.data.status,
-                showClose: true,
-                duration: 3000
-              });
-            });
+            }
+          }
         } else {
           console.log("error submit!!");
           return false;
         }
       });
+    },
+    updateData() {
+      this.$axios
+        .post(this.baseUrl + "/billSave", this.billData)
+        .then(res => {
+          console.log("修改賬單信息");
+          console.log(res);
+          if (res.status === 200) {
+            this.$message.success({
+              message: "賬單信息修改成功",
+              showClose: true,
+              duration: 2000
+            });
+
+            this.pageSel = 0;
+            this.page = 1;
+            this.getBillList();
+
+            document
+              .getElementById("billReportContainer")
+              .scrollIntoView({ behavior: "smooth" });
+          }
+        })
+        .catch(err => {
+          console.log(err);
+          if (this.billData.stockList.length == 0) {
+            this.billData.stockList = [
+              {
+                stockId: null,
+                productCode: "",
+                money: this.billData.money,
+                totalHkPrice: this.billData.totalHkPrice,
+                saleTotalHkMoney: 0
+              }
+            ];
+          }
+          this.$message.error({
+            message: err.data.status,
+            showClose: true,
+            duration: 3000
+          });
+        });
     },
     // 删除账单
     delBill(row, column) {
@@ -1533,8 +1523,8 @@ export default {
               this.saleHkMoneyTotal +
               this.currencyGlobal +
               " ,您的轉賬金額為：" +
-              this.currencyGlobal +
               this.billData.totalHkPrice +
+              this.currencyGlobal +
               " ，兩者不相等，是否確定繼續提交？";
             this.$confirm(msg, "提示", {
               confirmButtonText: "確定",

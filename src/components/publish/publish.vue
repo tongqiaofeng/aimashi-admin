@@ -546,6 +546,27 @@
               </div>
             </el-form-item>
             <el-form-item
+              label="
+                销售人员
+              "
+              :required="sold == 4 || sold == 8 ? true : false"
+              v-if="sold == 3 || sold == 4 || sold == 8"
+            >
+              <el-select
+                style="width: 50%;"
+                v-model="sellerId"
+                placeholder="请选择销售人员"
+              >
+                <el-option
+                  v-for="item in sellerList"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
+                >
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item
               label="客户姓名"
               v-show="sold != 8"
               :required="sold == 2 || sold == 4 ? true : false"
@@ -556,6 +577,21 @@
                 :fetch-suggestions="querySearch"
                 placeholder="请选择/输入客户姓名"
                 @select="handleSelect"
+              ></el-autocomplete>
+            </el-form-item>
+            <el-form-item
+              label="
+                客户类型
+              "
+              :required="sold == 4 || sold == 8 ? true : false"
+              v-if="sold == 3 || sold == 4 || sold == 8"
+            >
+              <el-autocomplete
+                style="width: 50%;"
+                v-model="customerType"
+                :fetch-suggestions="queryCustomerTypeSearch"
+                placeholder="请选择/输入客户类型"
+                @select="handleCustomerTypeSelect"
               ></el-autocomplete>
             </el-form-item>
             <el-form-item label="接收仓库" v-show="sold == 8" required>
@@ -1008,7 +1044,12 @@ export default {
       companyAndWarehouseList: [],
       receiveWarehouseId: null,
       companyId: null,
-      currencyGlobal: ""
+      currencyGlobal: "",
+
+      sellerId: "",
+      sellerList: [],
+      customerTypeList: [],
+      customerType: ""
     };
   },
   created() {
@@ -1017,6 +1058,7 @@ export default {
     this.getDataStock();
     this.getCustomerList();
     this.getCompanyAndWarehouseList();
+    this.getSellerAndCustomerType();
   },
   mounted() {
     this.companyId = sessionStorage.getItem("companyId");
@@ -1135,6 +1177,46 @@ export default {
       console.log(item);
       this.customer = item.value;
     },
+    // 获取销售人员及客户类型
+    getSellerAndCustomerType() {
+      this.$axios
+        .get(this.baseUrl + "/sellerCustomerTypeList")
+        .then(res => {
+          console.log("销售人员及客户类型列表");
+          console.log(res);
+          this.sellerList = res.data.sellerList;
+          this.customerTypeList = res.data.customerTypeList;
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+    // 客户类型輸入/匹配
+    queryCustomerTypeSearch(queryString, cb) {
+      console.log(typeof queryString);
+      let restaurants = this.customerTypeList;
+
+      for (let items of restaurants) {
+        items.value = items.name;
+      }
+
+      let results = queryString
+        ? restaurants.filter(this.createCustomerTypeFilter(queryString))
+        : restaurants;
+      // 调用 callback 返回建议列表的数据
+      cb(results);
+    },
+    createCustomerTypeFilter(queryString) {
+      return restaurant => {
+        return (
+          restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+        );
+      };
+    },
+    handleCustomerTypeSelect(item) {
+      console.log(item);
+      this.customerType = item.value;
+    },
 
     // 采购为港币
     isPurchaseHKD() {
@@ -1188,7 +1270,11 @@ export default {
             this.stockOutTime == null ||
             this.bill == "" ||
             this.saleTotalHkPrice == "" ||
-            this.saleTotalHkPrice == undefined
+            this.saleTotalHkPrice == undefined ||
+            this.sellerId == "" ||
+            this.sellerId == null ||
+            this.customerType == "" ||
+            this.customerType == null
           ) {
             this.$message.error({
               message: "数据不能为空，请检查数据填写",
@@ -1205,7 +1291,11 @@ export default {
             this.receiveWarehouseId == "" ||
             this.bill == "" ||
             this.saleTotalHkPrice == "" ||
-            this.saleTotalHkPrice == undefined
+            this.saleTotalHkPrice == undefined ||
+            this.sellerId == "" ||
+            this.sellerId == null ||
+            this.customerType == "" ||
+            this.customerType == null
           ) {
             this.$message.error({
               message: "数据不能为空，请检查数据填写",
@@ -1390,7 +1480,9 @@ export default {
         saleLogHkPrice: this.saleLogHkPrice,
         saleTotalHkPrice: this.saleTotalHkPrice,
         isPayCheck: this.isPayCheck == false ? 0 : 1,
-        isReceiveCheck: this.isReceiveCheck == false ? 0 : 1
+        isReceiveCheck: this.isReceiveCheck == false ? 0 : 1,
+        sellerId: this.sellerId,
+        customerType: this.customerType
       };
 
       this.cost = undefined;
@@ -1455,6 +1547,8 @@ export default {
             this.saleTotalHkPrice = "";
             this.isPayCheck = false;
             this.isReceiveCheck = false;
+            this.sellerId = "";
+            this.customerType = "";
 
             this.activeName = "first";
           }
@@ -1500,6 +1594,12 @@ export default {
         this.soldTime = "";
       } else {
         this.stockOutTime = "";
+      }
+
+      if (this.sold == 8) {
+        this.customerType = "公司";
+      } else {
+        this.customerType = "";
       }
     },
     sizeSel(e) {

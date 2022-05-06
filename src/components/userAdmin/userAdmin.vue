@@ -21,11 +21,12 @@
               placeholder="請輸入人員名稱"
             ></el-input>
           </el-form-item>
-          <el-form-item prop="type" label="是否為公司人員：">
-            <el-switch
-              v-model="addUserData.type"
-              @change="switchChange"
-            ></el-switch>
+          <el-form-item prop="type" label="人員類型：">
+            <el-radio-group v-model="addUserData.type" @change="radioChange">
+              <el-radio :label="0">公司</el-radio>
+              <el-radio :label="1">公司員工</el-radio>
+              <el-radio :label="2">其他人員</el-radio>
+            </el-radio-group>
           </el-form-item>
           <el-form-item
             prop="deptList"
@@ -79,12 +80,16 @@
       >
         <el-table-column prop="personnelName" label="人員名稱" align="center">
         </el-table-column>
-        <el-table-column prop="companyName" label="所屬公司" align="center">
-        </el-table-column>
-        <el-table-column prop="type" label="是否為公司人員" align="center">
+        <el-table-column prop="type" label="人員類型" align="center">
           <template slot-scope="scope">
             <div>
-              {{ scope.row.type == 1 ? "是" : "否" }}
+              {{
+                scope.row.type == 0
+                  ? "公司"
+                  : scope.row.type == 1
+                  ? "公司員工"
+                  : "其他人員"
+              }}
             </div>
           </template>
         </el-table-column>
@@ -128,11 +133,12 @@
               placeholder="請輸入人員名稱"
             ></el-input>
           </el-form-item>
-          <el-form-item prop="type" label="是否為公司人員：">
-            <el-switch
-              v-model="updateUserMsg.type"
-              @change="switchChange"
-            ></el-switch>
+          <el-form-item prop="type" label="人員類型：">
+            <el-radio-group v-model="updateUserMsg.type" @change="radioChange">
+              <el-radio :label="0">公司</el-radio>
+              <el-radio :label="1">公司員工</el-radio>
+              <el-radio :label="2">其他人員</el-radio>
+            </el-radio-group>
           </el-form-item>
           <el-form-item
             prop="deptList"
@@ -206,12 +212,15 @@ export default {
       dialogAddUserVisible: false,
       addUserData: {
         name: "",
-        type: false,
+        type: 1,
         deptList: [],
         currencyId: ""
       },
       addUserRules: {
         name: [{ required: true, message: "請輸入人員名稱", trigger: "blur" }],
+        personnelName: [
+          { required: false, message: "請輸入人員名稱", trigger: "blur" }
+        ],
         deptList: [
           { required: false, message: "請選擇所屬部門職位", trigger: "change" }
         ],
@@ -257,16 +266,16 @@ export default {
     this.getDeptList();
   },
   methods: {
-    switchChange() {
+    radioChange() {
       console.log(this.addUserData.type);
       if (this.dialogAddUserVisible == true) {
-        if (this.addUserData.type == true) {
+        if (this.addUserData.type == 1) {
           this.addUserRules.deptList[0].required = true;
         } else {
           this.addUserRules.deptList[0].required = false;
         }
       } else {
-        if (this.updateUserMsg.type == true) {
+        if (this.updateUserMsg.type == 1) {
           this.addUserRules.deptList[0].required = true;
         } else {
           this.addUserRules.deptList[0].required = false;
@@ -290,19 +299,20 @@ export default {
     // 添加人員
     addUser() {
       this.addUserData.name = "";
-      this.addUserData.type = true;
+      this.addUserData.type = 1;
       this.addUserData.deptList = [];
       this.addUserRules.deptList[0].required = false;
+      this.addUserRules.personnelName[0].required = false;
       this.handleChange();
       this.dialogAddUserVisible = true;
-      this.switchChange();
+      this.radioChange();
     },
     // 確定添加
     addUserSure(formName) {
       console.log(this.addUserData.type);
       console.log(this.addUserData.deptList);
       let deptEndList = [];
-      if (this.addUserData.type == true) {
+      if (this.addUserData.type == 1) {
         deptEndList = this.addUserData.deptList.map(item => {
           return {
             deptId: item[0],
@@ -322,7 +332,7 @@ export default {
                 deptList: deptEndList,
                 companyId: sessionStorage.getItem("companyId"),
                 name: this.addUserData.name,
-                type: this.addUserData.type == true ? 1 : 2
+                type: this.addUserData.type
               }
             )
             .then(res => {
@@ -355,9 +365,6 @@ export default {
       console.log(row);
       this.updateUserMsg = JSON.parse(JSON.stringify(row));
 
-      this.updateUserMsg.type == 1
-        ? (this.updateUserMsg.type = true)
-        : (this.updateUserMsg.type = false);
       this.updateUserMsg.companyId = this.updateUserMsg.companyId + "";
 
       if (this.updateUserMsg.type == 1) {
@@ -370,6 +377,7 @@ export default {
       } else {
         this.addUserRules.deptList[0].required = false;
       }
+      this.addUserRules.personnelName[0].required = true;
 
       this.dialogUpdateUserVisible = true;
     },
@@ -377,7 +385,7 @@ export default {
     updateUserSure(formName) {
       console.log(this.updateUserMsg.type);
       let deptEndList = [];
-      if (this.updateUserMsg.type == true) {
+      if (this.updateUserMsg.type == 1) {
         deptEndList = this.updateUserMsg.deptList.map(item => {
           return {
             deptId: item[0],
@@ -397,7 +405,7 @@ export default {
                 deptList: deptEndList,
                 companyId: sessionStorage.getItem("companyId"),
                 name: this.updateUserMsg.personnelName,
-                type: this.updateUserMsg.type == true ? 1 : 2
+                type: this.updateUserMsg.type
               }
             )
             .then(res => {

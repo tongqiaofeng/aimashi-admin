@@ -554,7 +554,7 @@
         name="third"
         v-if="sold == 2 || sold == 3 || sold == 8"
       >
-        <el-form ref="saleForm" label-width="110px">
+        <el-form ref="saleForm" label-width="121px">
           <el-form-item
             label="账单号"
             :required="isStock == 1 || sold == 8 ? true : false"
@@ -640,6 +640,42 @@
             </div>
           </el-form-item>
           <el-form-item
+            :label="'出售' + currencyFontRgx(headCurrency) + '金额'"
+            :required="isStock == 1 ? true : false"
+            v-if="sold == 3 && isHeadConsigns == 1"
+          >
+            <div style="width: 50%;display: flex;">
+              <el-input
+                style="flex: 1;"
+                v-model="headSellMoney"
+                :placeholder="
+                  '请输入出售' +
+                    currencyFontRgx(headCurrency) +
+                    '金额，用于与总公司结算'
+                "
+              ></el-input>
+            </div>
+          </el-form-item>
+          <el-form-item
+            label="销售人员"
+            :required="isStock == 1 || sold == 8 ? true : false"
+            v-if="sold == 3 || sold == 8"
+          >
+            <el-select
+              style="width: 50%;"
+              v-model="sellerId"
+              placeholder="请选择销售人员"
+            >
+              <el-option
+                v-for="item in sellerList"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id"
+              >
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item
             label="客户姓名"
             :required="isStock == 1 || sold == 2 ? true : false"
             v-show="sold != 8"
@@ -650,6 +686,19 @@
               :fetch-suggestions="querySearch"
               placeholder="请选择/输入客户姓名"
               @select="handleSelect"
+            ></el-autocomplete>
+          </el-form-item>
+          <el-form-item
+            label="客户类型"
+            :required="isStock == 1 || sold == 8 ? true : false"
+            v-if="sold == 3 || sold == 8"
+          >
+            <el-autocomplete
+              style="width: 50%;"
+              v-model="customerType"
+              :fetch-suggestions="queryCustomerTypeSearch"
+              placeholder="请选择/输入客户类型"
+              @select="handleCustomerTypeSelect"
             ></el-autocomplete>
           </el-form-item>
           <el-form-item label="接收仓库" v-show="sold == 8" required>
@@ -1027,7 +1076,6 @@ export default {
       isSelect: 1,
       isColor: 0,
       loading: null,
-      pageSel: 0,
       stateList: [
         {
           label: "采购中",
@@ -1113,6 +1161,9 @@ export default {
       activeName: "first",
       saleLogHkPrice: "",
       saleTotalHkPrice: "",
+      headSellMoney: "",
+      isHeadConsigns: 0,
+      headCurrency: "",
 
       buyAllPrice: undefined,
       totalHkPrice: undefined,
@@ -1125,7 +1176,12 @@ export default {
 
       isUpdateOrDel: null,
       companyId: null,
-      currencyGlobal: ""
+      currencyGlobal: "",
+
+      sellerId: "",
+      sellerList: [],
+      customerTypeList: [],
+      customerType: ""
     };
   },
   props: ["updatesId"],
@@ -1135,6 +1191,7 @@ export default {
     this.getCustomerList();
     this.getDataStock();
     this.getCompanyAndWarehouseList();
+    this.getSellerAndCustomerType();
   },
   methods: {
     // 款式輸入/匹配
@@ -1309,6 +1366,10 @@ export default {
           this.stockOutTime = data.stockOutTime;
           this.saleLogHkPrice = data.saleLogHkPrice;
           this.saleTotalHkPrice = data.saleTotalHkPrice;
+          this.headSellMoney =
+            data.headSellMoney == 0 ? "" : data.headSellMoney;
+          this.isHeadConsigns = data.isHeadConsigns;
+          this.headCurrency = data.headCurrency;
 
           this.isUpdateOrDel = data.companyId;
 
@@ -1325,9 +1386,11 @@ export default {
           } else {
             this.receiveWarehouseId = null;
           }
+          this.sellerId = data.sellerId;
+          this.customerType = data.customerType;
 
           this.activeName = "first";
-          this.pageSel = 1;
+
           (function smoothscroll() {
             var currentScroll =
               document.documentElement.scrollTop || document.body.scrollTop;
@@ -1339,27 +1402,8 @@ export default {
         });
     },
     dataCheck() {
-      // console.log(this.sold);
-      if (this.sold == 1 || this.sold == 2 || this.sold == 3) {
-        if (this.createTime == "" || this.createTime == null) {
-          this.$message.error({
-            message: "请选择入库时间",
-            showClose: true,
-            duration: 2000
-          });
-          return 1;
-        }
-      } else if (this.sold == 2) {
-        if (this.customer == "" || this.customer == null) {
-          console.log("-");
-          this.$message.error({
-            message: "请填写客户姓名",
-            showClose: true,
-            duration: 2000
-          });
-          return 1;
-        }
-      } else if (this.sold == 3 && this.isStock == 1) {
+      if (this.sold == 3 && this.isStock == 1) {
+        console.log("同時出庫了");
         if (
           this.soldTime == "" ||
           this.soldTime == null ||
@@ -1371,7 +1415,15 @@ export default {
           this.bill == null ||
           this.saleTotalHkPrice == "" ||
           this.saleTotalHkPrice == undefined ||
-          this.saleTotalHkPrice == null
+          this.saleTotalHkPrice == null ||
+          ((this.headSellMoney == "" ||
+            this.headSellMoney == undefined ||
+            this.headSellMoney == null) &&
+            this.isHeadConsigns == 1) ||
+          this.sellerId == "" ||
+          this.sellerId == null ||
+          this.customerType == "" ||
+          this.customerType == null
         ) {
           this.$message.error({
             message: "数据不能为空，请检查数据填写",
@@ -1380,7 +1432,30 @@ export default {
           });
           return 1;
         }
-      } else if (this.sold == 5) {
+      }
+      // console.log(this.sold);
+      if (this.sold == 1 || this.sold == 2 || this.sold == 3) {
+        if (this.createTime == "" || this.createTime == null) {
+          this.$message.error({
+            message: "请选择入库时间",
+            showClose: true,
+            duration: 2000
+          });
+          return 1;
+        }
+      }
+      if (this.sold == 2) {
+        if (this.customer == "" || this.customer == null) {
+          console.log("-");
+          this.$message.error({
+            message: "请填写客户姓名",
+            showClose: true,
+            duration: 2000
+          });
+          return 1;
+        }
+      }
+      if (this.sold == 5) {
         if (this.stockOutTime == "" || this.stockOutTime == null) {
           this.$message.error({
             message: "请选择取回时间",
@@ -1389,7 +1464,8 @@ export default {
           });
           return 1;
         }
-      } else if (this.sold == 6) {
+      }
+      if (this.sold == 6) {
         if (this.stockOutTime == "" || this.stockOutTime == null) {
           this.$message.error({
             message: "请选择退货时间",
@@ -1398,7 +1474,8 @@ export default {
           });
           return 1;
         }
-      } else if (this.sold == 7) {
+      }
+      if (this.sold == 7) {
         if (this.stockOutTime == "" || this.stockOutTime == null) {
           this.$message.error({
             message: "请选择时间",
@@ -1407,7 +1484,8 @@ export default {
           });
           return 1;
         }
-      } else if (this.sold == 8) {
+      }
+      if (this.sold == 8) {
         if (
           this.soldTime == "" ||
           this.soldTime == null ||
@@ -1415,7 +1493,11 @@ export default {
           this.receiveWarehouseId == "" ||
           this.bill == "" ||
           this.saleTotalHkPrice == "" ||
-          this.saleTotalHkPrice == undefined
+          this.saleTotalHkPrice == undefined ||
+          this.sellerId == "" ||
+          this.sellerId == null ||
+          this.customerType == "" ||
+          this.customerType == null
         ) {
           this.$message.error({
             message: "数据不能为空，请检查数据填写",
@@ -1497,9 +1579,10 @@ export default {
           duration: 2000
         });
       } else {
-        if (this.data1() !== 1 && this.dataCheck() !== 1) {
+        if (this.data1() != 1 && this.dataCheck() != 1) {
           console.log(this.productCode);
           console.log(this.stockLocId);
+          console.log("銷售人員", this.sellerId, this.customerType);
           this.updateData();
         }
       }
@@ -1599,9 +1682,13 @@ export default {
           stockOutTime: this.stockOutTime,
           saleLogHkPrice: this.saleLogHkPrice,
           saleTotalHkPrice: this.saleTotalHkPrice,
+          headSellMoney: this.headSellMoney,
           isPayCheck: this.isPayCheck == false ? 0 : 1,
           isReceiveCheck: this.isReceiveCheck == false ? 0 : 1,
-          receiveWarehouseId: this.sold == 8 ? this.receiveWarehouseId[1] : null
+          receiveWarehouseId:
+            this.sold == 8 ? this.receiveWarehouseId[1] : null,
+          sellerId: this.sellerId,
+          customerType: this.customerType
         })
         .then(res => {
           console.log(res);
@@ -1629,6 +1716,11 @@ export default {
     },
     stateChange() {
       this.activeName = "first";
+      if (this.sold == 8) {
+        this.customerType = "公司";
+      } else {
+        this.customerType = "";
+      }
     },
     // 获取客户列表
     getCustomerList() {
@@ -1669,6 +1761,48 @@ export default {
       console.log(item);
       this.customer = item.value;
     },
+
+    // 获取销售人员及客户类型
+    getSellerAndCustomerType() {
+      this.$axios
+        .get(this.baseUrl + "/sellerCustomerTypeList")
+        .then(res => {
+          console.log("销售人员及客户类型列表");
+          console.log(res);
+          this.sellerList = res.data.sellerList;
+          this.customerTypeList = res.data.customerTypeList;
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+    // 客户类型輸入/匹配
+    queryCustomerTypeSearch(queryString, cb) {
+      console.log(typeof queryString);
+      let restaurants = this.customerTypeList;
+
+      for (let items of restaurants) {
+        items.value = items.name;
+      }
+
+      let results = queryString
+        ? restaurants.filter(this.createCustomerTypeFilter(queryString))
+        : restaurants;
+      // 调用 callback 返回建议列表的数据
+      cb(results);
+    },
+    createCustomerTypeFilter(queryString) {
+      return restaurant => {
+        return (
+          restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+        );
+      };
+    },
+    handleCustomerTypeSelect(item) {
+      console.log(item);
+      this.customerType = item.value;
+    },
+
     isInputSel() {
       if (this.isInput == 0) {
         this.isInput = 1;

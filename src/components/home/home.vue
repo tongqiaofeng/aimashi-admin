@@ -510,7 +510,7 @@
           <user-admin v-if="selected == 9"></user-admin>
           <sales-ticket-admin v-if="selected == 10"></sales-ticket-admin>
           <sales-history v-if="selected == 11"></sales-history>
-          <sales-report v-if="selected == 12"></sales-report>
+          <sales-statement v-if="selected == 12"></sales-statement>
           <send-documents-add v-if="selected == 13"></send-documents-add>
           <send-documents-history
             v-if="selected == 14"
@@ -695,7 +695,7 @@ ul li a {
       line-height: 50px;
       position: absolute;
       top: 78px;
-      right: 155px;
+      right: 175px;
       background-color: #fff;
       border: 1px solid #ddd;
       border-radius: 10px;
@@ -945,7 +945,7 @@ img {
 }
 
 .el-table td {
-  padding: 5px 0;
+  padding: 10px 0;
 }
 
 .el-table td,

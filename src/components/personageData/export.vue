@@ -1,6 +1,6 @@
 <template>
   <div class="export-container">
-    <el-form label-width="85px">
+    <el-form label-width="145px">
       <el-form-item label="時間：">
         <div class="create">
           <el-date-picker
@@ -24,11 +24,11 @@
           </el-date-picker>
         </div>
       </el-form-item>
-      <el-form-item label="賬單賬戶：">
-        <el-select v-model="personId" placeholder="請選擇">
+      <el-form-item label="賬單賬戶/銷售人員：">
+        <el-select v-model="personId" placeholder="請選擇" clearable>
           <el-option
-            v-for="(item, index) in userList"
-            :key="index"
+            v-for="item in userList"
+            :key="item.id"
             :label="item.name"
             :value="item.id"
           ></el-option>
@@ -51,7 +51,7 @@
       <el-button
         style="width: 160px;"
         type="primary"
-        @click="inventoryExport('/stockExport')"
+        @click="inventoryExport('/salesExport')"
         >銷售單導出</el-button
       >
     </div>
@@ -74,7 +74,21 @@ export default {
     // 庫存導出
     inventoryExport(url) {
       let reqUrl = "";
-      if (url == "/billExport") {
+      if (url == "/stockExport") {
+        reqUrl =
+          this.$store.state.baseUrl +
+          url +
+          "?startTime=" +
+          this.time1 +
+          "&endTime=" +
+          this.time2;
+      } else if (url == "/billExport") {
+        if (this.personId == "" || this.personId == null) {
+          this.$message.error({
+            message: "請選擇導出賬單賬戶"
+          });
+          return;
+        }
         reqUrl =
           this.$store.state.baseUrl +
           url +
@@ -85,13 +99,21 @@ export default {
           "&id=" +
           this.personId;
       } else {
+        if (this.personId == "" || this.personId == null) {
+          this.$message.error({
+            message: "請選擇導出賬戶"
+          });
+          return;
+        }
         reqUrl =
           this.$store.state.baseUrl +
           url +
           "?startTime=" +
           this.time1 +
           "&endTime=" +
-          this.time2;
+          this.time2 +
+          "&seller=" +
+          this.personId;
       }
       const loading = this.$loading({
         lock: true,
@@ -151,8 +173,6 @@ export default {
           console.log("用戶列表");
           console.log(res);
           this.userList = res.data;
-
-          this.personId = this.userList[0].id;
         })
         .catch(err => {
           console.log(err);
@@ -186,8 +206,10 @@ export default {
   }
 
   .export-button {
+    width: 635px;
     margin-top: 40px;
     display: flex;
+    justify-content: flex-end;
   }
 }
 

@@ -353,6 +353,21 @@
             <el-form-item label="是否收款完成" prop="isReceiveCheck">
               <el-switch v-model="addDataConsign.isReceiveCheck"></el-switch>
             </el-form-item>
+            <el-form-item label="銷售人員" prop="sellerId">
+              <el-select
+                style="width: 300px;"
+                v-model="addDataConsign.sellerId"
+                placeholder="請選擇銷售人員"
+              >
+                <el-option
+                  v-for="item in sellerList"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
+                >
+                </el-option>
+              </el-select>
+            </el-form-item>
             <el-form-item label="客戶姓名" prop="customer">
               <el-autocomplete
                 style="width: 300px;"
@@ -360,6 +375,15 @@
                 :fetch-suggestions="querySearch"
                 placeholder="請選擇/輸入客戶姓名"
                 @select="handleSelect"
+              ></el-autocomplete>
+            </el-form-item>
+            <el-form-item label="客戶類型" prop="customerType">
+              <el-autocomplete
+                style="width: 300px;"
+                v-model="addDataConsign.customerType"
+                :fetch-suggestions="queryCustomerTypeSearch"
+                placeholder="請選擇/輸入客戶類型"
+                @select="handleCustomerTypeSelect"
               ></el-autocomplete>
             </el-form-item>
             <el-form-item prop="soldTime" label="出售日期">
@@ -493,7 +517,11 @@
                 <template slot="header" slot-scope="scope">
                   <div>
                     <span>出售{{ currencyFontRgx(currencyGlobal) }}金額</span>
-                    <span v-show="addDataConsign.sold == 4" style="color: red;"
+                    <span
+                      v-show="
+                        addDataConsign.sold == 4 && getIsHeadConsigns() == 0
+                      "
+                      style="color: red;"
                       >*</span
                     >
                   </div>
@@ -505,11 +533,40 @@
                       placeholder="请输入"
                       v-model="scope.row.saleTotalHkPrice"
                       clearable
-                      @input="getSubPrice"
+                      @change="getNumber(scope.row)"
                     ></el-input>
                   </div>
                 </template>
               </el-table-column>
+
+              <el-table-column
+                align="center"
+                prop="saleTotalHkPrice"
+                v-if="getIsHeadConsigns()"
+              >
+                <!-- eslint-disable-next-line -->
+                <template slot="header" slot-scope="scope">
+                  <div>
+                    <span
+                      >出售{{ currencyFontRgx(getHeadCurrency()) }}金額</span
+                    >
+                    <span v-show="addDataConsign.sold == 4" style="color: red;"
+                      >*</span
+                    >
+                  </div>
+                </template>
+                <template slot-scope="scope">
+                  <div>
+                    <el-input
+                      type="text"
+                      placeholder="请输入"
+                      v-model="scope.row.headSellMoney"
+                      clearable
+                    ></el-input>
+                  </div>
+                </template>
+              </el-table-column>
+
               <el-table-column
                 width="250px"
                 align="center"
@@ -530,7 +587,7 @@
             </el-table>
             <div>
               <p style="text-align: right;">
-                總金額：{{ formatNumberRgx(subTotal) }}
+                總金額：{{ formatNumberRgx(subTotal) + " " + currencyGlobal }}
               </p>
             </div>
           </div>
@@ -980,8 +1037,12 @@ export default {
         customer: "",
         soldTime: "",
         stockOutTime: "",
-        sellCurrencyId: ""
+        sellCurrencyId: "",
+        sellerId: "",
+        customerType: ""
       },
+      sellerList: [],
+      customerTypeList: [],
       addDataRules: {
         sold: [
           {
@@ -997,10 +1058,24 @@ export default {
             trigger: "blur"
           }
         ],
+        sellerId: [
+          {
+            required: false,
+            message: "請選擇銷售人員",
+            trigger: "change"
+          }
+        ],
         customer: [
           {
             required: false,
             message: "請選擇客戶",
+            trigger: "change"
+          }
+        ],
+        customerType: [
+          {
+            required: false,
+            message: "請選擇客戶類型",
             trigger: "change"
           }
         ],
@@ -1108,29 +1183,22 @@ export default {
       printLoading: false,
       printData: {
         id: "printArea",
-        popTitle: "", // 打印配置页上方的标题
-        extraHead: "銷售憑證", // 最上方的头部文字，附加在head标签上的额外标签，使用逗号分割
+        popTitle: "銷售憑證", // 打印配置页上方的标题
+        extraHead: "", // 最上方的头部文字，附加在head标签上的额外标签，使用逗号分割
         preview: false, // 是否启动预览模式，默认是false
-        previewTitle: "", // 打印预览的标题
-        previewPrintBtnLabel: "預覽結束，開始打印", // 打印预览的标题下方的按钮文本，点击可进入打印
-        zIndex: 20002, // 预览窗口的z-index，默认是20002，最好比默认值更高
-        previewBeforeOpenCallback() {
-          console.log("正在加载预览窗口！");
-          console.log(that);
-        }, // 预览窗口打开之前的callback
-        previewOpenCallback() {
-          console.log("已经加载完预览窗口，预览打开了！");
-        }, // 预览窗口打开时的callback
         beforeOpenCallback() {
+          // 开始打印之前的callback
           console.log("开始打印之前！");
-        }, // 开始打印之前的callback
+        },
         openCallback() {
+          // 调用打印时的callback
           loading.close();
           console.log("执行打印了！");
-        }, // 调用打印时的callback
+        },
         closeCallback() {
+          // 关闭打印的callback(无法区分确认or取消)
           console.log("关闭了打印工具！");
-        }, // 关闭打印的callback(无法区分确认or取消)
+        },
         clickMounted() {
           console.log("点击v-print绑定的按钮了！");
           loading = that.$loading({
@@ -1161,6 +1229,7 @@ export default {
     this.role = sessionStorage.getItem("role");
 
     this.getSellOrderList();
+    this.getSellerAndCustomerType();
   },
   mounted() {
     this.getCustomerList();
@@ -1192,8 +1261,25 @@ export default {
     getSubPrice() {
       this.subTotal = 0;
       for (const item of this.sellStockList) {
-        this.subTotal += item.saleTotalHkPrice;
+        this.subTotal += Number(item.saleTotalHkPrice);
       }
+    },
+    getIsHeadConsigns() {
+      for (const item of this.sellStockList) {
+        if (item.isHeadConsigns == 1) return 1;
+      }
+      return 0;
+    },
+    getHeadCurrency() {
+      for (const item of this.sellStockList) {
+        if (item.headCurrency.length == 3) return item.headCurrency;
+      }
+      return "";
+    },
+    // 金額處理
+    getNumber(item) {
+      item.saleTotalHkPrice = this.getPriceNum(item.saleTotalHkPrice);
+      this.getSubPrice();
     },
     // 撤銷銷售單
     cancelSales(item) {
@@ -1326,6 +1412,8 @@ export default {
       this.addDataConsign.isReceiveCheck =
         val.isReceiveCheck == 0 ? false : true;
       this.addDataConsign.customer = val.customer;
+      this.addDataConsign.sellerId = val.sellerId;
+      this.addDataConsign.customerType = val.customerType;
 
       this.addDataConsign.soldTime = val.soldTime;
       this.addDataConsign.stockOutTime = val.stockOutTime;
@@ -1344,7 +1432,10 @@ export default {
           priceTran: item.priceTran,
           saleLogHkPrice: item.saleLogHkPrice,
           saleTotalHkPrice: item.saleTotalHkPrice,
-          note: item.note
+          note: item.note,
+          headSellMoney: item.headSellMoney,
+          isHeadConsigns: item.isHeadConsigns,
+          headCurrency: item.headCurrency
         };
       });
       this.sellStockList = list;
@@ -1403,35 +1494,38 @@ export default {
         });
       }
     },
-    // 填寫銷售信息
-    addSold() {
-      if (this.sellStockList.length == 0) {
-        this.$message.error({
-          message: "請選擇銷售商品",
-          showClose: true,
-          duration: 2000
-        });
-      } else {
-        this.$refs.addSalesTicketForm.resetFields();
 
-        let list = this.sellStockList.map(item => {
-          return {
-            stockId: item.id,
-            productCode: item.productCode,
-            pic: item.pic,
-            pics: item.pics,
-            name: item.name,
-            priceTran: "",
-            saleLogHkPrice: "",
-            saleTotalHkPrice: "",
-            note: item.note
-          };
-        });
-        this.sellStockList = list;
-        console.log(this.sellStockList);
-
-        this.pageSel = 2;
+    dataCheck() {
+      for (const item of this.sellStockList) {
+        if (item.isHeadConsigns == 1 && item.headSellMoney == "") {
+          this.$message.error({
+            message:
+              "貨號 " +
+              item.productCode +
+              " 請輸入出售" +
+              this.currencyFontRgx(this.getHeadCurrency()) +
+              "金額，用於與總公司結算",
+            showClose: true,
+            duration: 2000
+          });
+          return 1;
+        }
+        if (item.isHeadConsigns == -1 && item.saleTotalHkPrice == "") {
+          this.$message.error({
+            message:
+              "貨號 " +
+              item.productCode +
+              " 請輸入出售" +
+              this.currencyFontRgx(this.currencyGlobal) +
+              "金額",
+            showClose: true,
+            duration: 2000
+          });
+          return 1;
+        }
       }
+
+      return 0;
     },
     // 提交銷售單信息
     submitSales(formName) {
@@ -1445,21 +1539,9 @@ export default {
               this.addDataConsign.sellCurrencyId
             );
           });
-          if (this.addDataConsign.sold != 3) {
-            let arr = this.sellStockList.map(item => {
-              return item.saleTotalHkPrice;
-            });
-            if (!arr.includes("")) {
+          if (this.addDataConsign.sold == 4) {
+            if (this.dataCheck() != 1) {
               this.updateRequest();
-            } else {
-              this.$message.error({
-                message:
-                  "請填寫出售" +
-                  this.currencyFontRgx(this.currencyGlobal) +
-                  "金額",
-                showClose: true,
-                duration: 2000
-              });
             }
           } else {
             this.updateRequest();
@@ -1486,7 +1568,9 @@ export default {
               : null,
           isReceiveCheck: this.addDataConsign.isReceiveCheck == false ? 0 : 1,
           sellCurrencyId: this.addDataConsign.sellCurrencyId,
-          sellStockList: this.sellStockList
+          sellStockList: this.sellStockList,
+          sellerId: this.addDataConsign.sellerId,
+          customerType: this.addDataConsign.customerType
         })
         .then(res => {
           console.log("修改銷售單信息");
@@ -1537,18 +1621,64 @@ export default {
       console.log(item);
       this.addDataConsign.customer = item.value;
     },
+
+    // 获取销售人员及客户类型
+    getSellerAndCustomerType() {
+      this.$axios
+        .get(this.baseUrl + "/sellerCustomerTypeList")
+        .then(res => {
+          console.log("销售人员及客户类型列表");
+          console.log(res);
+          this.sellerList = res.data.sellerList;
+          this.customerTypeList = res.data.customerTypeList;
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+    // 客户类型輸入/匹配
+    queryCustomerTypeSearch(queryString, cb) {
+      console.log(typeof queryString);
+      let restaurants = this.customerTypeList;
+
+      for (let items of restaurants) {
+        items.value = items.name;
+      }
+
+      let results = queryString
+        ? restaurants.filter(this.createCustomerTypeFilter(queryString))
+        : restaurants;
+      // 调用 callback 返回建议列表的数据
+      cb(results);
+    },
+    createCustomerTypeFilter(queryString) {
+      return restaurant => {
+        return (
+          restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+        );
+      };
+    },
+    handleCustomerTypeSelect(item) {
+      console.log(item);
+      this.addDataConsign.customerType = item.value;
+    },
+
     stateChange() {
       console.log(this.addDataConsign.sold);
       if (this.addDataConsign.sold == 3) {
         console.log("33333333");
         this.addDataRules.bill[0].required = false;
         this.addDataRules.customer[0].required = false;
+        this.addDataRules.sellerId[0].required = false;
+        this.addDataRules.customerType[0].required = false;
         this.addDataRules.soldTime[0].required = false;
         this.addDataRules.stockOutTime[0].required = false;
       } else if (this.addDataConsign.sold == 4) {
         console.log("4444444444");
         this.addDataRules.bill[0].required = true;
         this.addDataRules.customer[0].required = true;
+        this.addDataRules.sellerId[0].required = true;
+        this.addDataRules.customerType[0].required = true;
         this.addDataRules.soldTime[0].required = true;
         this.addDataRules.stockOutTime[0].required = true;
       }
