@@ -344,7 +344,7 @@
                     :content="scope.row.name"
                     placement="bottom"
                   >
-                    <div class="font-warp">{{ scope.row.headCurrency }}</div>
+                    <div class="font-warp">{{ scope.row.name }}</div>
                   </el-tooltip>
                 </div>
               </template>

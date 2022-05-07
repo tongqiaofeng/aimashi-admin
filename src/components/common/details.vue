@@ -624,7 +624,9 @@
                 ? '寄卖' + currencyFontRgx(currencyGlobal) + '金额'
                 : '出售' + currencyFontRgx(currencyGlobal) + '金额'
             "
-            :required="isStock == 1 || sold == 8 ? true : false"
+            :required="
+              (isStock == 1 && isHeadConsigns != 1) || sold == 8 ? true : false
+            "
             v-if="sold == 3 || sold == 8"
           >
             <div style="width: 50%;display: flex;">
@@ -1404,33 +1406,57 @@ export default {
     dataCheck() {
       if (this.sold == 3 && this.isStock == 1) {
         console.log("同時出庫了");
-        if (
-          this.soldTime == "" ||
-          this.soldTime == null ||
-          this.customer == "" ||
-          this.customer == null ||
-          this.stockOutTime == "" ||
-          this.stockOutTime == null ||
-          this.bill == "" ||
-          this.bill == null ||
-          this.saleTotalHkPrice == "" ||
-          this.saleTotalHkPrice == undefined ||
-          this.saleTotalHkPrice == null ||
-          ((this.headSellMoney == "" ||
-            this.headSellMoney == undefined ||
-            this.headSellMoney == null) &&
-            this.isHeadConsigns == 1) ||
-          this.sellerId == "" ||
-          this.sellerId == null ||
-          this.customerType == "" ||
-          this.customerType == null
-        ) {
-          this.$message.error({
-            message: "数据不能为空，请检查数据填写",
-            showClose: true,
-            duration: 2000
-          });
-          return 1;
+        if (this.isHeadConsigns == 1) {
+          if (
+            this.soldTime == "" ||
+            this.soldTime == null ||
+            this.customer == "" ||
+            this.customer == null ||
+            this.stockOutTime == "" ||
+            this.stockOutTime == null ||
+            this.bill == "" ||
+            (this.bill == null) |
+              ((this.headSellMoney == "" ||
+                this.headSellMoney == undefined ||
+                this.headSellMoney == null) &&
+                this.isHeadConsigns == 1) ||
+            this.sellerId == "" ||
+            this.sellerId == null ||
+            this.customerType == "" ||
+            this.customerType == null
+          ) {
+            this.$message.error({
+              message: "数据不能为空，请检查数据填写",
+              showClose: true,
+              duration: 2000
+            });
+            return 1;
+          }
+        } else {
+          if (
+            this.soldTime == "" ||
+            this.soldTime == null ||
+            this.customer == "" ||
+            this.customer == null ||
+            this.stockOutTime == "" ||
+            this.stockOutTime == null ||
+            this.bill == "" ||
+            this.bill == null ||
+            this.saleTotalHkPrice == "" ||
+            this.saleTotalHkPrice == undefined ||
+            this.saleTotalHkPrice == null ||
+            this.sellerId == "" ||
+            this.sellerId == null ||
+            this.customerType == "" ||
+            this.customerType == null
+          ) {
+            this.$message.error({
+              message: "数据不能为空，请检查数据填写",
+              showClose: true,
+              duration: 2000
+            });
+            return 1;
+          }
         }
       }
       // console.log(this.sold);

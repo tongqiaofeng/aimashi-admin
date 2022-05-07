@@ -205,7 +205,7 @@
               </el-form-item>
               <el-form-item
                 :label="'出售' + currencyFontRgx(currencyGlobal) + '金额'"
-                :required="sold == 3 ? false : true"
+                :required="isHeadConsigns != 1 && sold == 4 ? true : false"
               >
                 <div style="display: flex;">
                   <el-input
@@ -727,9 +727,10 @@ export default {
             this.stockOutTime == null ||
             this.bill == "" ||
             this.bill == null ||
-            this.saleTotalHkPrice == "" ||
-            this.saleTotalHkPrice == undefined ||
-            this.saleTotalHkPrice == null ||
+            ((this.saleTotalHkPrice == "" ||
+              this.saleTotalHkPrice == undefined ||
+              this.saleTotalHkPrice == null) &&
+              this.isHeadConsigns != 1) ||
             ((this.headSellMoney == "" ||
               this.headSellMoney == undefined ||
               this.headSellMoney == null) &&

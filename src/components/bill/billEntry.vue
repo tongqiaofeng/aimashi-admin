@@ -264,7 +264,11 @@
         <div
           style="display: flex;justify-content: flex-end;padding-bottom: 30px;text-align: right;"
         >
-          <el-button type="primary" @click="clearForm">
+          <el-button
+            style="margin-right: 50px;"
+            type="primary"
+            @click="clearForm"
+          >
             重置
           </el-button>
           <el-button v-if="billData.id" type="primary" @click="updateBillSure"
@@ -1058,6 +1062,8 @@ export default {
     },
     // 根據貨號查找產品描述
     searchCode(productCode, index) {
+      productCode = productCode.trim();
+      this.billData.stockList[index].productCode = productCode;
       if (productCode != "") {
         this.$axios
           .get(this.baseUrl + "/productCodeSearch?productCode=" + productCode)
