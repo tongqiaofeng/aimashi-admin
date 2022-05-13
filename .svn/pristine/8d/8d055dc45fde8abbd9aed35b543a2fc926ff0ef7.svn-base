@@ -1,0 +1,20 @@
+{
+    "files": [
+        "src/main.umd.ts",
+        "src/main.esm.ts"
+    ],
+    "compilerOptions": {
+        "noImplicitAny": true,
+        "target": "ES5",
+        "outDir": "output/",
+        "esModuleInterop": true,
+        "module": "commonjs"
+    },
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "node_modules",
+        "**/*.spec.ts"
+    ]
+}
