@@ -1,0 +1,5 @@
+# pack-refs with: peeled fully-peeled sorted 
+535db794b47016a81b429d2b05960a80a546906b refs/heads/master
+84e615c20658af5f99a00ab408ee6599ebcad432 refs/remotes/origin/dependabot/npm_and_yarn/webpack-bundle-analyzer-3.3.2
+26902f845ba6766623b55320784d9dfeff85a285 refs/remotes/origin/dependabot/npm_and_yarn/webpack-dev-server-3.1.11
+b946cc415f93744503ecbd2e58beda72b3ce446c refs/remotes/origin/master

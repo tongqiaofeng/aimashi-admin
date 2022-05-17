@@ -86,7 +86,7 @@ export default {
           lock: true,
           text: "登錄中...",
           spinner: "el-icon-loading",
-          background: "rgba(0, 0, 0, 0.7)"
+          background: "rgba(0, 0, 0, 0.5)"
         });
 
         this.$axios

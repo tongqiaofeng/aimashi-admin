@@ -20,7 +20,7 @@
     "exceljs": "^4.3.0",
     "file-saver": "^2.0.2",
     "luckyexcel": "^1.0.1",
-    "node-sass": "^4.14.1",
+    "sass": "^1.26.5",
     "v-viewer": "^1.6.4",
     "vue": "^2.5.2",
     "vue-print-nb": "^1.7.5",
@@ -79,7 +79,7 @@
     "vue-loader": "^13.3.0",
     "vue-style-loader": "^3.0.1",
     "vue-template-compiler": "^2.5.2",
-    "webpack": "^3.6.0",
+    "webpack": "^3.12.0",
     "webpack-bundle-analyzer": "^2.9.0",
     "webpack-dev-server": "^2.9.1",
     "webpack-merge": "^4.1.0"

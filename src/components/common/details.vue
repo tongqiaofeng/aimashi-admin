@@ -2118,7 +2118,7 @@ export default {
             lock: true,
             text: "图片上传中...",
             spinner: "el-icon-loading",
-            background: "rgba(0, 0, 0, 0.7)"
+            background: "rgba(0, 0, 0, 0.5)"
           });
 
           for (let item of file) {
@@ -2307,7 +2307,7 @@ export default {
             lock: true,
             text: "图片上传中...",
             spinner: "el-icon-loading",
-            background: "rgba(0, 0, 0, 0.7)"
+            background: "rgba(0, 0, 0, 0.5)"
           });
 
           for (let item of file) {
