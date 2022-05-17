@@ -144,11 +144,20 @@ export default {
           }
 
           if (url == "/stockExport") {
-            link.setAttribute("download", "商品庫存_" + num + ".xlsx");
+            link.setAttribute(
+              "download",
+              "Hermès 基金库存 ( Updated on 3 May 2022)" + ".xlsx"
+            );
           } else if (url == "/billExport") {
-            link.setAttribute("download", "賬單_" + num + ".xlsx");
+            link.setAttribute(
+              "download",
+              "Hermès Bill summary_" + num + ".xlsx"
+            );
           } else {
-            link.setAttribute("download", "銷售單_" + num + ".xlsx");
+            link.setAttribute(
+              "download",
+              "Hermès Invoice summary_" + num + ".xlsx"
+            );
           }
 
           document.body.appendChild(link);

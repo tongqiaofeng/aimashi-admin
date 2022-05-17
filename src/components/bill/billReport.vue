@@ -1456,7 +1456,7 @@ export default {
           for (let i = 0; i < 10; i++) {
             num += Math.ceil(Math.random() * 10);
           }
-          link.setAttribute("download", "賬單報表_" + num + ".xlsx");
+          link.setAttribute("download", "Hermès Bill summary_" + num + ".xlsx");
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
