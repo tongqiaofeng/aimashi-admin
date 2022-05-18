@@ -144,9 +144,16 @@ export default {
           }
 
           if (url == "/stockExport") {
+            const date = new Date();
+
+            let date1 = new Intl.DateTimeFormat("en-GB", {
+              dateStyle: "full"
+            }).format(date);
+            let date2 = date1.split(",")[1];
+
             link.setAttribute(
               "download",
-              "Hermès 基金库存 ( Updated on 3 May 2022)" + ".xlsx"
+              "Hermès 基金库存 ( Updated on" + date2 + " ).xlsx"
             );
           } else if (url == "/billExport") {
             link.setAttribute(
