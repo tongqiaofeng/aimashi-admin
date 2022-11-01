@@ -246,7 +246,7 @@
           </el-form>
         </el-tab-pane>
         <el-tab-pane label="采购及价格" name="second">
-          <el-form ref="purchaseForm" label-width="100px">
+          <el-form ref="purchaseForm" label-width="110px">
             <el-form-item label="买手">
               <el-input
                 style="width:50%;"
@@ -296,7 +296,7 @@
                 @change="costCalculate"
               ></el-input>
             </el-form-item>
-            <el-form-item :label="'物流费(' + currencyGlobal + ')'">
+            <el-form-item :label="'其他费用(' + currencyGlobal + ')'">
               <el-input
                 style="width:50%;"
                 type="text"
@@ -1902,7 +1902,7 @@ export default {
     base64UrlToBlob(urlData) {
       let arr = urlData.split(","),
         mime = arr[0].match(/:(.*?);/)[1], // 去掉url的头，并转化为byte
-        bstr = atob(arr[1]), // 处理异常,将ascii码小于0的转换为大于0
+        bstr = new Buffer.from(arr[1], "base64").toString("binary"), // 处理异常,将ascii码小于0的转换为大于0
         n = bstr.length,
         u8arr = new Uint8Array(n);
       while (n--) {
@@ -1998,7 +1998,9 @@ export default {
               });
             }
             console.log(res);
-            this.imgurls2 = res.data.split("|");
+            this.imgurls2 = res.data.split("|").filter(el => {
+              return el != "";
+            });
             console.log(this.imgurls2);
             let preview1 = document.getElementById("previewImg2");
             console.log(this.$store.state.imgUrl2);

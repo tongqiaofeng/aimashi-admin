@@ -8,11 +8,11 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    // baseUrl: 'https://hk.wistechx.cn/HermesApi', // 正式
-    // baseCompanyUrl: "https://hk.wistechx.cn/HermesNewApi",
+    baseUrl: 'https://hk.wistechx.cn/HermesApi', // 正式
+    baseCompanyUrl: "https://hk.wistechx.cn/HermesNewApi",
     //baseUrl: 'http://hk.wistechx.cn:8081/stock',
-    baseUrl: 'http://192.168.0.164:8081/stock',
-    baseCompanyUrl: "http://192.168.0.164:8081",
+    // baseUrl: 'http://192.168.0.164:8081/stock',
+    // baseCompanyUrl: "http://192.168.0.164:8081",
     currentRole: null, // 当前用户角色
     isLogin: false,
     token: '',

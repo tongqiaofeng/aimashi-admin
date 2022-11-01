@@ -141,12 +141,15 @@ export default {
     base64UrlToBlob2(urlData) {
       console.log("转Blob格式/file格式", urlData);
 
-      let mime = urlData.split(",")[0].match(/:(.*?);/)[1], // image/jpeg
-        n = atob(urlData.split(",")[1]).length, // window.atob() 对接受到的 base64 数据进行解码,得到原数据
-        u8arr = new Uint8Array(n); // 创建初始化为0的，包含n个元素的无符号整型数组
+      let arr = urlData.split(","),
+        mime = arr[0].match(/:(.*?);/)[1], // 去掉url的头，并转化为byte
+        bstr = new Buffer.from(arr[1], "base64").toString("binary"), // 处理异常,将ascii码小于0的转换为大于0
+        n = bstr.length,
+        u8arr = new Uint8Array(n);
       while (n--) {
-        u8arr[n] = atob(urlData.split(",")[1]).charCodeAt(n);
+        u8arr[n] = bstr.charCodeAt(n);
       }
+
       console.log("u8arr数据", u8arr);
 
       // 转blob
@@ -176,7 +179,11 @@ export default {
           }
           console.log(res);
           this.loading.close();
-          this.imgSrcs.push(res.data.split("|")[0]);
+          this.imgSrcs.push(
+            res.data.split("|").filter(el => {
+              return el != "";
+            })[0]
+          );
         })
         .catch(err => {
           this.loading.close();

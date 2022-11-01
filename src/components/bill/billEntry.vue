@@ -92,6 +92,11 @@
                 貨號
               </div>
               <div class="every2">
+                <span
+                  style="color: red;"
+                  v-show="billRules.money[0].required == true"
+                  >*</span
+                >
                 外幣金額
               </div>
               <div class="every3">外幣轉{{ companyCurrency }}匯率</div>
@@ -110,24 +115,19 @@
                 操作
               </div>
             </div>
-            <div
-              class="code-table"
-              style="margin-top: 5px;"
-              v-for="(items, index) in billData.stockList"
-              :key="index"
-            >
+            <div class="code-table" style="margin-top: 5px;">
               <div class="every1">
                 <el-input
-                  v-model="items.productCode"
+                  v-model="productListMsg.productCode"
                   placeholder="請輸入"
-                  @change="searchCode(items.productCode, index)"
+                  @change="searchCode(productListMsg.productCode, '')"
                 ></el-input>
               </div>
               <div class="every2">
                 <el-input
-                  v-model="items.money"
+                  v-model="productListMsg.money"
                   placeholder="請輸入"
-                  @change="tablePriceChange(items)"
+                  @change="tablePriceChange(productListMsg, 'add')"
                 ></el-input>
                 <el-select
                   v-model="billData.currencyId"
@@ -151,9 +151,9 @@
               </div>
               <div class="every4">
                 <el-input
-                  v-model="items.totalHkPrice"
+                  v-model="productListMsg.totalHkPrice"
                   placeholder="請輸入"
-                  @change="tablePriceChange(items)"
+                  @change="tablePriceChange(productListMsg, 'add')"
                 ></el-input>
               </div>
               <div class="every5">
@@ -161,13 +161,65 @@
                   src="../../assets/imgs/add.png"
                   style="width: 30px;height: 30px;cursor: pointer;"
                   @click="addCode"
-                  v-if="index == 0"
                 />
-                <el-button type="text" @click="delCode(index)" v-else
-                  >刪除</el-button
-                >
               </div>
             </div>
+
+            <div style="margin-top: 30px;" v-if="billData.stockList.length > 0">
+              <div
+                class="code-table"
+                style="margin-top: 5px;"
+                v-for="(items, index) in billData.stockList"
+                :key="index"
+              >
+                <div class="every1">
+                  <el-input
+                    v-model="items.productCode"
+                    placeholder="請輸入"
+                    @change="searchCode(items.productCode, index)"
+                  ></el-input>
+                </div>
+                <div class="every2">
+                  <el-input
+                    v-model="items.money"
+                    placeholder="請輸入"
+                    @change="tablePriceChange(items, 'update')"
+                  ></el-input>
+                  <el-select
+                    v-model="billData.currencyId"
+                    placeholder="請選擇幣種"
+                  >
+                    <el-option
+                      v-for="item in currencyIds"
+                      :key="item.value"
+                      :label="item.label"
+                      :value="item.value"
+                    >
+                    </el-option>
+                  </el-select>
+                </div>
+                <div class="every3">
+                  <el-input
+                    v-model="billData.totalToHkRate"
+                    placeholder="請輸入"
+                    @input="hkRateTableNum"
+                  ></el-input>
+                </div>
+                <div class="every4">
+                  <el-input
+                    v-model="items.totalHkPrice"
+                    placeholder="請輸入"
+                    @change="tablePriceChange(items, 'update')"
+                  ></el-input>
+                </div>
+                <div class="every5">
+                  <el-button type="text" @click="delCode(index)"
+                    >刪除</el-button
+                  >
+                </div>
+              </div>
+            </div>
+
             <el-dialog
               title="提示"
               :visible.sync="dialogCodeVisible"
@@ -186,6 +238,7 @@
               </div>
             </el-dialog>
           </el-form-item>
+
           <el-form-item
             label="產品描述"
             prop="productDes"
@@ -232,11 +285,7 @@
           <el-form-item
             :label="'外幣轉' + companyCurrency + '匯率'"
             prop="totalToHkRate"
-            v-if="
-              billData.stockList.length > 0
-                ? billData.stockList[0].productCode == ''
-                : productCodeIsNull
-            "
+            v-if="billData.stockList.length == 0"
           >
             <el-input
               v-model="billData.totalToHkRate"
@@ -262,11 +311,7 @@
           </el-form-item>
         </el-form>
         <div style="display: flex;justify-content: flex-end;text-align: right;">
-          <el-button
-            style="margin-right: 50px;"
-            type="primary"
-            @click="clearForm"
-          >
+          <el-button style="margin-right: 50px;" @click="clearForm">
             重置
           </el-button>
           <el-button v-if="billData.id" type="primary" @click="updateBillSure"
@@ -371,17 +416,7 @@ export default {
         totalHkPrice: "",
         receiveType: "",
         remark: "",
-        stockList: [
-          {
-            stockId: null,
-            productCode: "",
-            money: "",
-            totalHkPrice: "",
-            saleTotalHkMoney: 0,
-            treasuryPrices: 0,
-            saleTotalHkPrice: 0
-          }
-        ]
+        stockList: []
       },
       billRules: {
         personId: [
@@ -491,7 +526,6 @@ export default {
       delId: null,
 
       productCodeIsKong: false,
-      productCodeIsNull: true,
 
       personType: null,
       payeeType: null,
@@ -500,7 +534,18 @@ export default {
       companyCurrency: "",
 
       accountNumberType: null,
-      currencyGlobal: ""
+      currencyGlobal: "",
+
+      productListMsg: {
+        stockId: null,
+        productCode: "",
+        money: "",
+        totalHkPrice: "",
+        saleTotalHkMoney: 0,
+        treasuryPrices: 0,
+        saleTotalHkPrice: 0
+      },
+      proDes: ""
     };
   },
   created() {
@@ -545,32 +590,21 @@ export default {
     },
     // 修改賬單
     updateBill(row, column) {
+      console.log(row, column);
       this.isClick = false;
 
       this.billData = JSON.parse(JSON.stringify(row));
-      if (this.billData.stockList.length == 0) {
-        this.billData.stockList = [
-          {
-            stockId: null,
-            productCode: "",
-            money: "",
-            totalHkPrice: "",
-            saleTotalHkMoney: 0,
-            treasuryPrices: 0,
-            saleTotalHkPrice: 0
-          }
-        ];
-        this.productCodeIsNull = true;
-      } else {
-        this.productCodeIsNull = false;
-      }
+
+      this.billRules.money[0].required = false;
+      this.payeeType = null;
+      this.payeeCurrency = null;
+
+      this.personChange("update");
+      this.isSam();
     },
     // 確定修改
     updateBillSure() {
-      if (
-        this.isClick == true &&
-        this.billData.stockList[0].productCode != ""
-      ) {
+      if (this.isClick == true) {
         this.$message.error({
           message: "有貨號查詢產品描述失敗，請檢查貨號輸入是否正確",
           showClose: true,
@@ -583,17 +617,6 @@ export default {
           this.updateData();
         } else {
           console.log("不通過");
-          this.billData.stockList = [
-            {
-              stockId: null,
-              productCode: "",
-              money: "",
-              totalHkPrice: "",
-              saleTotalHkMoney: 0,
-              treasuryPrices: 0,
-              saleTotalHkPrice: 0
-            }
-          ];
         }
       }
     },
@@ -618,19 +641,19 @@ export default {
                 this.billData.id = null;
                 this.billData.currencyId = "";
                 this.billData.totalToHkRate = "";
-                this.billData.stockList = [
-                  {
-                    stockId: null,
-                    productCode: "",
-                    money: "",
-                    totalHkPrice: "",
-                    saleTotalHkMoney: 0,
-                    treasuryPrices: 0,
-                    saleTotalHkPrice: 0
-                  }
-                ];
+                this.billData.stockList = [];
 
                 this.billData.personId = name;
+
+                this.productListMsg = {
+                  stockId: null,
+                  productCode: "",
+                  money: "",
+                  totalHkPrice: "",
+                  saleTotalHkMoney: 0,
+                  treasuryPrices: 0,
+                  saleTotalHkPrice: 0
+                };
 
                 this.getBillList();
 
@@ -641,17 +664,6 @@ export default {
             })
             .catch(err => {
               console.log(err);
-              this.billData.stockList = [
-                {
-                  stockId: null,
-                  productCode: "",
-                  money: "",
-                  totalHkPrice: "",
-                  saleTotalHkMoney: 0,
-                  treasuryPrices: 0,
-                  saleTotalHkPrice: 0
-                }
-              ];
               this.$message.error({
                 message: err.data.status,
                 showClose: true,
@@ -711,17 +723,16 @@ export default {
       this.billData.id = null;
       this.billData.currencyId = "";
       this.billData.totalToHkRate = "";
-      this.billData.stockList = [
-        {
-          stockId: null,
-          productCode: "",
-          money: "",
-          totalHkPrice: "",
-          saleTotalHkMoney: 0,
-          treasuryPrices: 0,
-          saleTotalHkPrice: 0
-        }
-      ];
+      this.billData.stockList = [];
+      this.productListMsg = {
+        stockId: null,
+        productCode: "",
+        money: "",
+        totalHkPrice: "",
+        saleTotalHkMoney: 0,
+        treasuryPrices: 0,
+        saleTotalHkPrice: 0
+      };
 
       this.billData.personId = name;
       console.log(this.billData);
@@ -730,10 +741,7 @@ export default {
     submitData() {
       this.$refs["billForm"].validate(valid => {
         if (valid) {
-          if (
-            this.isClick == true &&
-            this.billData.stockList[0].productCode != ""
-          ) {
+          if (this.isClick == true) {
             this.$message.error({
               message: "有貨號查詢產品描述失敗，請檢查貨號是否正確",
               showClose: true,
@@ -747,19 +755,6 @@ export default {
               this.submitFormData();
             } else {
               console.log("不通過");
-              if (this.billData.stockList.length == 0) {
-                this.billData.stockList = [
-                  {
-                    stockId: null,
-                    productCode: "",
-                    money: this.billData.money,
-                    totalHkPrice: this.billData.totalHkPrice,
-                    saleTotalHkMoney: 0,
-                    treasuryPrices: 0,
-                    saleTotalHkPrice: 0
-                  }
-                ];
-              }
             }
           }
         } else {
@@ -781,28 +776,23 @@ export default {
               showClose: true,
               duration: 2000
             });
-
             let name = this.billData.personId;
-
             this.$refs.billForm.resetFields();
             this.billData.currencyId = "";
             this.billData.totalToHkRate = "";
-            this.billData.stockList = [
-              {
-                stockId: null,
-                productCode: "",
-                money: "",
-                totalHkPrice: "",
-                saleTotalHkMoney: 0,
-                treasuryPrices: 0,
-                saleTotalHkPrice: 0
-              }
-            ];
-
+            this.billData.stockList = [];
             this.billData.personId = name;
 
+            this.productListMsg = {
+              stockId: null,
+              productCode: "",
+              money: "",
+              totalHkPrice: "",
+              saleTotalHkMoney: 0,
+              treasuryPrices: 0,
+              saleTotalHkPrice: 0
+            };
             this.getBillList();
-
             document
               .getElementById("billEntryContainer")
               .scrollIntoView({ behavior: "smooth" });
@@ -810,19 +800,6 @@ export default {
         })
         .catch(err => {
           console.log(err);
-          if (this.billData.stockList.length == 0) {
-            this.billData.stockList = [
-              {
-                stockId: null,
-                productCode: "",
-                money: this.billData.money,
-                totalHkPrice: this.billData.totalHkPrice,
-                saleTotalHkMoney: 0,
-                treasuryPrices: 0,
-                saleTotalHkPrice: 0
-              }
-            ];
-          }
           this.$message.error({
             message: err.data.status,
             showClose: true,
@@ -834,150 +811,59 @@ export default {
     isKong() {
       this.productCodeIsKong = false;
 
-      if (this.billData.stockList[0].productCode == "") {
-        this.billData.stockList = [];
-        this.productCodeIsNull = true;
-      } else {
-        this.productCodeIsNull = false;
-
-        for (const item of this.billData.stockList) {
-          // 賬號為Sam
-          if (this.billRules.money[0].required == true) {
-            if (item.money == "" || item.money == 0) {
-              this.$message.error({
-                message: "產品貨號列表外幣金額不能為空，請輸入",
-                showClose: true,
-                duration: 2000
-              });
-              this.productCodeIsKong = true;
-              return;
-            }
-          } else {
-            this.productCodeIsKong = false;
+      for (const item of this.billData.stockList) {
+        // 賬號為Sam
+        if (this.billRules.money[0].required == true) {
+          if (item.money == "" || item.money == 0) {
+            this.$message.error({
+              message: "產品貨號列表外幣金額不能為空，請輸入",
+              showClose: true,
+              duration: 2000
+            });
+            this.productCodeIsKong = true;
+            return;
           }
-
-          // 交易類型為  買入/賣出相關
-          if (
-            this.billData.tradeType != 2 &&
-            this.billData.tradeType != 5 &&
-            this.billData.tradeType != 6
-          ) {
-            if (item.totalHkPrice == "") {
-              this.$message.error({
-                message:
-                  "產品貨號列表" +
-                  this.companyCurrency +
-                  "金額不能為空，請輸入",
-                showClose: true,
-                duration: 2000
-              });
-              this.productCodeIsKong = true;
-              return;
-            }
-          } else {
-            this.productCodeIsKong = false;
-          }
-
-          if (this.billData.tradeType == 0) {
-            if (
-              item.treasuryPrices &&
-              item.totalHkPrice &&
-              item.treasuryPrices != item.totalHkPrice
-            ) {
-              this.productCodeIsKong = true;
-              let msg =
-                "貨號" +
-                item.productCode +
-                "入庫金額為：" +
-                item.treasuryPrices +
-                this.currencyGlobal +
-                " ，您錄入的買入金額為：" +
-                item.totalHkPrice +
-                this.currencyGlobal +
-                " ，兩者不相等，是否確定繼續提交？";
-              this.$confirm(msg, "提示", {
-                confirmButtonText: "確定",
-                cancelButtonText: "取消",
-                type: "warning"
-              })
-                .then(() => {
-                  this.productCodeIsKong = false;
-                  if (this.billData.id) {
-                    this.updateData();
-                  } else {
-                    this.submitFormData();
-                  }
-                })
-                .catch(() => {
-                  console.log("取消提交");
-                });
-              return;
-            } else {
-              this.productCodeIsKong = false;
-            }
-          } else if (this.billData.tradeType == 1) {
-            if (
-              item.saleTotalHkPrice &&
-              item.totalHkPrice &&
-              item.saleTotalHkPrice != item.totalHkPrice
-            ) {
-              this.productCodeIsKong = true;
-              let msg =
-                "貨號" +
-                item.productCode +
-                "出售金額為：" +
-                item.saleTotalHkPrice +
-                this.currencyGlobal +
-                " ，您錄入的賣出金額為：" +
-                item.totalHkPrice +
-                this.currencyGlobal +
-                " ，兩者不相等，是否確定繼續提交？";
-              this.$confirm(msg, "提示", {
-                confirmButtonText: "確定",
-                cancelButtonText: "取消",
-                type: "warning"
-              })
-                .then(() => {
-                  this.productCodeIsKong = false;
-                  if (this.billData.id) {
-                    this.updateData();
-                  } else {
-                    this.submitFormData();
-                  }
-                })
-                .catch(() => {
-                  console.log("取消提交");
-                });
-              return;
-            } else {
-              this.productCodeIsKong = false;
-            }
-          }
+        } else {
+          this.productCodeIsKong = false;
         }
 
-        if (this.billData.tradeType == 2) {
-          let saleHkMoneyTotal = 0;
+        // 交易類型為  買入/賣出相關
 
-          // reduce() 方法接收一个函数作为累加器，数组中的每个值（从左到右）开始缩减，最终计算为一个值。
-          // 參數一：必需。用于执行每个数组元素的函数。 c: 必需,初始值/计算结束后的返回值。item	必需,当前元素
-          // 參數二：可选。传递给函数的初始值
-          saleHkMoneyTotal = this.billData.stockList.reduce(
-            (c, item) => c + item.saleTotalHkMoney * 1,
-            0
-          );
+        if (
+          this.billData.tradeType != 2 &&
+          this.billData.tradeType != 5 &&
+          this.billData.tradeType != 6
+        ) {
+          if (item.totalHkPrice == "") {
+            this.$message.error({
+              message:
+                "產品貨號列表" + this.companyCurrency + "金額不能為空，請輸入",
+              showClose: true,
+              duration: 2000
+            });
+            this.productCodeIsKong = true;
+            return;
+          }
+        } else {
+          this.productCodeIsKong = false;
+        }
 
+        if (this.billData.tradeType == 0) {
+          console.log("买入账单", item);
           if (
-            this.billData.totalHkPrice &&
-            this.saleHkMoneyTotal &&
-            this.billData.totalHkPrice != saleHkMoneyTotal
+            item.treasuryPrices &&
+            item.totalHkPrice &&
+            item.treasuryPrices != item.totalHkPrice
           ) {
             this.productCodeIsKong = true;
             let msg =
-              "產品列表出售總金額為：" +
-              saleHkMoneyTotal +
+              "貨號" +
+              item.productCode +
+              "入庫金額為：" +
+              item.treasuryPrices +
               this.currencyGlobal +
-              " ，您的轉賬金額為：" +
-              this.billData.totalHkPrice +
+              " ，您錄入的買入金額為：" +
+              item.totalHkPrice +
               this.currencyGlobal +
               " ，兩者不相等，是否確定繼續提交？";
             this.$confirm(msg, "提示", {
@@ -1000,6 +886,90 @@ export default {
           } else {
             this.productCodeIsKong = false;
           }
+        } else if (this.billData.tradeType == 1) {
+          if (
+            item.saleTotalHkPrice &&
+            item.totalHkPrice &&
+            item.saleTotalHkPrice != item.totalHkPrice
+          ) {
+            this.productCodeIsKong = true;
+            let msg =
+              "貨號" +
+              item.productCode +
+              "出售金額為：" +
+              item.saleTotalHkPrice +
+              this.currencyGlobal +
+              " ，您錄入的賣出金額為：" +
+              item.totalHkPrice +
+              this.currencyGlobal +
+              " ，兩者不相等，是否確定繼續提交？";
+            this.$confirm(msg, "提示", {
+              confirmButtonText: "確定",
+              cancelButtonText: "取消",
+              type: "warning"
+            })
+              .then(() => {
+                this.productCodeIsKong = false;
+                if (this.billData.id) {
+                  this.updateData();
+                } else {
+                  this.submitFormData();
+                }
+              })
+              .catch(() => {
+                console.log("取消提交");
+              });
+            return;
+          } else {
+            this.productCodeIsKong = false;
+          }
+        }
+      }
+
+      if (this.billData.tradeType == 2) {
+        let saleHkMoneyTotal = 0;
+
+        // reduce() 方法接收一个函数作为累加器，数组中的每个值（从左到右）开始缩减，最终计算为一个值。
+        // 參數一：必需。用于执行每个数组元素的函数。 c: 必需,初始值/计算结束后的返回值。item	必需,当前元素
+        // 參數二：可选。传递给函数的初始值
+        saleHkMoneyTotal = this.billData.stockList.reduce(
+          (c, item) => c + item.saleTotalHkMoney * 1,
+          0
+        );
+
+        if (
+          this.billData.totalHkPrice &&
+          this.saleHkMoneyTotal &&
+          this.billData.totalHkPrice != saleHkMoneyTotal
+        ) {
+          this.productCodeIsKong = true;
+          let msg =
+            "產品列表出售總金額為：" +
+            saleHkMoneyTotal +
+            this.currencyGlobal +
+            " ，您的轉賬金額為：" +
+            this.billData.totalHkPrice +
+            this.currencyGlobal +
+            " ，兩者不相等，是否確定繼續提交？";
+          this.$confirm(msg, "提示", {
+            confirmButtonText: "確定",
+            cancelButtonText: "取消",
+            type: "warning"
+          })
+            .then(() => {
+              this.productCodeIsKong = false;
+              if (this.billData.id) {
+                this.updateData();
+              } else {
+                this.submitFormData();
+              }
+            })
+            .catch(() => {
+              console.log("取消提交");
+            });
+          return;
+        } else {
+          this.productCodeIsKong = false;
         }
       }
     },
@@ -1031,8 +1001,11 @@ export default {
       this.billData.receiveType = item.value;
     },
     // 賬戶類型為其他和員工
-    personChange() {
-      this.getBillList();
+    personChange(type) {
+      if (type != "update") {
+        this.getBillList();
+      }
+
       let companyCurrencyId;
       for (const item of this.userList) {
         if (item.id == this.billData.personId) {
@@ -1162,7 +1135,6 @@ export default {
     searchCode(productCode, index) {
       console.log(productCode, index);
       productCode = productCode.trim();
-      this.billData.stockList[index].productCode = productCode;
       if (productCode != "") {
         this.$axios
           .get(this.baseUrl + "/productCodeSearch?productCode=" + productCode)
@@ -1171,15 +1143,34 @@ export default {
             console.log(res);
             let item = res.data;
             if (item.stockId) {
-              this.billData.productDes += item.productDes + "\n";
+              this.proDes = item.productDes;
               this.isClick = false;
 
-              this.billData.stockList[index].stockId = item.stockId;
-              this.billData.stockList[index].saleTotalHkMoney =
-                item.saleTotalHkMoney;
-              this.billData.stockList[index].treasuryPrices = item.totalHkPrice;
-              this.billData.stockList[index].saleTotalHkPrice =
-                item.saleTotalHkPrice;
+              if (index != "") {
+                console.log("修改333333333");
+                let list = this.billData.productDes.split("\n").filter(el => {
+                  return el != "";
+                });
+                list.splice(index, 1, this.proDes);
+                this.billData.productDes = list.join("\n");
+
+                this.billData.stockList[index].productCode = productCode;
+                this.billData.stockList[index].stockId = item.stockId;
+                this.billData.stockList[index].saleTotalHkMoney =
+                  item.saleTotalHkMoney;
+                this.billData.stockList[index].treasuryPrices =
+                  item.totalHkPrice;
+                this.billData.stockList[index].saleTotalHkPrice =
+                  item.saleTotalHkPrice;
+              } else {
+                console.log("新增66666666666");
+
+                this.productListMsg.productCode = productCode;
+                this.productListMsg.stockId = item.stockId;
+                this.productListMsg.saleTotalHkMoney = item.saleTotalHkMoney;
+                this.productListMsg.treasuryPrices = item.totalHkPrice;
+                this.productListMsg.saleTotalHkPrice = item.saleTotalHkPrice;
+              }
             } else {
               this.productCode = productCode;
               this.dialogCodeVisible = true;
@@ -1195,7 +1186,9 @@ export default {
     delCode(index) {
       this.billData.stockList.splice(index, 1);
 
-      let list = this.billData.productDes.split("\n");
+      let list = this.billData.productDes.split("\n").filter(el => {
+        return el != "";
+      });
       list.splice(index, 1);
       this.billData.productDes = list.join("\n");
 
@@ -1203,18 +1196,82 @@ export default {
     },
     // 添加貨號
     addCode() {
-      this.billData.stockList.push({
-        stockId: null,
-        productCode: "",
-        money: "",
-        totalHkPrice: "",
-        saleTotalHkMoney: 0,
-        treasuryPrices: 0,
-        saleTotalHkPrice: 0
-      });
+      if (this.productListMsg.productCode) {
+        if (this.isClick == true) {
+          this.$message.error({
+            message: "貨號查詢產品描述失敗，請檢查貨號是否正確",
+            showClose: true,
+            duration: 5000
+          });
+        } else {
+          if (
+            this.billRules.money[0].required == true &&
+            !this.productListMsg.money
+          ) {
+            this.$message.error({
+              message: "外幣金額不能為空，請輸入",
+              showClose: true,
+              duration: 2000
+            });
+            return;
+          }
+
+          if (
+            this.billData.tradeType != 2 &&
+            this.billData.tradeType != 5 &&
+            this.billData.tradeType != 6 &&
+            !this.productListMsg.totalHkPrice
+          ) {
+            this.$message.error({
+              message: this.companyCurrency + "金額不能為空，請輸入",
+              showClose: true,
+              duration: 2000
+            });
+            return;
+          }
+
+          this.billData.stockList.push({
+            productCode: this.productListMsg.productCode,
+            stockId: this.productListMsg.stockId,
+            money: this.productListMsg.money,
+            totalHkPrice: this.productListMsg.totalHkPrice,
+            saleTotalHkMoney: this.productListMsg.saleTotalHkMoney,
+            treasuryPrices: this.productListMsg.treasuryPrices,
+            saleTotalHkPrice: this.productListMsg.saleTotalHkPrice
+          });
+
+          if (
+            this.billData.productDes &&
+            this.billData.productDes.substr(-1, 2) != "\n"
+          ) {
+            this.billData.productDes += "\n" + this.proDes + "\n";
+          } else {
+            this.billData.productDes += this.proDes + "\n";
+          }
+
+          this.tableHKPriceChange();
+
+          this.productListMsg = {
+            stockId: null,
+            productCode: "",
+            money: "",
+            totalHkPrice: "",
+            saleTotalHkMoney: 0,
+            treasuryPrices: 0,
+            saleTotalHkPrice: 0
+          };
+        }
+      } else {
+        this.$message.error({
+          message: "請輸入貨號查詢產品",
+          showClose: true,
+          duration: 2000
+        });
+      }
     },
+
     // 表格內外幣金額與港幣金額變化
-    tablePriceChange(item) {
+    tablePriceChange(item, index) {
       item.money = this.getPriceNum(item.money);
       item.totalHkPrice = this.getIntegerNum(item.totalHkPrice);
 
@@ -1233,11 +1290,22 @@ export default {
           ).toFixed(0);
         }
       }
-
-      this.tableHKPriceChange();
+      if (index == "update") {
+        this.tableHKPriceChange();
+      }
     },
     // 匯率變化
     hkRateTableNum() {
+      if (this.billData.currencyId == 1 && this.billData.totalToHkRate < 1) {
+        this.productListMsg.totalHkPrice = (
+          this.productListMsg.money / this.billData.totalToHkRate
+        ).toFixed(0);
+      } else {
+        this.productListMsg.totalHkPrice = (
+          this.productListMsg.money * this.billData.totalToHkRate
+        ).toFixed(0);
+      }
+
       for (const item of this.billData.stockList) {
         if (this.billData.currencyId == 1 && this.billData.totalToHkRate < 1) {
           item.totalHkPrice = (

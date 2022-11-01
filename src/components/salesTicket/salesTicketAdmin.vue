@@ -278,6 +278,7 @@
             </el-form-item>
             <el-form-item label="關鍵字：">
               <el-input
+                clearable
                 style="width: 400px;"
                 v-model="searchKey"
                 placeholder="可輸入商品款式、尺寸、材質、色號、色系、貨號等搜索"

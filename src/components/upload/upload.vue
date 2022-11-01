@@ -85,7 +85,7 @@ export default {
     base64UrlToBlob(urlData) {
       let arr = urlData.split(","),
         mime = arr[0].match(/:(.*?);/)[1], // 去掉url的头，并转化为byte
-        bstr = atob(arr[1]), // 处理异常,将ascii码小于0的转换为大于0
+        bstr = new Buffer.from(arr[1], "base64").toString("binary"), // 处理异常,将ascii码小于0的转换为大于0
         n = bstr.length,
         u8arr = new Uint8Array(n);
       while (n--) {
@@ -183,7 +183,9 @@ export default {
               });
             }
             console.log(res);
-            this.imgurls = res.data.split("|");
+            this.imgurls = res.data.split("|").filter(el => {
+              return el != "";
+            });
             console.log(this.imgurls);
             let preview1 = document.getElementById("previewImg1");
             console.log(this.$store.state.imgUrl);

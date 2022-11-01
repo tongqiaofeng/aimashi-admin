@@ -357,7 +357,7 @@
         </el-form>
       </el-tab-pane>
       <el-tab-pane label="采购及价格" name="second">
-        <el-form label-width="100px">
+        <el-form label-width="110px">
           <el-form-item label="买手">
             <el-input
               style="width:50%;"
@@ -407,7 +407,7 @@
               @change="costCalculate"
             ></el-input>
           </el-form-item>
-          <el-form-item :label="'物流费(' + currencyGlobal + ')'">
+          <el-form-item :label="'其他费用(' + currencyGlobal + ')'">
             <el-input
               style="width:50%;"
               type="text"
@@ -1276,7 +1276,9 @@ export default {
           this.$store.state.imgUrl = data.pics;
           this.$store.state.imgUrl2 = data.privateImg;
 
-          let p = data.pics.split("|");
+          let p = data.pics.split("|").filter(el => {
+            return el != "";
+          });
           this.imgSrc = [];
           this.imgSrc2 = [];
           for (let i = 0; i < p.length - 1; i++) {
@@ -1284,7 +1286,9 @@ export default {
           }
 
           if (data.privateImg !== "" && data.privateImg !== null) {
-            let q = data.privateImg.split("|");
+            let q = data.privateImg.split("|").filter(el => {
+              return el != "";
+            });
             for (let i = 0; i < q.length - 1; i++) {
               this.imgSrc2.push(q[i]);
             }
@@ -1336,7 +1340,7 @@ export default {
                 name: list[index]
               });
             }
-          }else{
+          } else {
             this.isRequire = 1;
           }
           this.leather = data.leather;
@@ -1346,7 +1350,9 @@ export default {
           this.colorSeries = data.colorSeries;
           this.letter = data.letter;
           this.stockStat = data.stockStat;
-          this.stock = data.stockStat.split("|");
+          this.stock = data.stockStat.split("|").filter(el => {
+            return el != "";
+          });
           this.note = data.note;
           this.logHkPrice = data.logHkPrice;
 
@@ -2245,7 +2251,7 @@ export default {
     base64UrlToBlob(urlData) {
       let arr = urlData.split(","),
         mime = arr[0].match(/:(.*?);/)[1], // 去掉url的头，并转化为byte
-        bstr = atob(arr[1]), // 处理异常,将ascii码小于0的转换为大于0
+        bstr = new Buffer.from(arr[1], "base64").toString("binary"), // 处理异常,将ascii码小于0的转换为大于0
         n = bstr.length,
         u8arr = new Uint8Array(n);
       while (n--) {
@@ -2336,7 +2342,9 @@ export default {
               });
             }
             console.log(res);
-            this.imgurls = res.data.split("|");
+            this.imgurls = res.data.split("|").filter(el => {
+              return el != "";
+            });
             console.log(this.imgurls);
             let preview1 = document.getElementById("preview1");
             console.log(this.$store.state.imgUrl);
@@ -2434,7 +2442,7 @@ export default {
     base64UrlToBlob2(urlData) {
       let arr = urlData.split(","),
         mime = arr[0].match(/:(.*?);/)[1], // 去掉url的头，并转化为byte
-        bstr = atob(arr[1]), // 处理异常,将ascii码小于0的转换为大于0
+        bstr = new Buffer.from(arr[1], "base64").toString("binary"), // 处理异常,将ascii码小于0的转换为大于0
         n = bstr.length,
         u8arr = new Uint8Array(n);
       while (n--) {
@@ -2527,7 +2535,9 @@ export default {
               });
             }
             console.log(res);
-            this.imgurls2 = res.data.split("|");
+            this.imgurls2 = res.data.split("|").filter(el => {
+              return el != "";
+            });
             console.log(this.imgurls2);
             let preview1 = document.getElementById("preview1");
             console.log(this.$store.state.imgUrl2);

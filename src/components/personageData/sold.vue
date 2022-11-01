@@ -31,7 +31,7 @@
               </el-select>
             </el-form-item>
             <el-form-item label="">
-              <el-input
+              <el-input clearable
                 style="width: 600px;"
                 placeholder="输入款式，尺寸，材质，色号，色系，客户，货号可搜索，如：H000001、000001、1"
                 v-model="searchKey"
