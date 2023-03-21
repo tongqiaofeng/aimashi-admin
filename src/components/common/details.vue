@@ -1,61 +1,30 @@
 <template>
   <div class="update-container">
     <!-- 分公司可以查看總公司商品，但是庫存地沒法顯示，因為分公司只能顯示自己所管理的倉庫 -->
-    <div
-      style="width: 60px;margin-bottom: 20px;display: flex;justify-content:space-between;cursor: pointer;"
-      @click="goback"
-    >
+    <div style="width: 60px;margin-bottom: 20px;display: flex;justify-content:space-between;cursor: pointer;"
+      @click="goback">
       <img src="../../assets/imgs/goback.png" style="height: 21px;" />
       <p style="margin: 0;">返回</p>
     </div>
     <el-form ref="globalForm" label-width="110px">
       <el-form-item label="货号" required>
         <el-form-item>
-          <el-input
-            style="width:50%;"
-            type="text"
-            placeholder="请输入货号"
-            v-model="productCode"
-            clearable
-          ></el-input>
+          <el-input style="width:50%;" type="text" placeholder="请输入货号" v-model="productCode" clearable></el-input>
         </el-form-item>
       </el-form-item>
       <el-form-item label="库存地" required>
-        <el-select
-          v-if="sold == 8"
-          v-model="stockLocId"
-          placeholder="请选择"
-          clearable
-          style="width:50%;"
-          value-key="warehouseId"
-        >
-          <el-option
-            v-for="item in stockLocs"
-            :key="item.warehouseId"
-            :label="item.warehouseName"
-            :value="item"
-          >
+        <el-select v-if="sold == 8" v-model="stockLocId" placeholder="请选择" clearable style="width:50%;"
+          value-key="warehouseId">
+          <el-option v-for="item in stockLocs" :key="item.warehouseId" :label="item.warehouseName" :value="item">
             <span style="float: left">{{ item.warehouseName }}</span>
             <span style="float: right; color: #8492a6; font-size: 13px">{{
               item.companyName
             }}</span>
           </el-option>
         </el-select>
-        <el-select
-          v-else
-          v-model="stockLocId"
-          placeholder="请选择"
-          clearable
-          style="width:50%;"
-          value-key="warehouseId"
-        >
-          <el-option
-            v-for="item in stockLocs"
-            :key="item.warehouseId"
-            :label="item.warehouseName"
-            :value="item"
-            v-show="item.companyId == companyId"
-          >
+        <el-select v-else v-model="stockLocId" placeholder="请选择" clearable style="width:50%;" value-key="warehouseId">
+          <el-option v-for="item in stockLocs" :key="item.warehouseId" :label="item.warehouseName" :value="item"
+            v-show="item.companyId == companyId">
             <span style="float: left">{{ item.warehouseName }}</span>
             <span style="float: right; color: #8492a6; font-size: 13px">{{
               item.companyName
@@ -65,124 +34,56 @@
       </el-form-item>
       <el-form-item label="库存状态" required>
         <el-form-item>
-          <el-select
-            style="width: 50%;"
-            v-model="sold"
-            placeholder="请选择"
-            @change="stateChange"
-          >
-            <el-option
-              v-for="item in stateList"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            >
+          <el-select style="width: 50%;" v-model="sold" placeholder="请选择" @change="stateChange">
+            <el-option v-for="item in stateList" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
       </el-form-item>
       <el-form-item label="预计到达时间" v-if="sold == 0">
-        <el-date-picker
-          type="date"
-          placeholder="请选择日期时间"
-          v-model="estimateTime"
-          style="width:50%;"
-          value-format="yyyy-MM-dd"
-          format="yyyy-MM-dd"
-        >
+        <el-date-picker type="date" placeholder="请选择日期时间" v-model="estimateTime" style="width:50%;"
+          value-format="yyyy-MM-dd" format="yyyy-MM-dd">
         </el-date-picker>
       </el-form-item>
-      <el-form-item
-        label="入库时间"
-        required
-        v-if="sold == 1 || sold == 2 || sold == 3 || sold == 8"
-      >
-        <el-date-picker
-          style="width:50%;"
-          v-model="createTime"
-          type="date"
-          placeholder="请选择日期时间"
-          value-format="yyyy-MM-dd"
-          format="yyyy-MM-dd"
-          :disabled="sold == 3 || sold == 8 ? true : false"
-        ></el-date-picker>
+      <el-form-item label="入库时间" required v-if="sold == 1 || sold == 2 || sold == 3 || sold == 8">
+        <el-date-picker style="width:50%;" v-model="createTime" type="date" placeholder="请选择日期时间"
+          value-format="yyyy-MM-dd" format="yyyy-MM-dd"
+          :disabled="sold == 3 || sold == 8 ? true : false"></el-date-picker>
       </el-form-item>
       <el-form-item label="取回时间" required v-if="sold == 5">
-        <el-date-picker
-          v-model="stockOutTime"
-          type="date"
-          style="width:50%;"
-          placeholder="请选择日期"
-          value-format="yyyy-MM-dd"
-          format="yyyy-MM-dd"
-        ></el-date-picker>
+        <el-date-picker v-model="stockOutTime" type="date" style="width:50%;" placeholder="请选择日期"
+          value-format="yyyy-MM-dd" format="yyyy-MM-dd"></el-date-picker>
       </el-form-item>
       <el-form-item label="退货时间" required v-if="sold == 6">
-        <el-date-picker
-          v-model="stockOutTime"
-          type="date"
-          style="width:50%;"
-          placeholder="请选择日期"
-          value-format="yyyy-MM-dd"
-          format="yyyy-MM-dd"
-        ></el-date-picker>
+        <el-date-picker v-model="stockOutTime" type="date" style="width:50%;" placeholder="请选择日期"
+          value-format="yyyy-MM-dd" format="yyyy-MM-dd"></el-date-picker>
       </el-form-item>
       <el-form-item label="时间" required v-if="sold == 7">
-        <el-date-picker
-          v-model="stockOutTime"
-          type="date"
-          style="width:50%;"
-          placeholder="请选择日期"
-          value-format="yyyy-MM-dd"
-          format="yyyy-MM-dd"
-        ></el-date-picker>
+        <el-date-picker v-model="stockOutTime" type="date" style="width:50%;" placeholder="请选择日期"
+          value-format="yyyy-MM-dd" format="yyyy-MM-dd"></el-date-picker>
       </el-form-item>
     </el-form>
     <el-tabs v-model="activeName">
       <el-tab-pane label="图片及参数" name="first">
         <div style="text-align:left;margin-bottom:10px;">
           <div style="margin-bottom:15px;">
-            <span style="color: #f56c6c;">*</span
-            ><span style="font-size:15px;">商品展示图：(最多上传9张图片)</span>
+            <span style="color: #f56c6c;">*</span><span style="font-size:15px;">商品展示图：(最多上传9张图片)</span>
           </div>
           <div style="display:flex;">
             <div class="upload-imgs">
               <div class="add">
                 <div id="previewImg">
-                  <form
-                    enctype="multipart/form-data"
-                    style="width:100px;height:100px;"
-                  >
-                    <input
-                      @change="inputChange1($event)"
-                      type="file"
-                      name="upload-images"
-                      accept="image/*"
-                      class="inputUpload"
-                      multiple
-                    />
+                  <form enctype="multipart/form-data" style="width:100px;height:100px;">
+                    <input @change="inputChange1($event)" type="file" name="upload-images" accept="image/*"
+                      class="inputUpload" multiple />
                     <i class="el-icon-plus addIcon"></i>
                   </form>
                 </div>
               </div>
-              <div
-                style="display:flex;flex-wrap:wrap;position:relative;"
-                id="delImg"
-              >
-                <div
-                  v-for="(item, index) of imgSrc"
-                  :key="index"
-                  style="margin-left:10px;position:relative;"
-                >
-                  <span class="spanStyle" @click="delImage(item, index)"
-                    >x</span
-                  >
-                  <img
-                    :src="item"
-                    width="100px"
-                    height="100px"
-                    style="border-radius:5px;object-fit:cover;"
-                  />
+              <div style="display:flex;flex-wrap:wrap;position:relative;" id="delImg">
+                <div v-for="(item, index) of imgSrc" :key="index" style="margin-left:10px;position:relative;">
+                  <span class="spanStyle" @click="delImage(item, index)">x</span>
+                  <img :src="item" width="100px" height="100px" style="border-radius:5px;object-fit:cover;" />
                 </div>
               </div>
             </div>
@@ -191,50 +92,23 @@
         <div style="text-align:left;margin-bottom:10px;">
           <div style="margin-bottom:15px;">
             <span style="font-size:15px;">内部图：(最多上传30张图片)</span>
-            <span
-              style="cursor: pointer;color: #409EFF;font-size:15px;"
-              @click="showImgSel"
-              >查看图片</span
-            >
+            <span style="cursor: pointer;color: #409EFF;font-size:15px;" @click="showImgSel">查看图片</span>
           </div>
           <div style="display:flex;" v-if="showImg">
             <div class="upload-imgs">
               <div class="add">
                 <div id="previewImg">
-                  <form
-                    enctype="multipart/form-data"
-                    style="width:100px;height:100px;"
-                  >
-                    <input
-                      @change="inputChange2($event)"
-                      type="file"
-                      name="upload-images"
-                      accept="image/*"
-                      class="inputUpload"
-                      multiple
-                    />
+                  <form enctype="multipart/form-data" style="width:100px;height:100px;">
+                    <input @change="inputChange2($event)" type="file" name="upload-images" accept="image/*"
+                      class="inputUpload" multiple />
                     <i class="el-icon-plus addIcon"></i>
                   </form>
                 </div>
               </div>
-              <div
-                style="display:flex;flex-wrap: wrap;position:relative;"
-                id="delImg2"
-              >
-                <div
-                  v-for="(item, index) of imgSrc2"
-                  :key="index"
-                  style="margin-left:10px;position:relative;"
-                >
-                  <span class="spanStyle" @click="delImage2(item, index)"
-                    >x</span
-                  >
-                  <img
-                    :src="item"
-                    width="100px"
-                    height="100px"
-                    style="border-radius:5px;object-fit:cover;"
-                  />
+              <div style="display:flex;flex-wrap: wrap;position:relative;" id="delImg2">
+                <div v-for="(item, index) of imgSrc2" :key="index" style="margin-left:10px;position:relative;">
+                  <span class="spanStyle" @click="delImage2(item, index)">x</span>
+                  <img :src="item" width="100px" height="100px" style="border-radius:5px;object-fit:cover;" />
                 </div>
               </div>
             </div>
@@ -242,115 +116,52 @@
         </div>
         <el-form ref="form" label-width="80px">
           <el-form-item label="款式" required>
-            <el-autocomplete
-              style="width: 50%;"
-              v-model="model"
-              :fetch-suggestions="queryModelSearch"
-              placeholder="请选择/输入款式"
-              @select="handleModelSelect"
-            ></el-autocomplete>
+            <el-autocomplete style="width: 50%;" v-model="model" :fetch-suggestions="queryModelSearch"
+              placeholder="请选择/输入款式" @select="handleModelSelect"></el-autocomplete>
           </el-form-item>
           <el-form-item label="大小" :required="isRequire == 0 ? true : false">
-            <el-autocomplete
-              style="width: 50%;"
-              v-model="size"
-              :fetch-suggestions="querySizeSearch"
-              placeholder="请选择/输入大小"
-              @select="handleSizeSelect"
-            ></el-autocomplete>
+            <el-autocomplete style="width: 50%;" v-model="size" :fetch-suggestions="querySizeSearch"
+              placeholder="请选择/输入大小" @select="handleSizeSelect"></el-autocomplete>
           </el-form-item>
           <el-form-item label="材质" :required="isRequire == 0 ? true : false">
-            <el-cascader
-              v-model="leather"
-              :options="leathers"
-              @change="handleChange"
-              style="width:50%;"
-              v-if="isInput == 0"
-            >
+            <el-cascader v-model="leather" :options="leathers" @change="handleChange" style="width:50%;"
+              v-if="isInput == 0">
             </el-cascader>
-            <el-input
-              v-if="isInput == 1"
-              v-model="leather"
-              style="width: 50%;"
-              placeholder="请输入"
-            ></el-input>
+            <el-input v-if="isInput == 1" v-model="leather" style="width: 50%;" placeholder="请输入"></el-input>
             <el-button style="border: 0;" type="text" @click="isInputSel">{{
               isInput == 0 ? "输入" : "选择"
             }}</el-button>
           </el-form-item>
-          <el-form-item
-            label="金属质感"
-            :required="isRequire == 0 ? true : false"
-          >
-            <el-select
-              v-model="metal"
-              placeholder="请选择"
-              style="width: 50%;"
-              clearable
-              v-if="isSelect == 0"
-            >
-              <el-option
-                v-for="item in metals"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-              >
+          <el-form-item label="金属质感" :required="isRequire == 0 ? true : false">
+            <el-select v-model="metal" placeholder="请选择" style="width: 50%;" clearable v-if="isSelect == 0">
+              <el-option v-for="item in metals" :key="item.value" :label="item.label" :value="item.value">
               </el-option>
             </el-select>
-            <el-input
-              v-if="isSelect == 1"
-              v-model="metal"
-              style="width: 50%;"
-              placeholder="请输入"
-            ></el-input>
+            <el-input v-if="isSelect == 1" v-model="metal" style="width: 50%;" placeholder="请输入"></el-input>
             <el-button type="text" @click="isSelectSel">{{
               isSelect == 0 ? "输入" : "选择"
             }}</el-button>
           </el-form-item>
           <el-form-item label="色号">
-            <el-input
-              style="width:50%;"
-              placeholder="请输入色号"
-              v-model="colorId"
-              @input="colorIdBlur"
-              clearable
-            >
+            <el-input style="width:50%;" placeholder="请输入色号" v-model="colorId" @input="colorIdBlur" clearable>
             </el-input>
             <el-button style="border: 0;" type="text" @click="isColorSel">{{
               isColor == 0 ? "无色号" : "有色号"
             }}</el-button>
           </el-form-item>
           <el-form-item label="颜色" :required="isRequire == 0 ? true : false">
-            <el-input
-              style="width:50%;"
-              v-model="color"
-              clearable
-              :disabled="isColor == 0 ? true : false"
-            ></el-input>
+            <el-input style="width:50%;" v-model="color" clearable :disabled="isColor == 0 ? true : false"></el-input>
           </el-form-item>
           <el-form-item label="色系">
-            <el-input
-              style="width:50%;"
-              v-model="colorSeries"
-              clearable
-              :disabled="isColor == 0 ? true : false"
-            ></el-input>
+            <el-input style="width:50%;" v-model="colorSeries" clearable
+              :disabled="isColor == 0 ? true : false"></el-input>
           </el-form-item>
           <el-form-item label="刻度">
-            <el-input
-              style="width:50%;"
-              placeholder="请输入刻度"
-              v-model="letter"
-              clearable
-            ></el-input>
+            <el-input style="width:50%;" placeholder="请输入刻度" v-model="letter" clearable></el-input>
           </el-form-item>
           <el-form-item label="状态" :required="isRequire == 0 ? true : false">
             <el-checkbox-group v-model="stock" style="width:50%;">
-              <el-checkbox
-                v-for="stock in stockStats"
-                :label="stock"
-                :key="stock"
-                >{{ stock }}
+              <el-checkbox v-for="stock in stockStats" :label="stock" :key="stock">{{ stock }}
               </el-checkbox>
             </el-checkbox-group>
           </el-form-item>
@@ -359,36 +170,14 @@
       <el-tab-pane label="采购及价格" name="second">
         <el-form label-width="110px">
           <el-form-item label="买手">
-            <el-input
-              style="width:50%;"
-              placeholder="请输入买手"
-              v-model="source"
-              clearable
-            ></el-input>
+            <el-input style="width:50%;" placeholder="请输入买手" v-model="source" clearable></el-input>
           </el-form-item>
           <el-form-item label="采购外币金额">
             <div style="width: 50%;display: flex;">
-              <el-input
-                style="flex: 1;"
-                type="text"
-                placeholder="请输入采购外币金额"
-                v-model="buyAllPrice"
-                clearable
-                :controls="false"
-                @change="isPurchaseHKD"
-              ></el-input>
-              <el-select
-                v-model="currencyId"
-                placeholder="请选择采购价币种"
-                clearable
-                @change="isPurchaseHKD"
-              >
-                <el-option
-                  v-for="item in currencyIds"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                >
+              <el-input style="flex: 1;" type="text" placeholder="请输入采购外币金额" v-model="buyAllPrice" clearable
+                :controls="false" @change="isPurchaseHKD"></el-input>
+              <el-select v-model="currencyId" placeholder="请选择采购价币种" clearable @change="isPurchaseHKD">
+                <el-option v-for="item in currencyIds" :key="item.value" :label="item.label" :value="item.value">
                 </el-option>
               </el-select>
             </div>
@@ -397,57 +186,24 @@
             <el-switch v-model="isPayCheck"></el-switch>
           </el-form-item>
           <el-form-item :label="'入库价(' + currencyGlobal + ')'">
-            <el-input
-              style="width:50%;"
-              type="text"
-              placeholder="请输入入库价"
-              v-model="totalHkPrice"
-              clearable
-              :controls="false"
-              @change="costCalculate"
-            ></el-input>
+            <el-input style="width:50%;" type="text" placeholder="请输入入库价" v-model="totalHkPrice" clearable
+              :controls="false" @change="costCalculate"></el-input>
           </el-form-item>
           <el-form-item :label="'其他费用(' + currencyGlobal + ')'">
-            <el-input
-              style="width:50%;"
-              type="text"
-              placeholder="请输入物流金额"
-              v-model="logHkPrice"
-              clearable
-              :controls="false"
-              @change="costCalculate"
-            ></el-input>
+            <el-input style="width:50%;" type="text" placeholder="请输入物流金额" v-model="logHkPrice" clearable
+              :controls="false" @change="costCalculate"></el-input>
           </el-form-item>
           <el-form-item :label="'总成本(' + currencyGlobal + ')'">
-            <el-input
-              style="width:50%;"
-              type="text"
-              placeholder="请输入总成本"
-              v-model="cost"
-              clearable
-              :controls="false"
-              @change="numCheckout"
-            ></el-input>
+            <el-input style="width:50%;" type="text" placeholder="请输入总成本" v-model="cost" clearable :controls="false"
+              @change="numCheckout"></el-input>
           </el-form-item>
           <el-form-item :label="'同行价(' + currencyGlobal + ')'">
-            <el-input
-              :controls="false"
-              style="width:50%;"
-              placeholder="请输入同行价"
-              v-model="pricePeer"
-              clearable
-              @change="numCheckout"
-            ></el-input>
+            <el-input :controls="false" style="width:50%;" placeholder="请输入同行价" v-model="pricePeer" clearable
+              @change="numCheckout"></el-input>
           </el-form-item>
           <el-form-item :label="'散客价(' + currencyGlobal + ')'">
-            <el-input
-              :controls="false"
-              style="width:50%;"
-              placeholder="请输入散客价"
-              v-model="priceIndi"
-              clearable
-              @change="numCheckout"
-            ></el-input>
+            <el-input :controls="false" style="width:50%;" placeholder="请输入散客价" v-model="priceIndi" clearable
+              @change="numCheckout"></el-input>
           </el-form-item>
           <el-form-item label="购入记录" v-show="buyPaymentList.length > 0">
             <el-table :data="buyPaymentList" style="width: 100%;">
@@ -463,20 +219,10 @@
                   </div>
                 </template>
               </el-table-column>
-              <el-table-column
-                width="250px"
-                align="center"
-                prop="productDes"
-                label="產品描述"
-              >
+              <el-table-column width="250px" align="center" prop="productDes" label="產品描述">
                 <template slot-scope="scope">
                   <div>
-                    <el-tooltip
-                      class="item"
-                      effect="light"
-                      :content="scope.row.productDes"
-                      placement="top-end"
-                    >
+                    <el-tooltip class="item" effect="light" :content="scope.row.productDes" placement="top-end">
                       <div class="font-warp">{{ scope.row.productDes }}</div>
                     </el-tooltip>
                   </div>
@@ -487,10 +233,10 @@
                   <div>
                     {{
                       scope.row.money == "" || scope.row.money == 0
-                        ? "/"
-                        : formatNumberRgx(scope.row.money) +
-                          " " +
-                          scope.row.currency
+                      ? "/"
+                      : formatNumberRgx(scope.row.money) +
+                      " " +
+                      scope.row.currency
                     }}
                   </div>
                 </template>
@@ -501,50 +247,32 @@
                     {{
                       scope.row.totalToHkRate == "" ||
                       scope.row.totalToHkRate == 0
-                        ? "/"
-                        : scope.row.totalToHkRate
+                      ? "/"
+                      : scope.row.totalToHkRate
                     }}
                   </div>
                 </template>
               </el-table-column>
-              <el-table-column
-                align="center"
-                prop="totalHkPrice"
-                :label="currencyFontRgx(currencyGlobal) + '金額'"
-              >
+              <el-table-column align="center" prop="totalHkPrice" :label="currencyFontRgx(currencyGlobal) + '金額'">
                 <template slot-scope="scope">
                   <div>
                     {{
                       scope.row.totalHkPrice == "" ||
                       scope.row.totalHkPrice == 0
-                        ? "/"
-                        : formatNumberRgx(scope.row.totalHkPrice) +
-                          " " +
-                          currencyGlobal
+                      ? "/"
+                      : formatNumberRgx(scope.row.totalHkPrice) +
+                      " " +
+                      currencyGlobal
                     }}
                   </div>
                 </template>
               </el-table-column>
-              <el-table-column
-                align="center"
-                prop="receiveType"
-                label="交易方式"
-              >
+              <el-table-column align="center" prop="receiveType" label="交易方式">
               </el-table-column>
-              <el-table-column
-                width="250px"
-                align="center"
-                prop="remark"
-                label="Remarks"
-              >
+              <el-table-column width="250px" align="center" prop="remark" label="Remarks">
                 <template slot-scope="scope">
                   <div>
-                    <el-tooltip
-                      class="item"
-                      effect="light"
-                      :content="scope.row.remark"
-                      placement="top-end"
-                    >
+                    <el-tooltip class="item" effect="light" :content="scope.row.remark" placement="top-end">
                       <div class="font-warp">{{ scope.row.remark }}</div>
                     </el-tooltip>
                   </div>
@@ -554,57 +282,23 @@
           </el-form-item>
         </el-form>
       </el-tab-pane>
-      <el-tab-pane
-        :label="sold == 8 ? '寄卖信息' : '销售信息'"
-        name="third"
-        v-if="sold == 2 || sold == 3 || sold == 8"
-      >
+      <el-tab-pane :label="sold == 8 ? '寄卖信息' : '销售信息'" name="third" v-if="sold == 2 || sold == 3 || sold == 8">
         <el-form ref="saleForm" label-width="121px">
-          <el-form-item
-            label="账单号"
-            :required="isStock == 1 || sold == 8 ? true : false"
-            v-if="sold == 3 || sold == 8"
-          >
+          <el-form-item label="账单号" :required="isStock == 1 || sold == 8 ? true : false" v-if="sold == 3 || sold == 8">
             <el-input v-model="bill" style="width: 50%;"></el-input>
           </el-form-item>
-          <el-form-item
-            :label="sold == 8 ? '寄卖时间' : '出售时间'"
-            :required="isStock == 1 || sold == 8 ? true : false"
-            v-if="sold == 3 || sold == 8"
-          >
-            <el-date-picker
-              v-model="soldTime"
-              type="date"
-              placeholder="请选择日期"
-              value-format="yyyy-MM-dd"
-              format="yyyy-MM-dd"
-              style="width:50%;"
-            ></el-date-picker>
+          <el-form-item :label="sold == 8 ? '寄卖时间' : '出售时间'" :required="isStock == 1 || sold == 8 ? true : false"
+            v-if="sold == 3 || sold == 8">
+            <el-date-picker v-model="soldTime" type="date" placeholder="请选择日期" value-format="yyyy-MM-dd"
+              format="yyyy-MM-dd" style="width:50%;"></el-date-picker>
           </el-form-item>
           <el-form-item :label="sold == 8 ? '寄卖外币金额' : '出售外币金额'">
             <div style="width: 50%;display: flex;">
-              <el-input
-                type="text"
-                style="flex: 1;"
-                :placeholder="
-                  sold == 8 ? '请输入寄卖外币金额' : '请输入出售外币金额'
-                "
-                v-model="priceTran"
-                clearable
-                @change="isSellHKD"
-              ></el-input>
-              <el-select
-                v-model="sellCurrencyId"
-                placeholder="请选择"
-                clearable
-                @change="isSellHKD"
-              >
-                <el-option
-                  v-for="item in currencyIds"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                >
+              <el-input type="text" style="flex: 1;" :placeholder="
+                sold == 8 ? '请输入寄卖外币金额' : '请输入出售外币金额'
+              " v-model="priceTran" clearable @change="isSellHKD"></el-input>
+              <el-select v-model="sellCurrencyId" placeholder="请选择" clearable @change="isSellHKD">
+                <el-option v-for="item in currencyIds" :key="item.value" :label="item.label" :value="item.value">
                 </el-option>
               </el-select>
             </div>
@@ -615,135 +309,66 @@
           <!-- 物流费/银行手续费送货(HKD) -->
           <el-form-item label="物流费/手续费" v-if="sold == 3 || sold == 8">
             <div style="width: 50%;display: flex;">
-              <el-input
-                style="flex: 1;"
-                v-model="saleLogHkPrice"
-                placeholder="请输入物流费/银行手续费送货"
-              ></el-input>
+              <el-input style="flex: 1;" v-model="saleLogHkPrice" placeholder="请输入物流费/银行手续费送货"></el-input>
               <span>{{ currencyGlobal }}</span>
             </div>
           </el-form-item>
-          <el-form-item
-            :label="
-              sold == 8
-                ? '寄卖' + currencyFontRgx(currencyGlobal) + '金额'
-                : '出售' + currencyFontRgx(currencyGlobal) + '金额'
-            "
-            :required="
-              (isStock == 1 && isHeadConsigns != 1) || sold == 8 ? true : false
-            "
-            v-if="sold == 3 || sold == 8"
-          >
+          <el-form-item :label="
+            sold == 8
+              ? '寄卖' + currencyFontRgx(currencyGlobal) + '金额'
+              : '出售' + currencyFontRgx(currencyGlobal) + '金额'
+          " :required="
+  (isStock == 1 && isHeadConsigns != 1) || sold == 8 ? true : false
+" v-if="sold == 3 || sold == 8">
             <div style="width: 50%;display: flex;">
-              <el-input
-                style="flex: 1;"
-                v-model="saleTotalHkPrice"
-                :placeholder="
-                  sold == 8
-                    ? '请输入寄卖' + currencyFontRgx(currencyGlobal) + '金额'
-                    : '请输入出售' + currencyFontRgx(currencyGlobal) + '金额'
-                "
-              ></el-input>
+              <el-input style="flex: 1;" v-model="saleTotalHkPrice" :placeholder="
+                sold == 8
+                  ? '请输入寄卖' + currencyFontRgx(currencyGlobal) + '金额'
+                  : '请输入出售' + currencyFontRgx(currencyGlobal) + '金额'
+              "></el-input>
             </div>
           </el-form-item>
-          <el-form-item
-            :label="'出售' + currencyFontRgx(headCurrency) + '金额'"
-            :required="isStock == 1 ? true : false"
-            v-if="sold == 3 && isHeadConsigns == 1"
-          >
+          <el-form-item :label="'出售' + currencyFontRgx(headCurrency) + '金额'" :required="isStock == 1 ? true : false"
+            v-if="sold == 3 && isHeadConsigns == 1">
             <div style="width: 50%;display: flex;">
-              <el-input
-                style="flex: 1;"
-                v-model="headSellMoney"
-                :placeholder="
-                  '请输入出售' +
-                    currencyFontRgx(headCurrency) +
-                    '金额，用于与总公司结算'
-                "
-              ></el-input>
+              <el-input style="flex: 1;" v-model="headSellMoney" :placeholder="
+                '请输入出售' +
+                currencyFontRgx(headCurrency) +
+                '金额，用于与总公司结算'
+              "></el-input>
             </div>
           </el-form-item>
-          <el-form-item
-            label="销售人员"
-            :required="isStock == 1 || sold == 8 ? true : false"
-            v-if="sold == 3 || sold == 8"
-          >
-            <el-select
-              style="width: 50%;"
-              v-model="sellerId"
-              placeholder="请选择销售人员"
-            >
-              <el-option
-                v-for="item in sellerList"
-                :key="item.id"
-                :label="item.name"
-                :value="item.id"
-              >
+          <el-form-item label="销售人员" :required="isStock == 1 || sold == 8 ? true : false" v-if="sold == 3 || sold == 8">
+            <el-select style="width: 50%;" v-model="sellerId" placeholder="请选择销售人员">
+              <el-option v-for="item in sellerList" :key="item.id" :label="item.name" :value="item.id">
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item
-            label="客户姓名"
-            :required="isStock == 1 || sold == 2 ? true : false"
-            v-show="sold != 8"
-          >
-            <el-autocomplete
-              style="width: 50%;"
-              v-model="customer"
-              :fetch-suggestions="querySearch"
-              placeholder="请选择/输入客户姓名"
-              @select="handleSelect"
-            ></el-autocomplete>
+          <el-form-item label="客户姓名" :required="isStock == 1 || sold == 2 ? true : false" v-show="sold != 8">
+            <el-autocomplete style="width: 50%;" v-model="customer" :fetch-suggestions="querySearch"
+              placeholder="请选择/输入客户姓名" @select="handleSelect"></el-autocomplete>
           </el-form-item>
-          <el-form-item
-            label="客户类型"
-            :required="isStock == 1 || sold == 8 ? true : false"
-            v-if="sold == 3 || sold == 8"
-          >
-            <el-autocomplete
-              style="width: 50%;"
-              v-model="customerType"
-              :fetch-suggestions="queryCustomerTypeSearch"
-              placeholder="请选择/输入客户类型"
-              @select="handleCustomerTypeSelect"
-            ></el-autocomplete>
+          <el-form-item label="客户类型" :required="isStock == 1 || sold == 8 ? true : false" v-if="sold == 3 || sold == 8">
+            <el-autocomplete style="width: 50%;" v-model="customerType" :fetch-suggestions="queryCustomerTypeSearch"
+              placeholder="请选择/输入客户类型" @select="handleCustomerTypeSelect"></el-autocomplete>
           </el-form-item>
           <el-form-item label="接收仓库" v-show="sold == 8" required>
-            <el-cascader
-              style="width: 50%;"
-              v-model="receiveWarehouseId"
-              :options="companyAndWarehouseList"
-              :props="{
-                value: 'id',
-                label: 'name',
-                children: 'warehouseList'
-              }"
-            ></el-cascader>
+            <el-cascader style="width: 50%;" v-model="receiveWarehouseId" :options="companyAndWarehouseList" :props="{
+              value: 'id',
+              label: 'name',
+              children: 'warehouseList'
+            }"></el-cascader>
           </el-form-item>
 
-          <el-form-item
-            label="是否同时出库"
-            label-width="110px"
-            v-if="sold == 3"
-          >
+          <el-form-item label="是否同时出库" label-width="110px" v-if="sold == 3">
             <el-radio-group v-model="isStock">
               <el-radio :label="0">否</el-radio>
               <el-radio :label="1">是</el-radio>
             </el-radio-group>
           </el-form-item>
-          <el-form-item
-            label="出库时间"
-            required
-            v-if="sold == 3 && isStock == 1"
-          >
-            <el-date-picker
-              v-model="stockOutTime"
-              type="date"
-              style="width:50%;"
-              placeholder="请选择日期"
-              value-format="yyyy-MM-dd"
-              format="yyyy-MM-dd"
-            ></el-date-picker>
+          <el-form-item label="出库时间" required v-if="sold == 3 && isStock == 1">
+            <el-date-picker v-model="stockOutTime" type="date" style="width:50%;" placeholder="请选择日期"
+              value-format="yyyy-MM-dd" format="yyyy-MM-dd"></el-date-picker>
           </el-form-item>
           <el-form-item label="出售记录" v-show="sellPaymentList.length > 0">
             <el-table :data="sellPaymentList" style="width: 100%;">
@@ -759,20 +384,10 @@
                   </div>
                 </template>
               </el-table-column>
-              <el-table-column
-                width="250px"
-                align="center"
-                prop="productDes"
-                label="產品描述"
-              >
+              <el-table-column width="250px" align="center" prop="productDes" label="產品描述">
                 <template slot-scope="scope">
                   <div>
-                    <el-tooltip
-                      class="item"
-                      effect="light"
-                      :content="scope.row.productDes"
-                      placement="top-end"
-                    >
+                    <el-tooltip class="item" effect="light" :content="scope.row.productDes" placement="top-end">
                       <div class="font-warp">{{ scope.row.productDes }}</div>
                     </el-tooltip>
                   </div>
@@ -783,10 +398,10 @@
                   <div>
                     {{
                       scope.row.money == "" || scope.row.money == 0
-                        ? "/"
-                        : formatNumberRgx(scope.row.money) +
-                          " " +
-                          scope.row.currency
+                      ? "/"
+                      : formatNumberRgx(scope.row.money) +
+                      " " +
+                      scope.row.currency
                     }}
                   </div>
                 </template>
@@ -797,50 +412,32 @@
                     {{
                       scope.row.totalToHkRate == "" ||
                       scope.row.totalToHkRate == 0
-                        ? "/"
-                        : scope.row.totalToHkRate
+                      ? "/"
+                      : scope.row.totalToHkRate
                     }}
                   </div>
                 </template>
               </el-table-column>
-              <el-table-column
-                align="center"
-                prop="totalHkPrice"
-                :label="currencyFontRgx(currencyGlobal) + '金額'"
-              >
+              <el-table-column align="center" prop="totalHkPrice" :label="currencyFontRgx(currencyGlobal) + '金額'">
                 <template slot-scope="scope">
                   <div>
                     {{
                       scope.row.totalHkPrice == "" ||
                       scope.row.totalHkPrice == 0
-                        ? "/"
-                        : formatNumberRgx(scope.row.totalHkPrice) +
-                          " " +
-                          currencyGlobal
+                      ? "/"
+                      : formatNumberRgx(scope.row.totalHkPrice) +
+                      " " +
+                      currencyGlobal
                     }}
                   </div>
                 </template>
               </el-table-column>
-              <el-table-column
-                align="center"
-                prop="receiveType"
-                label="交易方式"
-              >
+              <el-table-column align="center" prop="receiveType" label="交易方式">
               </el-table-column>
-              <el-table-column
-                width="250px"
-                align="center"
-                prop="remark"
-                label="Remarks"
-              >
+              <el-table-column width="250px" align="center" prop="remark" label="Remarks">
                 <template slot-scope="scope">
                   <div>
-                    <el-tooltip
-                      class="item"
-                      effect="light"
-                      :content="scope.row.remark"
-                      placement="top-end"
-                    >
+                    <el-tooltip class="item" effect="light" :content="scope.row.remark" placement="top-end">
                       <div class="font-warp">{{ scope.row.remark }}</div>
                     </el-tooltip>
                   </div>
@@ -851,10 +448,7 @@
         </el-form>
       </el-tab-pane>
       <el-tab-pane label="资金流" name="fifth" v-if="allPaymentList.length > 0">
-        <el-table
-          :data="allPaymentList"
-          style="width: 100%;margin-bottom: 22px;"
-        >
+        <el-table :data="allPaymentList" style="width: 100%;margin-bottom: 22px;">
           <el-table-column align="center" prop="time" label="日期">
             <template slot-scope="scope">
               <div>
@@ -874,20 +468,10 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column
-            width="250px"
-            align="center"
-            prop="productDes"
-            label="產品描述"
-          >
+          <el-table-column width="250px" align="center" prop="productDes" label="產品描述">
             <template slot-scope="scope">
               <div>
-                <el-tooltip
-                  class="item"
-                  effect="light"
-                  :content="scope.row.productDes"
-                  placement="top-end"
-                >
+                <el-tooltip class="item" effect="light" :content="scope.row.productDes" placement="top-end">
                   <div class="font-warp">{{ scope.row.productDes }}</div>
                 </el-tooltip>
               </div>
@@ -898,10 +482,10 @@
               <div>
                 {{
                   scope.row.money == "" || scope.row.money == 0
-                    ? "/"
-                    : formatNumberRgx(scope.row.money) +
-                      " " +
-                      scope.row.currency
+                  ? "/"
+                  : formatNumberRgx(scope.row.money) +
+                  " " +
+                  scope.row.currency
                 }}
               </div>
             </template>
@@ -911,45 +495,31 @@
               <div>
                 {{
                   scope.row.totalToHkRate == "" || scope.row.totalToHkRate == 0
-                    ? "/"
-                    : scope.row.totalToHkRate
+                  ? "/"
+                  : scope.row.totalToHkRate
                 }}
               </div>
             </template>
           </el-table-column>
-          <el-table-column
-            align="center"
-            prop="totalHkPrice"
-            :label="currencyFontRgx(currencyGlobal) + '金額'"
-          >
+          <el-table-column align="center" prop="totalHkPrice" :label="currencyFontRgx(currencyGlobal) + '金額'">
             <template slot-scope="scope">
               <div>
                 {{
                   scope.row.totalHkPrice == "" || scope.row.totalHkPrice == 0
-                    ? "/"
-                    : formatNumberRgx(scope.row.totalHkPrice) +
-                      " " +
-                      currencyGlobal
+                  ? "/"
+                  : formatNumberRgx(scope.row.totalHkPrice) +
+                  " " +
+                  currencyGlobal
                 }}
               </div>
             </template>
           </el-table-column>
           <el-table-column align="center" prop="receiveType" label="交易方式">
           </el-table-column>
-          <el-table-column
-            width="250px"
-            align="center"
-            prop="remark"
-            label="Remarks"
-          >
+          <el-table-column width="250px" align="center" prop="remark" label="Remarks">
             <template slot-scope="scope">
               <div>
-                <el-tooltip
-                  class="item"
-                  effect="light"
-                  :content="scope.row.remark"
-                  placement="top-end"
-                >
+                <el-tooltip class="item" effect="light" :content="scope.row.remark" placement="top-end">
                   <div class="font-warp">{{ scope.row.remark }}</div>
                 </el-tooltip>
               </div>
@@ -960,23 +530,13 @@
       <el-tab-pane label="备注信息" name="fourth">
         <el-form ref="noteForm">
           <el-form-item label="备注">
-            <el-input
-              type="textarea"
-              placeholder="请输入备注信息"
-              style="width:50%;"
-              v-model="note"
-            ></el-input>
+            <el-input type="textarea" placeholder="请输入备注信息" style="width:50%;" v-model="note"></el-input>
           </el-form-item>
         </el-form>
       </el-tab-pane>
     </el-tabs>
 
-    <el-button
-      type="primary"
-      v-preventClick
-      @click="basicInfoUpdateSure"
-      class="update-sure-button"
-      >确 定
+    <el-button type="primary" v-preventClick @click="basicInfoUpdateSure" class="update-sure-button">确 定
     </el-button>
   </div>
 </template>
@@ -1070,10 +630,6 @@ export default {
       imgs: "",
       delList: [],
       delList2: [],
-      b: "",
-      c: "",
-      e: "",
-      d: "",
       showImg: false,
 
       stockOutTime: null,
@@ -2094,51 +1650,22 @@ export default {
     },
     // 颜色色系的判断
     colorIdBlur() {
-      this.b = "";
-      this.c = "";
-      this.e = "";
-      this.d = "";
       this.color = "";
       this.colorSeries = "";
-      for (let i in this.clrs) {
-        for (let j in this.clrs[i].yanse) {
-          if (this.colorId.match(/[a-z]/g) !== null) {
-            this.colorId = this.colorId.toUpperCase();
-            if (this.colorId.indexOf("/") !== -1) {
-              this.colorList = this.colorId.split("/");
-              if (this.colorList[0] == this.clrs[i].yanse[j].sehao) {
-                this.e = this.clrs[i].yanse[j].name;
-                this.b = this.clrs[i].sexi;
-              }
-              if (this.colorList[1] == this.clrs[i].yanse[j].sehao) {
-                this.d = this.clrs[i].yanse[j].name;
-                this.c = this.clrs[i].sexi;
-              }
-              this.color = this.e + "拼" + this.d;
-              this.colorSeries = this.b + "/" + this.c;
-            } else {
-              if (this.colorId == this.clrs[i].yanse[j].sehao) {
-                this.color = this.clrs[i].yanse[j].name;
-                this.colorSeries = this.clrs[i].sexi;
-              }
-            }
-          } else {
-            if (this.colorId.indexOf("/") !== -1) {
-              this.colorList = this.colorId.split("/");
-              if (this.colorList[0] == this.clrs[i].yanse[j].sehao) {
-                this.e = this.clrs[i].yanse[j].name;
-                this.b = this.clrs[i].sexi;
-              }
-              if (this.colorList[1] == this.clrs[i].yanse[j].sehao) {
-                this.d = this.clrs[i].yanse[j].name;
-                this.c = this.clrs[i].sexi;
-              }
-              this.color = this.e + "拼" + this.d;
-              this.colorSeries = this.b + "/" + this.c;
-            } else {
-              if (this.colorId == this.clrs[i].yanse[j].sehao) {
-                this.color = this.clrs[i].yanse[j].name;
-                this.colorSeries = this.clrs[i].sexi;
+      if (this.colorId.match(/[a-zA-Z]/g) !== null) {
+        this.colorId = this.colorId.toUpperCase();
+      }
+      this.colorList = this.colorId.split("/");
+      for (let k = 0; k < this.colorList.length; k++) {
+        for (let i in this.clrs) {
+          for (let j in this.clrs[i].yanse) {
+            if (this.colorList[k] === this.clrs[i].yanse[j].sehao) {
+              if (this.color === '') {
+                this.color += this.clrs[i].yanse[j].name;
+                this.colorSeries += this.clrs[i].sexi
+              } else {
+                this.color += '拼' + this.clrs[i].yanse[j].name;
+                this.colorSeries += '/' + this.clrs[i].sexi
               }
             }
           }
@@ -2232,7 +1759,7 @@ export default {
                   // 调用压缩图片方法
                   quality: 0.7
                 },
-                function(base64Codes) {
+                function (base64Codes) {
                   // console.log("压缩后：" + base.length / 1024 + " " + base);
                   let bl = that.base64UrlToBlob(base64Codes);
                   // file.append('file', bl, 'file_' + Date.parse(new Date()) + '.jpg') // 文件对象
@@ -2270,7 +1797,7 @@ export default {
       let ready = new FileReader();
       /* 开始读取指定File对象中的内容. 读取操作完成时,返回一个URL格式的字符串. */
       ready.readAsDataURL(file);
-      ready.onload = function() {
+      ready.onload = function () {
         let re = this.result;
         that.canvasDataURL(re, obj, callback); // 开始压缩
       };
@@ -2278,7 +1805,7 @@ export default {
     canvasDataURL(path, obj, callback) {
       let img = new Image();
       img.src = path;
-      img.onload = function() {
+      img.onload = function () {
         let that = this; // 指到img
         // 默认按比例压缩
         let w = that.width,
@@ -2423,7 +1950,7 @@ export default {
                   // 调用压缩图片方法
                   quality: 0.7
                 },
-                function(base64Codes) {
+                function (base64Codes) {
                   // console.log("压缩后：" + base.length / 1024 + " " + base);
                   let bl = that.base64UrlToBlob2(base64Codes);
                   // file.append('file', bl, 'file_' + Date.parse(new Date()) + '.jpg') // 文件对象
@@ -2461,7 +1988,7 @@ export default {
       let ready = new FileReader();
       /* 开始读取指定File对象中的内容. 读取操作完成时,返回一个URL格式的字符串. */
       ready.readAsDataURL(file);
-      ready.onload = function() {
+      ready.onload = function () {
         let re = this.result;
         that.canvasDataURL2(re, obj, callback); // 开始压缩
       };
@@ -2469,7 +1996,7 @@ export default {
     canvasDataURL2(path, obj, callback) {
       let img = new Image();
       img.src = path;
-      img.onload = function() {
+      img.onload = function () {
         let that = this; // 指到img
         // 默认按比例压缩
         let w = that.width,
