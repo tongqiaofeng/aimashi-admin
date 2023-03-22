@@ -9,12 +9,8 @@
           <el-table-column align="center" prop="pic" label="图片">
             <template slot-scope="scope">
               <div>
-                <el-image
-                  style="width: 100px; height: 100px"
-                  :src="scope.row.pic.trim()"
-                  :preview-src-list="bigImg(scope.row.pics)"
-                  :z-index="5000"
-                >
+                <el-image style="width: 100px; height: 100px" :src="scope.row.pic.trim()"
+                  :preview-src-list="bigImg(scope.row.pics)" :z-index="5000">
                 </el-image>
               </div>
             </template>
@@ -22,12 +18,7 @@
           <el-table-column align="center" prop="name" label="商品信息">
             <template slot-scope="scope">
               <div>
-                <el-tooltip
-                  class="item"
-                  effect="light"
-                  :content="scope.row.name"
-                  placement="bottom"
-                >
+                <el-tooltip class="item" effect="light" :content="scope.row.name" placement="bottom">
                   <div class="font-warp">{{ scope.row.name }}</div>
                 </el-tooltip>
               </div>
@@ -36,36 +27,26 @@
           <el-table-column align="center" label="操作">
             <template slot-scope="scope">
               <div>
-                <el-button type="text" @click="editProduct(scope.row.id)"
-                  >编辑</el-button
-                >
+                <el-button type="text" @click="editProduct(scope.row.id)">编辑</el-button>
               </div>
             </template>
           </el-table-column>
         </el-table>
         <div style="margin-top:15px;text-align: right;">
-          <el-pagination
-            @current-change="handleCurrentChange"
-            :current-page="page"
-            layout="total, prev, pager, next, jumper"
-            :total="total"
-          >
+          <el-pagination @current-change="handleCurrentChange" :current-page="page"
+            layout="total, prev, pager, next, jumper" :total="total">
           </el-pagination>
         </div>
       </div>
       <div v-if="pageSel == 1">
-        <details-vue
-          :updatesId="updateId"
-          @goback="goback"
-          @updateSuccess="updateSuccess"
-        ></details-vue>
+        <details-vue :updatesId="updateId" @goback="goback" @updateSuccess="updateSuccess"></details-vue>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import detailsVue from "../common/details.vue";
+import detailsVue from "@/components/details.vue";
 export default {
   components: { detailsVue },
   data() {
@@ -105,7 +86,7 @@ export default {
     // 大图
     bigImg(pics) {
       // console.log(pics);
-      let list = pics.split("|").filter(function(s) {
+      let list = pics.split("|").filter(function (s) {
         return s && s.trim();
       });
 
@@ -143,9 +124,9 @@ export default {
       this.$axios
         .get(
           this.$store.state.baseUrl +
-            "/noPriceList?page=" +
-            this.page +
-            "&pageNum=10&flag=1"
+          "/noPriceList?page=" +
+          this.page +
+          "&pageNum=10&flag=1"
         )
         .then(res => {
           console.log(res);

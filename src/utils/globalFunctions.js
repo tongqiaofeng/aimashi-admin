@@ -1,5 +1,6 @@
-export default function (Vue) {
-  let stateList = [{
+export default function(Vue) {
+  let stateList = [
+    {
       label: "采购中",
       value: "0"
     },
@@ -30,11 +31,15 @@ export default function (Vue) {
     {
       label: "客人取回",
       value: "5"
+    },
+    {
+      label: "客人寄卖",
+      value: "9"
     }
   ];
-  Vue.prototype.soldStateRgx = function (item) {
+  Vue.prototype.soldStateRgx = function(item) {
     if (item == 3 || item == 4) {
-      return '已出售'
+      return "已出售";
     } else {
       for (let i = 0; i < stateList.length; ++i) {
         if (item == stateList[i].value) return stateList[i].label;
@@ -44,7 +49,8 @@ export default function (Vue) {
     return "";
   };
 
-  let typeList = [{
+  let typeList = [
+    {
       label: "買入",
       value: 0
     },
@@ -74,14 +80,15 @@ export default function (Vue) {
     }
   ];
   // 账单类型匹配
-  Vue.prototype.tradeTypeRgx = function (item) {
+  Vue.prototype.tradeTypeRgx = function(item) {
     for (let i = 0; i < typeList.length; ++i) {
       if (item == typeList[i].value) return typeList[i].label;
     }
     return "";
   };
 
-  let currencyIds = [{
+  let currencyIds = [
+    {
       value: "1",
       label: "CNY人民币"
     },
@@ -106,24 +113,36 @@ export default function (Vue) {
       label: "AUD澳元"
     }
   ];
-  Vue.prototype.currencyRgx = function (item) {
+  Vue.prototype.currencyRgx = function(item) {
     for (let i = 0; i < currencyIds.length; ++i) {
       if (item == currencyIds[i].value)
-        return currencyIds[i].label.split('').slice(0, 3).join('')
+        return currencyIds[i].label
+          .split("")
+          .slice(0, 3)
+          .join("");
     }
     return "";
   };
 
-  Vue.prototype.currencyFontRgx = function (item) {
+  Vue.prototype.currencyFontRgx = function(item) {
     for (let i = 0; i < currencyIds.length; ++i) {
-      if (item == currencyIds[i].label.split('').slice(0, 3).join(''))
-        return currencyIds[i].label.split('').slice(3, 6).join('')
+      if (
+        item ==
+        currencyIds[i].label
+          .split("")
+          .slice(0, 3)
+          .join("")
+      )
+        return currencyIds[i].label
+          .split("")
+          .slice(3, 6)
+          .join("");
     }
     return "";
   };
 
   // 貨號提取
-  Vue.prototype.productCodeGet = function (item) {
+  Vue.prototype.productCodeGet = function(item) {
     if (item.length > 0) {
       let msg = "";
       for (const every of item) {
@@ -136,7 +155,7 @@ export default function (Vue) {
   };
 
   // 千分钱数
-  Vue.prototype.formatNumberRgx = function (num) {
+  Vue.prototype.formatNumberRgx = function(num) {
     if (num == "" || num == null || num == 0) {
       return 0;
     } else {
@@ -147,11 +166,14 @@ export default function (Vue) {
   };
 
   // 負數及带小数數字的獲取
-  Vue.prototype.getPriceNum = function (value) {
+  Vue.prototype.getPriceNum = function(value) {
     console.log(value);
     if (value != "" && value != null) {
       let reg = /(\-)?\d+[0-9]+([.]{1}[0-9]+){0,1}/g;
-      let m = value.toString().replace(/,/g, '').match(reg);
+      let m = value
+        .toString()
+        .replace(/,/g, "")
+        .match(reg);
       console.log(m);
       return m ? m.join("") : value;
     } else {
@@ -159,12 +181,15 @@ export default function (Vue) {
     }
   };
   // 負數及整数数字的获取
-  Vue.prototype.getIntegerNum = function (value) {
+  Vue.prototype.getIntegerNum = function(value) {
     console.log(value);
     if (value != "" && value != null) {
       let reg = /(\-)?\d+[0-9]+([0-9]+){0,1}/g;
 
-      let m = value.toString().replace(/,/g, '').match(reg);
+      let m = value
+        .toString()
+        .replace(/,/g, "")
+        .match(reg);
       console.log(m);
       return m ? m.join("") : value;
     } else {
@@ -172,7 +197,7 @@ export default function (Vue) {
     }
   };
   // 在庫时长
-  Vue.prototype.timeLong = function (time) {
+  Vue.prototype.timeLong = function(time) {
     if (time !== null && time !== "") {
       let startTime = new Date(time); // 开始时间
       let endTime = new Date(); // 结束时间
@@ -185,17 +210,16 @@ export default function (Vue) {
   };
 
   // 大图
-  Vue.prototype.bigImg = function (pics) {
+  Vue.prototype.bigImg = function(pics) {
     // console.log(pics);
-    if (pics != '' && pics != null) {
-      let list = pics.split("|").filter(function (s) {
+    if (pics != "" && pics != null) {
+      let list = pics.split("|").filter(function(s) {
         return s && s.trim();
       });
 
       return list;
     } else {
-      return []
+      return [];
     }
-
   };
-};
+}

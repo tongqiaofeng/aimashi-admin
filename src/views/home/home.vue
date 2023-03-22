@@ -4,10 +4,7 @@
       <el-header height="78px">
         <div class="main-top-right">
           <div class="left-con">
-            <img
-              src="../../assets/imgs/logo_white.png"
-              style="width: 65px;height: 65px;object-fit: cover;"
-            />
+            <img src="../../assets/imgs/logo_white.png" style="width: 65px;height: 65px;object-fit: cover;" />
             <p class="left-font-one">愛馬仕後台管理系統</p>
           </div>
           <div style="display: flex;">
@@ -21,10 +18,7 @@
           <div class="downbtn" v-if="updateUser == 1">
             <div class="logout-div" @click="logoutSure">
               <div class="logout-img">
-                <img
-                  src="../../assets/imgs/logOut.png"
-                  style="width: 17px;height: 18px;"
-                />
+                <img src="../../assets/imgs/logOut.png" style="width: 17px;height: 18px;" />
               </div>
               <span>退出登录</span>
             </div>
@@ -39,166 +33,88 @@
                 <p class="dad-li-font">庫存管理</p>
               </div>
               <ul class="aside-ul-son">
-                <li
-                  class="son-li"
-                  @click="selectedPage(4)"
-                  :style="{
-                    backgroundColor: selected == 4 ? '#303e53' : 'transparent'
-                  }"
-                >
+                <li class="son-li" @click="selectedPage(4)" :style="{
+                  backgroundColor: selected == 4 ? '#303e53' : 'transparent'
+                }">
                   <p class="son-li-line" v-if="selected == 4"></p>
-                  <div
-                    class="son-li-center"
-                    :style="{ marginLeft: selected == 4 ? '-38px' : '32px' }"
-                  >
+                  <div class="son-li-center" :style="{ marginLeft: selected == 4 ? '-38px' : '32px' }">
                     <div class="center-img-div">
-                      <img
-                        class="center-img"
-                        src="../../assets/imgs/home/04.png"
-                      />
+                      <img class="center-img" src="../../assets/imgs/home/04.png" />
                     </div>
                     <p class="center-font">商品入庫</p>
                   </div>
                   <div class="son-li-right">
-                    <img
-                      class="right-img"
-                      src="../../assets/imgs/home/right.png"
-                    />
+                    <img class="right-img" src="../../assets/imgs/home/right.png" />
                   </div>
                 </li>
-                <li
-                  class="son-li"
-                  @click="selectedPage(5)"
-                  :style="{
-                    backgroundColor: selected == 5 ? '#303e53' : 'transparent'
-                  }"
-                >
+                <li class="son-li" @click="selectedPage(5)" :style="{
+                  backgroundColor: selected == 5 ? '#303e53' : 'transparent'
+                }">
                   <p class="son-li-line" v-if="selected == 5"></p>
-                  <div
-                    class="son-li-center"
-                    :style="{ marginLeft: selected == 5 ? '-38px' : '32px' }"
-                  >
+                  <div class="son-li-center" :style="{ marginLeft: selected == 5 ? '-38px' : '32px' }">
                     <div class="center-img-div">
-                      <img
-                        class="center-img"
-                        src="../../assets/imgs/home/01.png"
-                      />
+                      <img class="center-img" src="../../assets/imgs/home/01.png" />
                     </div>
                     <p class="center-font">庫存查詢</p>
                   </div>
                   <div class="son-li-right">
-                    <img
-                      class="right-img"
-                      src="../../assets/imgs/home/right.png"
-                    />
+                    <img class="right-img" src="../../assets/imgs/home/right.png" />
                   </div>
                 </li>
-                <li
-                  class="son-li"
-                  @click="selectedPage(2)"
-                  :style="{
-                    backgroundColor: selected == 2 ? '#303e53' : 'transparent'
-                  }"
-                >
+                <li class="son-li" @click="selectedPage(2)" :style="{
+                  backgroundColor: selected == 2 ? '#303e53' : 'transparent'
+                }">
                   <p class="son-li-line" v-if="selected == 2"></p>
-                  <div
-                    class="son-li-center"
-                    :style="{ marginLeft: selected == 2 ? '-38px' : '32px' }"
-                  >
+                  <div class="son-li-center" :style="{ marginLeft: selected == 2 ? '-38px' : '32px' }">
                     <div class="center-img-div">
-                      <img
-                        class="center-img"
-                        src="../../assets/imgs/home/sold.png"
-                      />
+                      <img class="center-img" src="../../assets/imgs/home/sold.png" />
                     </div>
                     <p class="center-font">已售商品</p>
                   </div>
                   <div class="son-li-right">
-                    <img
-                      class="right-img"
-                      src="../../assets/imgs/home/right.png"
-                    />
+                    <img class="right-img" src="../../assets/imgs/home/right.png" />
                   </div>
                 </li>
-                <li
-                  class="son-li"
-                  @click="selectedPage(1)"
-                  :style="{
-                    backgroundColor: selected == 1 ? '#303e53' : 'transparent'
-                  }"
-                >
+                <li class="son-li" @click="selectedPage(1)" :style="{
+                  backgroundColor: selected == 1 ? '#303e53' : 'transparent'
+                }">
                   <p class="son-li-line" v-if="selected == 1"></p>
-                  <div
-                    class="son-li-center"
-                    :style="{ marginLeft: selected == 1 ? '-24px' : '32px' }"
-                  >
+                  <div class="son-li-center" :style="{ marginLeft: selected == 1 ? '-24px' : '32px' }">
                     <div class="center-img-div">
-                      <img
-                        class="center-img"
-                        src="../../assets/imgs/home/not.png"
-                      />
+                      <img class="center-img" src="../../assets/imgs/home/not.png" />
                     </div>
                     <p class="center-font">售價未錄入</p>
                   </div>
                   <div class="son-li-right">
-                    <img
-                      class="right-img"
-                      src="../../assets/imgs/home/right.png"
-                    />
+                    <img class="right-img" src="../../assets/imgs/home/right.png" />
                   </div>
                 </li>
-                <li
-                  class="son-li"
-                  @click="selectedPage(15)"
-                  :style="{
-                    backgroundColor: selected == 15 ? '#303e53' : 'transparent'
-                  }"
-                >
+                <li class="son-li" @click="selectedPage(15)" :style="{
+                  backgroundColor: selected == 15 ? '#303e53' : 'transparent'
+                }">
                   <p class="son-li-line" v-if="selected == 15"></p>
-                  <div
-                    class="son-li-center"
-                    :style="{ marginLeft: selected == 15 ? '-24px' : '32px' }"
-                  >
+                  <div class="son-li-center" :style="{ marginLeft: selected == 15 ? '-24px' : '32px' }">
                     <div class="center-img-div">
-                      <img
-                        class="center-img"
-                        src="../../assets/imgs/home/not.png"
-                      />
+                      <img class="center-img" src="../../assets/imgs/home/not.png" />
                     </div>
                     <p class="center-font">成本未錄入</p>
                   </div>
                   <div class="son-li-right">
-                    <img
-                      class="right-img"
-                      src="../../assets/imgs/home/right.png"
-                    />
+                    <img class="right-img" src="../../assets/imgs/home/right.png" />
                   </div>
                 </li>
-                <li
-                  class="son-li"
-                  @click="selectedPage(3)"
-                  :style="{
-                    backgroundColor: selected == 3 ? '#303e53' : 'transparent'
-                  }"
-                >
+                <li class="son-li" @click="selectedPage(3)" :style="{
+                  backgroundColor: selected == 3 ? '#303e53' : 'transparent'
+                }">
                   <p class="son-li-line" v-if="selected == 3"></p>
-                  <div
-                    class="son-li-center"
-                    :style="{ marginLeft: selected == 3 ? '-38px' : '32px' }"
-                  >
+                  <div class="son-li-center" :style="{ marginLeft: selected == 3 ? '-38px' : '32px' }">
                     <div class="center-img-div">
-                      <img
-                        class="center-img"
-                        src="../../assets/imgs/home/export.png"
-                      />
+                      <img class="center-img" src="../../assets/imgs/home/export.png" />
                     </div>
                     <p class="center-font">導出數據</p>
                   </div>
                   <div class="son-li-right">
-                    <img
-                      class="right-img"
-                      src="../../assets/imgs/home/right.png"
-                    />
+                    <img class="right-img" src="../../assets/imgs/home/right.png" />
                   </div>
                 </li>
               </ul>
@@ -208,112 +124,60 @@
                 <p class="dad-li-font">銷售與寄賣</p>
               </div>
               <ul class="aside-ul-son">
-                <li
-                  class="son-li"
-                  @click="selectedPage(10)"
-                  :style="{
-                    backgroundColor: selected == 10 ? '#303e53' : 'transparent'
-                  }"
-                >
+                <li class="son-li" @click="selectedPage(10)" :style="{
+                  backgroundColor: selected == 10 ? '#303e53' : 'transparent'
+                }">
                   <p class="son-li-line" v-if="selected == 10"></p>
-                  <div
-                    class="son-li-center"
-                    :style="{ marginLeft: selected == 10 ? '-38px' : '32px' }"
-                  >
+                  <div class="son-li-center" :style="{ marginLeft: selected == 10 ? '-38px' : '32px' }">
                     <div class="center-img-div">
-                      <img
-                        class="center-img"
-                        src="../../assets/imgs/home/sales.png"
-                      />
+                      <img class="center-img" src="../../assets/imgs/home/sales.png" />
                     </div>
                     <p class="center-font">銷售開單</p>
                   </div>
                   <div class="son-li-right">
-                    <img
-                      class="right-img"
-                      src="../../assets/imgs/home/right.png"
-                    />
+                    <img class="right-img" src="../../assets/imgs/home/right.png" />
                   </div>
                 </li>
-                <li
-                  class="son-li"
-                  @click="selectedPage(11)"
-                  :style="{
-                    backgroundColor: selected == 11 ? '#303e53' : 'transparent'
-                  }"
-                >
+                <li class="son-li" @click="selectedPage(11)" :style="{
+                  backgroundColor: selected == 11 ? '#303e53' : 'transparent'
+                }">
                   <p class="son-li-line" v-if="selected == 11"></p>
-                  <div
-                    class="son-li-center"
-                    :style="{ marginLeft: selected == 11 ? '-38px' : '32px' }"
-                  >
+                  <div class="son-li-center" :style="{ marginLeft: selected == 11 ? '-38px' : '32px' }">
                     <div class="center-img-div">
-                      <img
-                        class="center-img"
-                        src="../../assets/imgs/home/history.png"
-                      />
+                      <img class="center-img" src="../../assets/imgs/home/history.png" />
                     </div>
                     <p class="center-font">銷售歷史</p>
                   </div>
                   <div class="son-li-right">
-                    <img
-                      class="right-img"
-                      src="../../assets/imgs/home/right.png"
-                    />
+                    <img class="right-img" src="../../assets/imgs/home/right.png" />
                   </div>
                 </li>
-                <li
-                  class="son-li"
-                  @click="selectedPage(13)"
-                  :style="{
-                    backgroundColor: selected == 13 ? '#303e53' : 'transparent'
-                  }"
-                >
+                <li class="son-li" @click="selectedPage(13)" :style="{
+                  backgroundColor: selected == 13 ? '#303e53' : 'transparent'
+                }">
                   <p class="son-li-line" v-if="selected == 13"></p>
-                  <div
-                    class="son-li-center"
-                    :style="{ marginLeft: selected == 13 ? '-38px' : '32px' }"
-                  >
+                  <div class="son-li-center" :style="{ marginLeft: selected == 13 ? '-38px' : '32px' }">
                     <div class="center-img-div">
-                      <img
-                        class="center-img"
-                        src="../../assets/imgs/home/sales.png"
-                      />
+                      <img class="center-img" src="../../assets/imgs/home/sales.png" />
                     </div>
                     <p class="center-font">新增寄賣</p>
                   </div>
                   <div class="son-li-right">
-                    <img
-                      class="right-img"
-                      src="../../assets/imgs/home/right.png"
-                    />
+                    <img class="right-img" src="../../assets/imgs/home/right.png" />
                   </div>
                 </li>
-                <li
-                  class="son-li"
-                  @click="selectedPage(14)"
-                  :style="{
-                    backgroundColor: selected == 14 ? '#303e53' : 'transparent'
-                  }"
-                >
+                <li class="son-li" @click="selectedPage(14)" :style="{
+                  backgroundColor: selected == 14 ? '#303e53' : 'transparent'
+                }">
                   <p class="son-li-line" v-if="selected == 14"></p>
-                  <div
-                    class="son-li-center"
-                    :style="{ marginLeft: selected == 14 ? '-38px' : '32px' }"
-                  >
+                  <div class="son-li-center" :style="{ marginLeft: selected == 14 ? '-38px' : '32px' }">
                     <div class="center-img-div">
-                      <img
-                        class="center-img"
-                        src="../../assets/imgs/home/history.png"
-                      />
+                      <img class="center-img" src="../../assets/imgs/home/history.png" />
                     </div>
                     <p class="center-font">寄賣記錄</p>
                   </div>
                   <div class="son-li-right">
-                    <img
-                      class="right-img"
-                      src="../../assets/imgs/home/right.png"
-                    />
+                    <img class="right-img" src="../../assets/imgs/home/right.png" />
                   </div>
                 </li>
               </ul>
@@ -323,31 +187,18 @@
                 <p class="dad-li-font">銷售報表</p>
               </div>
               <ul class="aside-ul-son">
-                <li
-                  class="son-li"
-                  @click="selectedPage(12)"
-                  :style="{
-                    backgroundColor: selected == 12 ? '#303e53' : 'transparent'
-                  }"
-                >
+                <li class="son-li" @click="selectedPage(12)" :style="{
+                  backgroundColor: selected == 12 ? '#303e53' : 'transparent'
+                }">
                   <p class="son-li-line" v-if="selected == 12"></p>
-                  <div
-                    class="son-li-center"
-                    :style="{ marginLeft: selected == 12 ? '-38px' : '32px' }"
-                  >
+                  <div class="son-li-center" :style="{ marginLeft: selected == 12 ? '-38px' : '32px' }">
                     <div class="center-img-div">
-                      <img
-                        class="center-img"
-                        src="../../assets/imgs/home/12.png"
-                      />
+                      <img class="center-img" src="../../assets/imgs/home/12.png" />
                     </div>
                     <p class="center-font">銷售報表</p>
                   </div>
                   <div class="son-li-right">
-                    <img
-                      class="right-img"
-                      src="../../assets/imgs/home/right.png"
-                    />
+                    <img class="right-img" src="../../assets/imgs/home/right.png" />
                   </div>
                 </li>
               </ul>
@@ -357,58 +208,32 @@
                 <p class="dad-li-font">賬單管理</p>
               </div>
               <ul class="aside-ul-son">
-                <li
-                  class="son-li"
-                  @click="selectedPage(6)"
-                  :style="{
-                    backgroundColor: selected == 6 ? '#303e53' : 'transparent'
-                  }"
-                >
+                <li class="son-li" @click="selectedPage(6)" :style="{
+                  backgroundColor: selected == 6 ? '#303e53' : 'transparent'
+                }">
                   <p class="son-li-line" v-if="selected == 6"></p>
-                  <div
-                    class="son-li-center"
-                    :style="{ marginLeft: selected == 6 ? '-38px' : '32px' }"
-                  >
+                  <div class="son-li-center" :style="{ marginLeft: selected == 6 ? '-38px' : '32px' }">
                     <div class="center-img-div">
-                      <img
-                        class="center-img"
-                        src="../../assets/imgs/home/bill_add.png"
-                      />
+                      <img class="center-img" src="../../assets/imgs/home/bill_add.png" />
                     </div>
                     <p class="center-font">賬單錄入</p>
                   </div>
                   <div class="son-li-right">
-                    <img
-                      class="right-img"
-                      src="../../assets/imgs/home/right.png"
-                    />
+                    <img class="right-img" src="../../assets/imgs/home/right.png" />
                   </div>
                 </li>
-                <li
-                  class="son-li"
-                  @click="selectedPage(7)"
-                  :style="{
-                    backgroundColor: selected == 7 ? '#303e53' : 'transparent'
-                  }"
-                >
+                <li class="son-li" @click="selectedPage(7)" :style="{
+                  backgroundColor: selected == 7 ? '#303e53' : 'transparent'
+                }">
                   <p class="son-li-line" v-if="selected == 7"></p>
-                  <div
-                    class="son-li-center"
-                    :style="{ marginLeft: selected == 7 ? '-38px' : '32px' }"
-                  >
+                  <div class="son-li-center" :style="{ marginLeft: selected == 7 ? '-38px' : '32px' }">
                     <div class="center-img-div">
-                      <img
-                        class="center-img"
-                        src="../../assets/imgs/home/search.png"
-                      />
+                      <img class="center-img" src="../../assets/imgs/home/search.png" />
                     </div>
                     <p class="center-font">賬單查詢</p>
                   </div>
                   <div class="son-li-right">
-                    <img
-                      class="right-img"
-                      src="../../assets/imgs/home/right.png"
-                    />
+                    <img class="right-img" src="../../assets/imgs/home/right.png" />
                   </div>
                 </li>
               </ul>
@@ -418,163 +243,94 @@
                 <p class="dad-li-font">訂單管理</p>
               </div>
               <ul class="aside-ul-son">
-                <li
-                  class="son-li"
-                  @click="selectedPage(16)"
-                  :style="{
-                    backgroundColor: selected == 16 ? '#303e53' : 'transparent'
-                  }"
-                >
+                <li class="son-li" @click="selectedPage(16)" :style="{
+                  backgroundColor: selected == 16 ? '#303e53' : 'transparent'
+                }">
                   <p class="son-li-line" v-if="selected == 16"></p>
-                  <div
-                    class="son-li-center"
-                    :style="{ marginLeft: selected == 16 ? '-38px' : '32px' }"
-                  >
+                  <div class="son-li-center" :style="{ marginLeft: selected == 16 ? '-38px' : '32px' }">
                     <div class="center-img-div">
-                      <img
-                        class="center-img"
-                        src="../../assets/imgs/home/bill_add.png"
-                      />
+                      <img class="center-img" src="../../assets/imgs/home/bill_add.png" />
                     </div>
                     <p class="center-font">商品發貨</p>
                   </div>
                   <div class="son-li-right">
-                    <img
-                      class="right-img"
-                      src="../../assets/imgs/home/right.png"
-                    />
+                    <img class="right-img" src="../../assets/imgs/home/right.png" />
                   </div>
                 </li>
-                <li
-                  class="son-li"
-                  @click="selectedPage(17)"
-                  :style="{
-                    backgroundColor: selected == 17 ? '#303e53' : 'transparent'
-                  }"
-                >
+                <li class="son-li" @click="selectedPage(17)" :style="{
+                  backgroundColor: selected == 17 ? '#303e53' : 'transparent'
+                }">
                   <p class="son-li-line" v-if="selected == 17"></p>
-                  <div
-                    class="son-li-center"
-                    :style="{ marginLeft: selected == 17 ? '-38px' : '32px' }"
-                  >
+                  <div class="son-li-center" :style="{ marginLeft: selected == 17 ? '-38px' : '32px' }">
                     <div class="center-img-div">
-                      <img
-                        class="center-img"
-                        src="../../assets/imgs/home/search.png"
-                      />
+                      <img class="center-img" src="../../assets/imgs/home/search.png" />
                     </div>
                     <p class="center-font">退貨確認</p>
                   </div>
                   <div class="son-li-right">
-                    <img
-                      class="right-img"
-                      src="../../assets/imgs/home/right.png"
-                    />
+                    <img class="right-img" src="../../assets/imgs/home/right.png" />
                   </div>
                 </li>
               </ul>
             </li>
-            <li
-              class="dad-li"
-              v-show="
-                role == 'system_admin' ||
-                  role == 'admin' ||
-                  role == 'normal_admin'
-              "
-            >
+            <li class="dad-li" v-show="
+              role == 'system_admin' ||
+              role == 'admin' ||
+              role == 'normal_admin'
+            ">
               <div style="width: 100%;">
                 <p class="dad-li-font">公司管理</p>
               </div>
               <ul class="aside-ul-son">
-                <li
-                  class="son-li"
-                  @click="selectedPage(8)"
-                  :style="{
-                    backgroundColor: selected == 8 ? '#303e53' : 'transparent'
-                  }"
-                  v-show="isHeadCompanyAdmin != -1"
-                >
+                <li class="son-li" @click="selectedPage(8)" :style="{
+                  backgroundColor: selected == 8 ? '#303e53' : 'transparent'
+                }" v-show="isHeadCompanyAdmin != -1">
                   <p class="son-li-line" v-if="selected == 8"></p>
-                  <div
-                    class="son-li-center"
-                    :style="{ marginLeft: selected == 8 ? '-38px' : '32px' }"
-                  >
+                  <div class="son-li-center" :style="{ marginLeft: selected == 8 ? '-38px' : '32px' }">
                     <div class="center-img-div">
-                      <img
-                        class="center-img"
-                        src="../../assets/imgs/home/company_admin.png"
-                      />
+                      <img class="center-img" src="../../assets/imgs/home/company_admin.png" />
                     </div>
                     <p class="center-font">公司管理</p>
                   </div>
                   <div class="son-li-right">
-                    <img
-                      class="right-img"
-                      src="../../assets/imgs/home/right.png"
-                    />
+                    <img class="right-img" src="../../assets/imgs/home/right.png" />
                   </div>
                 </li>
-                <li
-                  v-show="role == 'admin'"
-                  class="son-li"
-                  @click="selectedPage(9)"
-                  :style="{
-                    backgroundColor: selected == 9 ? '#303e53' : 'transparent'
-                  }"
-                >
+                <li v-show="role == 'admin'" class="son-li" @click="selectedPage(9)" :style="{
+                  backgroundColor: selected == 9 ? '#303e53' : 'transparent'
+                }">
                   <p class="son-li-line" v-if="selected == 9"></p>
-                  <div
-                    class="son-li-center"
-                    :style="{ marginLeft: selected == 9 ? '-38px' : '32px' }"
-                  >
+                  <div class="son-li-center" :style="{ marginLeft: selected == 9 ? '-38px' : '32px' }">
                     <div class="center-img-div">
-                      <img
-                        class="center-img"
-                        src="../../assets/imgs/home/08.png"
-                      />
+                      <img class="center-img" src="../../assets/imgs/home/08.png" />
                     </div>
                     <p class="center-font">人員管理</p>
                   </div>
                   <div class="son-li-right">
-                    <img
-                      class="right-img"
-                      src="../../assets/imgs/home/right.png"
-                    />
+                    <img class="right-img" src="../../assets/imgs/home/right.png" />
                   </div>
                 </li>
               </ul>
             </li>
           </ul>
         </el-aside>
-        <el-main
-          :style="defaultHeight"
-          class="home-container-main"
-          id="mainContainer"
-        >
+        <el-main :style="defaultHeight" class="home-container-main" id="mainContainer">
           <onSale v-if="selected == 1"></onSale>
           <sold v-if="selected == 2"></sold>
-          <export v-if="selected == 3"></export>
+          <exportVue v-if="selected == 3"></exportVue>
           <publish v-if="selected == 4"></publish>
           <warehouse v-if="selected == 5"></warehouse>
           <bill-entry v-if="selected == 6"></bill-entry>
           <bill-report v-if="selected == 7"></bill-report>
-          <system-company-admin
-            v-if="selected == 8 && role == 'system_admin'"
-          ></system-company-admin>
-          <company-admin
-            v-if="selected == 8 && role == 'admin'"
-          ></company-admin>
-          <normal-admin
-            v-if="selected == 8 && role == 'normal_admin'"
-          ></normal-admin>
+          <system-company-admin v-if="selected == 8 && role == 'system_admin'"></system-company-admin>
+          <company-admin v-if="selected == 8 && role == 'admin'"></company-admin>
+          <normal-admin v-if="selected == 8 && role == 'normal_admin'"></normal-admin>
           <user-admin v-if="selected == 9"></user-admin>
           <sales-ticket-admin v-if="selected == 10"></sales-ticket-admin>
           <sales-history v-if="selected == 11"></sales-history>
           <sales-statement v-if="selected == 12"></sales-statement>
           <send-documents-add v-if="selected == 13"></send-documents-add>
-          <send-documents-history
-            v-if="selected == 14"
-          ></send-documents-history>
+          <send-documents-history v-if="selected == 14"></send-documents-history>
           <cost-not v-if="selected == 15"></cost-not>
           <goods-delivery v-if="selected == 16"></goods-delivery>
           <goods-return v-if="selected == 17"></goods-return>
@@ -584,7 +340,48 @@
   </div>
 </template>
 <script>
+import onSale from '@/views/personageData/onSale.vue';
+import sold from '@/views/personageData/sold';
+import exportVue from '@/views/personageData/export';
+import publish from '@/views/publish/publish.vue';
+import warehouse from '@/views/personageData/warehouse';
+import billEntry from '../bill/billEntry.vue';
+import billReport from '@/views/bill/billReport'
+import systemCompanyAdmin from '@/views/companyAdmin/systemCompanyAdmin'
+import companyAdmin from '@/views/companyAdmin/companyAdmin'
+import normalAdmin from '@/views/companyAdmin/normalAdmin'
+import userAdmin from '@/views/userAdmin/userAdmin'
+import salesTicketAdmin from '@/views/salesTicket/salesTicketAdmin'
+import salesHistory from '@/views/salesTicket/salesHistory'
+import salesStatement from '@/views/salesTicket/salesStatement'
+import sendDocumentsAdd from '@/views/salesTicket/sendDocumentsAdd'
+import sendDocumentsHistory from '@/views/salesTicket/sendDocumentsHistory'
+import costNot from '@/views/personageData/costNot'
+import goodsDelivery from '@/views/soldAdmin/goodsDelivery'
+import goodsReturn from '@/views/soldAdmin/goodsReturn'
+
 export default {
+  components: {
+    onSale,
+    sold,
+    exportVue,
+    publish,
+    warehouse,
+    billEntry,
+    billReport,
+    systemCompanyAdmin,
+    companyAdmin,
+    normalAdmin,
+    userAdmin,
+    salesTicketAdmin,
+    salesHistory,
+    salesStatement,
+    sendDocumentsAdd,
+    sendDocumentsHistory,
+    costNot,
+    goodsDelivery,
+    goodsReturn
+  },
   data() {
     return {
       selected: 4,
@@ -622,8 +419,6 @@ export default {
       this.defaultHeight.height = window.innerHeight - 78 + "px";
     },
     selectedPage(sel) {
-      this.$store.state.imgUrl = "";
-      this.$store.state.imgUrl2 = "";
       this.selected = sel;
     },
     // 退出登录
@@ -993,7 +788,7 @@ img {
   text-align: right;
 }
 
-.el-button + .el-button {
+.el-button+.el-button {
   margin-left: 20px;
 }
 
@@ -1049,7 +844,7 @@ img {
   text-align: left;
 }
 
-.el-drawer__header > :first-child {
+.el-drawer__header> :first-child {
   flex: 1;
   outline: 0;
 }

@@ -57,11 +57,7 @@
               </el-radio-group>
 
               <div class="main-top-right">
-                <el-select
-                  style="width: 80px;"
-                  v-model="comparisonData"
-                  @change="dataComparison"
-                >
+                <el-select style="width: 80px;" v-model="comparisonData" @change="dataComparison">
                   <el-option label="年" value="1"> </el-option>
                   <el-option label="季度" value="2"> </el-option>
                   <el-option label="月" value="3"> </el-option>
@@ -69,33 +65,17 @@
               </div>
             </div>
             <div class="main-chart"></div>
-            <div
-              v-show="chartRadio == 1"
-              id="turnoverChart"
-              style="width: 100%;height: 500px;"
-            ></div>
+            <div v-show="chartRadio == 1" id="turnoverChart" style="width: 100%;height: 500px;"></div>
 
-            <div
-              v-show="chartRadio == 2"
-              id="salesCostChart"
-              style="width: 100%;height: 500px;"
-            ></div>
+            <div v-show="chartRadio == 2" id="salesCostChart" style="width: 100%;height: 500px;"></div>
 
-            <div
-              v-show="chartRadio == 3"
-              id="salesNumberChart"
-              style="width: 100%;height: 500px;"
-            ></div>
+            <div v-show="chartRadio == 3" id="salesNumberChart" style="width: 100%;height: 500px;"></div>
           </div>
           <div class="container-bottom" id="selfTable">
             <div>
               <div style="display: flex;justify-content: space-between;">
                 <div class="top-title" id="top10Change">
-                  <el-select
-                    style="width: 130px;"
-                    v-model="activeName"
-                    @change="handleTabsClick"
-                  >
+                  <el-select style="width: 130px;" v-model="activeName" @change="handleTabsClick">
                     <el-option label="利潤TOP10" value="first"> </el-option>
                     <el-option label="銷量TOP10" value="second"> </el-option>
                   </el-select>
@@ -103,85 +83,57 @@
                 </div>
                 <div v-show="activeName == 'second'">
                   <el-button-group>
-                    <el-button
-                      style="background-color: #3d81fd;color: #fff;"
-                      @click="checkboxChange(0)"
-                      >包款</el-button
-                    >
-                    <el-button
-                      :style="{
-                        'background-color':
-                          checkboxGroup.indexOf('大小') == -1
-                            ? '#fff'
-                            : '#3d81fd',
-                        color:
-                          checkboxGroup.indexOf('大小') == -1
-                            ? '#606266'
-                            : '#fff'
-                      }"
-                      @click="checkboxChange(1)"
-                      >大小</el-button
-                    >
-                    <el-button
-                      :style="{
-                        'background-color':
-                          checkboxGroup.indexOf('材質') == -1
-                            ? '#fff'
-                            : '#3d81fd',
-                        color:
-                          checkboxGroup.indexOf('材質') == -1
-                            ? '#606266'
-                            : '#fff'
-                      }"
-                      @click="checkboxChange(2)"
-                      >材質</el-button
-                    >
-                    <el-button
-                      :style="{
-                        'background-color':
-                          checkboxGroup.indexOf('金屬質感') == -1
-                            ? '#fff'
-                            : '#3d81fd',
-                        color:
-                          checkboxGroup.indexOf('金屬質感') == -1
-                            ? '#606266'
-                            : '#fff'
-                      }"
-                      @click="checkboxChange(3)"
-                      >金屬質感</el-button
-                    >
-                    <el-button
-                      :style="{
-                        'background-color':
-                          checkboxGroup.indexOf('顏色') == -1
-                            ? '#fff'
-                            : '#3d81fd',
-                        color:
-                          checkboxGroup.indexOf('顏色') == -1
-                            ? '#606266'
-                            : '#fff'
-                      }"
-                      @click="checkboxChange(4)"
-                      >顏色</el-button
-                    >
+                    <el-button style="background-color: #3d81fd;color: #fff;" @click="checkboxChange(0)">包款</el-button>
+                    <el-button :style="{
+                      'background-color':
+                        checkboxGroup.indexOf('大小') == -1
+                          ? '#fff'
+                          : '#3d81fd',
+                      color:
+                        checkboxGroup.indexOf('大小') == -1
+                          ? '#606266'
+                          : '#fff'
+                    }" @click="checkboxChange(1)">大小</el-button>
+                    <el-button :style="{
+                      'background-color':
+                        checkboxGroup.indexOf('材質') == -1
+                          ? '#fff'
+                          : '#3d81fd',
+                      color:
+                        checkboxGroup.indexOf('材質') == -1
+                          ? '#606266'
+                          : '#fff'
+                    }" @click="checkboxChange(2)">材質</el-button>
+                    <el-button :style="{
+                      'background-color':
+                        checkboxGroup.indexOf('金屬質感') == -1
+                          ? '#fff'
+                          : '#3d81fd',
+                      color:
+                        checkboxGroup.indexOf('金屬質感') == -1
+                          ? '#606266'
+                          : '#fff'
+                    }" @click="checkboxChange(3)">金屬質感</el-button>
+                    <el-button :style="{
+                      'background-color':
+                        checkboxGroup.indexOf('顏色') == -1
+                          ? '#fff'
+                          : '#3d81fd',
+                      color:
+                        checkboxGroup.indexOf('顏色') == -1
+                          ? '#606266'
+                          : '#fff'
+                    }" @click="checkboxChange(4)">顏色</el-button>
                   </el-button-group>
                 </div>
               </div>
             </div>
             <div class="bottom-main">
               <el-table v-show="activeName == 'first'" :data="profitTopList">
-                <el-table-column
-                  width="180px"
-                  align="center"
-                  prop="pics"
-                  label="圖片"
-                >
+                <el-table-column width="180px" align="center" prop="pics" label="圖片">
                   <template slot-scope="scope">
                     <div>
-                      <img
-                        style="width: 66px; height: 66px"
-                        :src="scope.row.pic"
-                      />
+                      <img style="width: 66px; height: 66px" :src="scope.row.pic" />
                     </div>
                   </template>
                 </el-table-column>
@@ -192,36 +144,21 @@
                     <div>
                       {{
                         formatNumberRgx(scope.row.profit) +
-                          " " +
-                          scope.row.currency
+                        " " +
+                        scope.row.currency
                       }}
                     </div>
                   </template>
                 </el-table-column>
               </el-table>
 
-              <el-table
-                v-show="activeName == 'second'"
-                v-loading="loading"
-                element-loading-text="加载中..."
-                element-loading-spinner="el-icon-loading"
-                element-loading-background="rgba(0, 0, 0, 0.8)"
-                :data="salesVolumeTopList"
-                style="margin-top: 20px;"
-                id="salesVolumeContainer"
-              >
-                <el-table-column
-                  width="180px"
-                  align="center"
-                  prop="pics"
-                  label="圖片"
-                >
+              <el-table v-show="activeName == 'second'" v-loading="loading" element-loading-text="加载中..."
+                element-loading-spinner="el-icon-loading" element-loading-background="rgba(0, 0, 0, 0.8)"
+                :data="salesVolumeTopList" style="margin-top: 20px;" id="salesVolumeContainer">
+                <el-table-column width="180px" align="center" prop="pics" label="圖片">
                   <template slot-scope="scope">
                     <div>
-                      <img
-                        style="width: 66px; height: 66px"
-                        :src="scope.row.pic"
-                      />
+                      <img style="width: 66px; height: 66px" :src="scope.row.pic" />
                     </div>
                   </template>
                 </el-table-column>
@@ -234,29 +171,21 @@
                       {{ checkboxGroup.length > 2 ? scope.row.leather : "" }}
                       {{
                         checkboxGroup.length > 3
-                          ? scope.row.metal
-                            ? scope.row.metal + "扣"
-                            : ""
+                        ? scope.row.metal
+                          ? scope.row.metal + "扣"
                           : ""
+                        : ""
                       }}
                     </div>
                   </template>
                 </el-table-column>
-                <el-table-column
-                  prop="salesVolumes"
-                  label="銷量"
-                  align="center"
-                >
+                <el-table-column prop="salesVolumes" label="銷量" align="center">
                 </el-table-column>
                 <el-table-column prop="prop" label="操作" align="center">
                   <template slot-scope="scoped">
                     <div>
-                      <img
-                        src="../../assets/imgs/statement/line.png"
-                        style="width: 22px;height: 19px;cursor: pointer;"
-                        title="查看銷售價格歷史曲線圖"
-                        @click="salesPriceHistory(scoped.row)"
-                      />
+                      <img src="../../assets/imgs/statement/line.png" style="width: 22px;height: 19px;cursor: pointer;"
+                        title="查看銷售價格歷史曲線圖" @click="salesPriceHistory(scoped.row)" />
                     </div>
                   </template>
                 </el-table-column>
@@ -271,46 +200,22 @@
               <div class="line"></div>
             </div>
             <div id="selfTable">
-              <el-table
-                :summary-method="getSummaries"
-                show-summary
-                :data="statisticsList"
-                style="width: 100%"
-                key="1"
-              >
-                <el-table-column
-                  prop="stockLocName"
-                  align="left"
-                  label="倉庫名稱"
-                >
+              <el-table :summary-method="getSummaries" show-summary :data="statisticsList" style="width: 100%" key="1">
+                <el-table-column prop="stockLocName" align="left" label="倉庫名稱">
                 </el-table-column>
                 <el-table-column prop="stockNum" align="left" label="庫存數量">
                 </el-table-column>
-                <el-table-column
-                  width="150px"
-                  prop="amount"
-                  align="left"
-                  :label="'庫存總金額' + ' (' + currencyGlobal + ')'"
-                >
+                <el-table-column width="150px" prop="amount" align="left" :label="'庫存總金額' + ' (' + currencyGlobal + ')'">
                   <template slot-scope="scope">
                     <div>
                       {{ formatNumberRgx(scope.row.amount) }}
                     </div>
                   </template>
                 </el-table-column>
-                <el-table-column
-                  width="110px"
-                  prop="overstockNum"
-                  align="left"
-                  label="積壓貨物數量"
-                >
+                <el-table-column width="110px" prop="overstockNum" align="left" label="積壓貨物數量">
                   <template slot-scope="scope">
                     <div>
-                      <el-button
-                        type="text"
-                        @click="checkProductNum(scope.row)"
-                        >{{ scope.row.overstockNum }}</el-button
-                      >
+                      <el-button type="text" @click="checkProductNum(scope.row)">{{ scope.row.overstockNum }}</el-button>
                     </div>
                   </template>
                 </el-table-column>
@@ -321,25 +226,18 @@
       </div>
     </div>
     <div v-if="pageSel == 1" class="back-style">
-      <div
-        style="width: 60px;margin-bottom: 20px;display: flex;justify-content:space-between;cursor: pointer;"
-        @click="goback(0)"
-      >
+      <div style="width: 60px;margin-bottom: 20px;display: flex;justify-content:space-between;cursor: pointer;"
+        @click="goback(0)">
         <img src="../../assets/imgs/goback.png" style="height: 21px;" />
         <p style="margin: 0;">返回</p>
       </div>
       <div>
-        <div
-          id="myPriceChart"
-          style="width: 100%;height: 75vh;margin-top: 20px;"
-        ></div>
+        <div id="myPriceChart" style="width: 100%;height: 75vh;margin-top: 20px;"></div>
       </div>
     </div>
     <div v-if="pageSel == 4" class="back-style">
-      <div
-        style="width: 60px;margin-bottom: 20px;display: flex;justify-content:space-between;cursor: pointer;"
-        @click="goback(0)"
-      >
+      <div style="width: 60px;margin-bottom: 20px;display: flex;justify-content:space-between;cursor: pointer;"
+        @click="goback(0)">
         <img src="../../assets/imgs/goback.png" style="height: 21px;" />
         <p style="margin: 0;">返回</p>
       </div>
@@ -350,47 +248,27 @@
           <el-table-column align="center" prop="pic" label="展示图">
             <template slot-scope="scope">
               <div>
-                <el-image
-                  style="width: 100px; height: 100px"
-                  :src="scope.row.pic.trim()"
-                  :preview-src-list="bigImg(scope.row.pics)"
-                  :z-index="5000"
-                >
+                <el-image style="width: 100px; height: 100px" :src="scope.row.pic.trim()"
+                  :preview-src-list="bigImg(scope.row.pics)" :z-index="5000">
                 </el-image>
               </div>
             </template>
           </el-table-column>
           <el-table-column align="center" prop="prop" label="内部图">
             <template slot-scope="scope">
-              <div
-                v-if="
-                  scope.row.privateImg !== '' && scope.row.privateImg !== null
-                "
-              >
-                <el-image
-                  style="width: 100px; height: 100px"
-                  :src="scope.row.privatePic.trim()"
-                  :preview-src-list="bigImg(scope.row.privateImg)"
-                  :z-index="5000"
-                >
+              <div v-if="
+                scope.row.privateImg !== '' && scope.row.privateImg !== null
+              ">
+                <el-image style="width: 100px; height: 100px" :src="scope.row.privatePic.trim()"
+                  :preview-src-list="bigImg(scope.row.privateImg)" :z-index="5000">
                 </el-image>
               </div>
             </template>
           </el-table-column>
-          <el-table-column
-            width="300px"
-            align="center"
-            prop="name"
-            label="商品信息"
-          >
+          <el-table-column width="300px" align="center" prop="name" label="商品信息">
             <template slot-scope="scope">
               <div>
-                <el-tooltip
-                  class="item"
-                  effect="light"
-                  :content="scope.row.name"
-                  placement="bottom"
-                >
+                <el-tooltip class="item" effect="light" :content="scope.row.name" placement="bottom">
                   <div class="font-warp">{{ scope.row.name }}</div>
                 </el-tooltip>
               </div>
@@ -418,34 +296,20 @@
           <el-table-column width="130px" align="center" label="操作">
             <template slot-scope="scope">
               <div>
-                <el-button
-                  style="margin-left: 3px;"
-                  type="text"
-                  @click="editProduct(scope.row)"
-                  >查看詳情</el-button
-                >
+                <el-button style="margin-left: 3px;" type="text" @click="editProduct(scope.row)">查看詳情</el-button>
               </div>
             </template>
           </el-table-column>
         </el-table>
         <div style="margin-top:15px;text-align: right;">
-          <el-pagination
-            @current-change="handleCurrentChangeSell"
-            :current-page="page"
-            :page-size="10"
-            layout="total, prev, pager, next, jumper"
-            :total="total"
-          >
+          <el-pagination @current-change="handleCurrentChangeSell" :current-page="page" :page-size="10"
+            layout="total, prev, pager, next, jumper" :total="total">
           </el-pagination>
         </div>
       </div>
     </div>
     <div v-if="pageSel == 5" style="margin-top: 20px;">
-      <details-vue
-        :updatesId="updateId"
-        @goback="gobackAdd"
-        @updateSuccess="updateSuccess"
-      ></details-vue>
+      <details-vue :updatesId="updateId" @goback="gobackAdd" @updateSuccess="updateSuccess"></details-vue>
     </div>
   </div>
 </template>
@@ -453,7 +317,7 @@
 <script>
 import { getAnnulusOption } from "../../utils/option";
 import * as $echarts from "echarts";
-import detailsVue from "../common/details.vue";
+import detailsVue from "@/components/details.vue";
 export default {
   components: { detailsVue },
   data() {
@@ -596,11 +460,11 @@ export default {
         this.$axios
           .get(
             this.$store.state.baseUrl +
-              "/overStockSearchList?stockLocId=" +
-              this.stockLocId +
-              "&page=" +
-              this.page +
-              "&pageNum=10"
+            "/overStockSearchList?stockLocId=" +
+            this.stockLocId +
+            "&page=" +
+            this.page +
+            "&pageNum=10"
           )
           .then(res => {
             console.log("積壓貨物列表");
@@ -965,8 +829,8 @@ export default {
       this.$axios
         .get(
           this.$store.state.baseUrl +
-            "/salesComparison?flag=" +
-            this.comparisonData
+          "/salesComparison?flag=" +
+          this.comparisonData
         )
         .then(res => {
           console.log("對比數據");
@@ -1213,13 +1077,11 @@ export default {
 </style>
 <style lang="scss">
 #salesReportContainer {
-  .el-tabs--border-card
-    > .el-tabs__header
-    .el-tabs__item:not(.is-disabled):hover {
+  .el-tabs--border-card>.el-tabs__header .el-tabs__item:not(.is-disabled):hover {
     color: #000;
   }
 
-  .el-tabs--border-card > .el-tabs__header .el-tabs__item.is-active {
+  .el-tabs--border-card>.el-tabs__header .el-tabs__item.is-active {
     color: #000;
   }
 
@@ -1229,7 +1091,7 @@ export default {
     border-color: #3d81fd;
   }
 
-  .el-radio-button__orig-radio:checked + .el-radio-button__inner {
+  .el-radio-button__orig-radio:checked+.el-radio-button__inner {
     color: #fff;
     background-color: #3d81fd;
     border-color: #3d81fd;
@@ -1237,6 +1099,7 @@ export default {
 }
 
 #selfTable {
+
   .el-table__footer-wrapper tbody td,
   .el-table__header-wrapper tbody td {
     background-color: #fff;

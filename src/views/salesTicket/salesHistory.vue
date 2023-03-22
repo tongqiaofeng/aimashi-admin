@@ -7,34 +7,17 @@
           <el-form inline>
             <el-form-item label="庫存狀態">
               <el-select v-model="sellSold">
-                <el-option
-                  v-for="item in stateList2"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                >
+                <el-option v-for="item in stateList2" :key="item.value" :label="item.label" :value="item.value">
                 </el-option>
               </el-select>
             </el-form-item>
             <el-form-item label="出售時間">
-              <el-date-picker
-                v-model="sellTime"
-                type="daterange"
-                range-separator="至"
-                start-placeholder="開始日期"
-                end-placeholder="結束日期"
-                format="yyyy-MM-dd"
-                value-format="yyyy-MM-dd"
-              >
+              <el-date-picker v-model="sellTime" type="daterange" range-separator="至" start-placeholder="開始日期"
+                end-placeholder="結束日期" format="yyyy-MM-dd" value-format="yyyy-MM-dd">
               </el-date-picker>
             </el-form-item>
             <el-form-item>
-              <el-input
-                style="width: 450px;"
-                v-model="sellKeyword"
-                placeholder="可輸入賬單號、商品貨號、客戶名稱搜索"
-                clearable
-              ></el-input>
+              <el-input style="width: 450px;" v-model="sellKeyword" placeholder="可輸入賬單號、商品貨號、客戶名稱搜索" clearable></el-input>
             </el-form-item>
             <el-form-item>
               <el-button type="primary" @click="searchSell">查詢</el-button>
@@ -43,16 +26,12 @@
         </div>
         <div
           style="width: 100%;padding: 20px 0;margin-top: 20px;text-align: center;background-color: #fff;border-radius: 6px;"
-          v-if="sellOrderList.length == 0"
-        >
+          v-if="sellOrderList.length == 0">
           暫無數據
         </div>
         <div v-else style="margin-top: 20px;">
-          <div
-            v-for="(item, index) in sellOrderList"
-            :key="index"
-            style="padding: 20px;margin-bottom: 20px;background-color: #fff;border-radius: 6px;"
-          >
+          <div v-for="(item, index) in sellOrderList" :key="index"
+            style="padding: 20px;margin-bottom: 20px;background-color: #fff;border-radius: 6px;">
             <div>
               <div class="bill-container">
                 <div class="container-top-left">
@@ -73,149 +52,82 @@
                   </div>
                 </div>
                 <div class="print">
-                  <el-button
-                    type="primary"
-                    size="mini"
-                    @click="updateSellOrder(item)"
-                    >修改</el-button
-                  >
-                  <el-button
-                    type="primary"
-                    size="mini"
-                    @click="printSalesCredentials(item.bill)"
-                    >銷售憑證</el-button
-                  >
-                  <el-button
-                    type="danger"
-                    size="mini"
-                    @click="cancelSales(item)"
-                    >撤銷</el-button
-                  >
-                  <el-dialog
-                    title="撤銷"
-                    :visible.sync="dialogDeleteBillVisible"
-                  >
+                  <el-button type="primary" size="mini" @click="updateSellOrder(item)">修改</el-button>
+                  <el-button type="primary" size="mini" @click="printSalesCredentials(item.bill)">銷售憑證</el-button>
+                  <el-button type="danger" size="mini" @click="cancelSales(item)">撤銷</el-button>
+                  <el-dialog title="撤銷" :visible.sync="dialogDeleteBillVisible">
                     <div style="text-align:center;font-size: 16px;">
                       確定刪除該銷售單？刪除後不可恢復
                     </div>
                     <div slot="footer">
-                      <el-button @click="dialogDeleteBillVisible = false"
-                        >取 消</el-button
-                      >
-                      <el-button type="primary" @click="cancelSureSales"
-                        >确 定</el-button
-                      >
+                      <el-button @click="dialogDeleteBillVisible = false">取 消</el-button>
+                      <el-button type="primary" @click="cancelSureSales">确 定</el-button>
                     </div>
                   </el-dialog>
                 </div>
               </div>
-              <el-table
-                border
-                stripe
-                :data="item.stockList"
-                style="width: 100%"
-              >
-                <el-table-column
-                  width="80px"
-                  align="center"
-                  prop="productCode"
-                  label="貨號"
-                >
+              <el-table border stripe :data="item.stockList" style="width: 100%">
+                <el-table-column width="80px" align="center" prop="productCode" label="貨號">
                 </el-table-column>
-                <el-table-column
-                  width="120px"
-                  align="center"
-                  prop="pic"
-                  label="圖片"
-                >
+                <el-table-column width="120px" align="center" prop="pic" label="圖片">
                   <template slot-scope="scope">
                     <div>
-                      <el-image
-                        style="width: 100px; height: 100px"
-                        :src="scope.row.pic.trim()"
-                        :preview-src-list="bigImg(scope.row.pics)"
-                        :z-index="5000"
-                      >
+                      <el-image style="width: 100px; height: 100px" :src="scope.row.pic.trim()"
+                        :preview-src-list="bigImg(scope.row.pics)" :z-index="5000">
                       </el-image>
                     </div>
                   </template>
                 </el-table-column>
-                <el-table-column
-                  width="250px"
-                  align="center"
-                  prop="name"
-                  label="商品信息"
-                >
+                <el-table-column width="250px" align="center" prop="name" label="商品信息">
                   <template slot-scope="scope">
                     <div>
-                      <el-tooltip
-                        class="item"
-                        effect="light"
-                        :content="scope.row.name"
-                        placement="bottom"
-                      >
+                      <el-tooltip class="item" effect="light" :content="scope.row.name" placement="bottom">
                         <div class="font-warp">{{ scope.row.name }}</div>
                       </el-tooltip>
                     </div>
                   </template>
                 </el-table-column>
-                <el-table-column
-                  align="center"
-                  prop="priceTran"
-                  label="出售外幣金額"
-                >
+                <el-table-column align="center" prop="priceTran" label="出售外幣金額">
                   <template slot-scope="scope">
                     <div>
                       {{
                         scope.row.priceTran
-                          ? formatNumberRgx(scope.row.priceTran) +
-                            " " +
-                            currencyRgx(scope.row.sellCurrencyId)
-                          : "--"
+                        ? formatNumberRgx(scope.row.priceTran) +
+                        " " +
+                        currencyRgx(scope.row.sellCurrencyId)
+                        : "--"
                       }}
                     </div>
                   </template>
                 </el-table-column>
-                <el-table-column
-                  align="center"
-                  prop="saleLogHkPrice"
-                  :label="'物流費/手續費(' + currencyGlobal + ')'"
-                >
+                <el-table-column align="center" prop="saleLogHkPrice" :label="'物流費/手續費(' + currencyGlobal + ')'">
                   <template slot-scope="scope">
                     <div>
                       {{
                         scope.row.saleLogHkPrice
-                          ? formatNumberRgx(scope.row.saleLogHkPrice) +
-                            " " +
-                            currencyGlobal
-                          : "--"
+                        ? formatNumberRgx(scope.row.saleLogHkPrice) +
+                        " " +
+                        currencyGlobal
+                        : "--"
                       }}
                     </div>
                   </template>
                 </el-table-column>
-                <el-table-column
-                  align="center"
-                  prop="saleTotalHkPrice"
-                  :label="'出售' + currencyFontRgx(currencyGlobal) + '金額'"
-                >
+                <el-table-column align="center" prop="saleTotalHkPrice"
+                  :label="'出售' + currencyFontRgx(currencyGlobal) + '金額'">
                   <template slot-scope="scope">
                     <div>
                       {{
                         scope.row.saleTotalHkPrice
-                          ? formatNumberRgx(scope.row.saleTotalHkPrice) +
-                            " " +
-                            currencyGlobal
-                          : "--"
+                        ? formatNumberRgx(scope.row.saleTotalHkPrice) +
+                        " " +
+                        currencyGlobal
+                        : "--"
                       }}
                     </div>
                   </template>
                 </el-table-column>
-                <el-table-column
-                  width="250px"
-                  align="center"
-                  prop="note"
-                  label="備註"
-                >
+                <el-table-column width="250px" align="center" prop="note" label="備註">
                   <template slot-scope="scope">
                     <div>
                       <el-tooltip placement="bottom" effect="light">
@@ -227,75 +139,38 @@
                     </div>
                   </template>
                 </el-table-column>
-                <el-table-column
-                  width="120px"
-                  align="center"
-                  prop="note"
-                  label="操作"
-                >
+                <el-table-column width="120px" align="center" prop="note" label="操作">
                   <template slot-scope="scope">
                     <div>
-                      <el-button type="text" @click="salesReturn(scope.row)"
-                        >退貨</el-button
-                      >
-                      <el-button type="text" @click="editProduct(scope.row)"
-                        >詳情</el-button
-                      >
-                      <el-dialog
-                        title="退貨"
-                        v-if="dialogStateVisible"
-                        :visible.sync="dialogStateVisible"
-                        width="800px"
-                        :close-on-press-escape="false"
-                        :close-on-click-modal="false"
-                        :modal-append-to-body="true"
-                        :append-to-body="true"
-                      >
+                      <el-button type="text" @click="salesReturn(scope.row)">退貨</el-button>
+                      <el-button type="text" @click="editProduct(scope.row)">詳情</el-button>
+                      <el-dialog title="退貨" v-if="dialogStateVisible" :visible.sync="dialogStateVisible" width="800px"
+                        :close-on-press-escape="false" :close-on-click-modal="false" :modal-append-to-body="true"
+                        :append-to-body="true">
                         <div>
                           <el-form label-width="110px">
                             <el-form-item label="庫存狀態" required>
-                              <el-select
-                                v-model="updateSellMsg.sold"
-                                placeholder="請選擇"
-                                style="width:100%;"
-                              >
-                                <el-option
-                                  v-for="item in stateUpdateList"
-                                  :key="item.value"
-                                  :label="item.label"
-                                  :value="item.value"
-                                >
+                              <el-select v-model="updateSellMsg.sold" placeholder="請選擇" style="width:100%;">
+                                <el-option v-for="item in stateUpdateList" :key="item.value" :label="item.label"
+                                  :value="item.value">
                                 </el-option>
                               </el-select>
                             </el-form-item>
                             <el-form-item label="入庫時間" required>
                               <el-form-item>
-                                <el-date-picker
-                                  type="date"
-                                  placeholder="請選擇日期時間"
-                                  v-model="updateSellMsg.createTime"
-                                  style="width:100%;"
-                                  value-format="yyyy-MM-dd"
-                                  format="yyyy-MM-dd"
-                                >
+                                <el-date-picker type="date" placeholder="請選擇日期時間" v-model="updateSellMsg.createTime"
+                                  style="width:100%;" value-format="yyyy-MM-dd" format="yyyy-MM-dd">
                                 </el-date-picker>
                               </el-form-item>
                             </el-form-item>
                             <el-form-item label="備註">
-                              <el-input
-                                type="textarea"
-                                style="width:100%;"
-                                v-model="updateSellMsg.note"
-                              ></el-input>
+                              <el-input type="textarea" style="width:100%;" v-model="updateSellMsg.note"></el-input>
                             </el-form-item>
                           </el-form>
                         </div>
                         <div slot="footer">
-                          <el-button @click="dialogStateVisible = false"
-                            >取 消</el-button
-                          >
-                          <el-button type="primary" @click="salesReturnSure"
-                            >确 定
+                          <el-button @click="dialogStateVisible = false">取 消</el-button>
+                          <el-button type="primary" @click="salesReturnSure">确 定
                           </el-button>
                         </div>
                       </el-dialog>
@@ -306,224 +181,105 @@
             </div>
           </div>
           <div style="margin-top:15px;text-align: right;">
-            <el-pagination
-              @current-change="handleCurrentChangeSell"
-              :current-page="sellPage"
-              :page-size="5"
-              layout="total, prev, pager, next, jumper"
-              :total="sellOrderTotal"
-            >
+            <el-pagination @current-change="handleCurrentChangeSell" :current-page="sellPage" :page-size="5"
+              layout="total, prev, pager, next, jumper" :total="sellOrderTotal">
             </el-pagination>
           </div>
         </div>
       </div>
       <div v-if="pageSel == 1">
-        <details-vue
-          :updatesId="updateId"
-          @goback="gobackAdd"
-          @updateSuccess="updateSuccess"
-        ></details-vue>
+        <details-vue :updatesId="updateId" @goback="gobackAdd" @updateSuccess="updateSuccess"></details-vue>
       </div>
       <div v-show="pageSel === 2" class="back-style">
-        <div
-          style="width: 60px;margin-bottom: 20px;display: flex;justify-content:space-between;cursor: pointer;"
-          @click="gobackAdd"
-        >
+        <div style="width: 60px;margin-bottom: 20px;display: flex;justify-content:space-between;cursor: pointer;"
+          @click="gobackAdd">
           <img src="../../assets/imgs/goback.png" style="height: 21px;" />
           <p style="margin: 0;">返回</p>
         </div>
         <div>
-          <el-form
-            ref="addSalesTicketForm"
-            :model="addDataConsign"
-            :rules="addDataRules"
-            label-width="98px"
-          >
+          <el-form ref="addSalesTicketForm" :model="addDataConsign" :rules="addDataRules" label-width="98px">
             <el-form-item label="庫存狀態" required>
               <el-form-item prop="sold">
-                <el-select
-                  style="width: 300px;"
-                  v-model="addDataConsign.sold"
-                  placeholder="請選擇"
-                  @change="stateChange"
-                >
-                  <el-option
-                    v-for="item in stateList"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value"
-                  >
+                <el-select style="width: 300px;" v-model="addDataConsign.sold" placeholder="請選擇" @change="stateChange">
+                  <el-option v-for="item in stateList" :key="item.value" :label="item.label" :value="item.value">
                   </el-option>
                 </el-select>
               </el-form-item>
             </el-form-item>
             <el-form-item prop="bill" label="賬單號">
-              <el-input
-                style="width: 300px;"
-                v-model="addDataConsign.bill"
-                placeholder="請輸入賬單號"
-              ></el-input>
+              <el-input style="width: 300px;" v-model="addDataConsign.bill" placeholder="請輸入賬單號"></el-input>
             </el-form-item>
             <el-form-item label="是否收款完成" prop="isReceiveCheck">
               <el-switch v-model="addDataConsign.isReceiveCheck"></el-switch>
             </el-form-item>
             <el-form-item label="銷售人員" prop="sellerId">
-              <el-select
-                style="width: 300px;"
-                v-model="addDataConsign.sellerId"
-                placeholder="請選擇銷售人員"
-              >
-                <el-option
-                  v-for="item in sellerList"
-                  :key="item.id"
-                  :label="item.name"
-                  :value="item.id"
-                >
+              <el-select style="width: 300px;" v-model="addDataConsign.sellerId" placeholder="請選擇銷售人員">
+                <el-option v-for="item in sellerList" :key="item.id" :label="item.name" :value="item.id">
                 </el-option>
               </el-select>
             </el-form-item>
             <el-form-item label="客戶姓名" prop="customer">
-              <el-autocomplete
-                style="width: 300px;"
-                v-model="addDataConsign.customer"
-                :fetch-suggestions="querySearch"
-                placeholder="請選擇/輸入客戶姓名"
-                @select="handleSelect"
-              ></el-autocomplete>
+              <el-autocomplete style="width: 300px;" v-model="addDataConsign.customer" :fetch-suggestions="querySearch"
+                placeholder="請選擇/輸入客戶姓名" @select="handleSelect"></el-autocomplete>
             </el-form-item>
             <el-form-item label="客戶類型" prop="customerType">
-              <el-autocomplete
-                style="width: 300px;"
-                v-model="addDataConsign.customerType"
-                :fetch-suggestions="queryCustomerTypeSearch"
-                placeholder="請選擇/輸入客戶類型"
-                @select="handleCustomerTypeSelect"
-              ></el-autocomplete>
+              <el-autocomplete style="width: 300px;" v-model="addDataConsign.customerType"
+                :fetch-suggestions="queryCustomerTypeSearch" placeholder="請選擇/輸入客戶類型"
+                @select="handleCustomerTypeSelect"></el-autocomplete>
             </el-form-item>
             <el-form-item prop="soldTime" label="出售日期">
-              <el-date-picker
-                style="width: 300px;"
-                v-model="addDataConsign.soldTime"
-                type="date"
-                format="yyyy-MM-dd"
-                value-format="yyyy-MM-dd"
-                placeholder="請選擇"
-              ></el-date-picker>
+              <el-date-picker style="width: 300px;" v-model="addDataConsign.soldTime" type="date" format="yyyy-MM-dd"
+                value-format="yyyy-MM-dd" placeholder="請選擇"></el-date-picker>
             </el-form-item>
-            <el-form-item
-              label="出庫時間"
-              prop="stockOutTime"
-              v-show="addDataConsign.sold == 4"
-            >
-              <el-date-picker
-                style="width: 300px;"
-                v-model="addDataConsign.stockOutTime"
-                type="date"
-                placeholder="請選擇日期"
-                value-format="yyyy-MM-dd"
-                format="yyyy-MM-dd"
-              ></el-date-picker>
+            <el-form-item label="出庫時間" prop="stockOutTime" v-show="addDataConsign.sold == 4">
+              <el-date-picker style="width: 300px;" v-model="addDataConsign.stockOutTime" type="date" placeholder="請選擇日期"
+                value-format="yyyy-MM-dd" format="yyyy-MM-dd"></el-date-picker>
             </el-form-item>
             <el-form-item label="外幣金額幣種" prop="sellCurrencyId">
-              <el-select
-                style="width: 300px;"
-                v-model="addDataConsign.sellCurrencyId"
-                placeholder="請選擇"
-                clearable
-              >
-                <el-option
-                  v-for="item in currencyIds"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                >
+              <el-select style="width: 300px;" v-model="addDataConsign.sellCurrencyId" placeholder="請選擇" clearable>
+                <el-option v-for="item in currencyIds" :key="item.value" :label="item.label" :value="item.value">
                 </el-option>
               </el-select>
             </el-form-item>
           </el-form>
           <div>
             <el-table border :data="sellStockList">
-              <el-table-column
-                width="80px"
-                align="center"
-                prop="productCode"
-                label="貨號"
-              >
+              <el-table-column width="80px" align="center" prop="productCode" label="貨號">
               </el-table-column>
-              <el-table-column
-                width="120px"
-                align="center"
-                prop="pic"
-                label="圖片"
-              >
+              <el-table-column width="120px" align="center" prop="pic" label="圖片">
                 <template slot-scope="scope">
                   <div>
-                    <el-image
-                      style="width: 100px; height: 100px"
-                      :src="scope.row.pic.trim()"
-                      :preview-src-list="bigImg(scope.row.pics)"
-                      :z-index="5000"
-                    >
+                    <el-image style="width: 100px; height: 100px" :src="scope.row.pic.trim()"
+                      :preview-src-list="bigImg(scope.row.pics)" :z-index="5000">
                     </el-image>
                   </div>
                 </template>
               </el-table-column>
-              <el-table-column
-                width="250px"
-                align="center"
-                prop="name"
-                label="商品信息"
-              >
+              <el-table-column width="250px" align="center" prop="name" label="商品信息">
                 <template slot-scope="scope">
                   <div>
-                    <el-tooltip
-                      class="item"
-                      effect="light"
-                      :content="scope.row.name"
-                      placement="bottom"
-                    >
+                    <el-tooltip class="item" effect="light" :content="scope.row.name" placement="bottom">
                       <div class="font-warp">{{ scope.row.name }}</div>
                     </el-tooltip>
                   </div>
                 </template>
               </el-table-column>
-              <el-table-column
-                align="center"
-                prop="priceTran"
-                label="出售外幣金額
-                "
-              >
+              <el-table-column align="center" prop="priceTran" label="出售外幣金額
+                  ">
                 <template slot-scope="scope">
                   <div>
-                    <el-input
-                      type="text"
-                      placeholder="请输入"
-                      v-model="scope.row.priceTran"
-                      clearable
-                      @change="isSellHKD(scope.row)"
-                      ><i
-                        slot="suffix"
-                        style="color: #000;font-style:normal;line-height: 40px;"
-                        >{{ currencyRgx(addDataConsign.sellCurrencyId) }}</i
-                      ></el-input
-                    >
+                    <el-input type="text" placeholder="请输入" v-model="scope.row.priceTran" clearable
+                      @change="isSellHKD(scope.row)"><i slot="suffix"
+                        style="color: #000;font-style:normal;line-height: 40px;">{{
+                          currencyRgx(addDataConsign.sellCurrencyId) }}</i></el-input>
                   </div>
                 </template>
               </el-table-column>
-              <el-table-column
-                align="center"
-                prop="saleLogHkPrice"
-                :label="'物流費/手續費(' + currencyGlobal + ')'"
-              >
+              <el-table-column align="center" prop="saleLogHkPrice" :label="'物流費/手續費(' + currencyGlobal + ')'">
                 <template slot-scope="scope">
                   <div>
-                    <el-input
-                      type="text"
-                      placeholder="请输入"
-                      v-model="scope.row.saleLogHkPrice"
-                      clearable
-                      @change="getSubPrice"
-                    ></el-input>
+                    <el-input type="text" placeholder="请输入" v-model="scope.row.saleLogHkPrice" clearable
+                      @change="getSubPrice"></el-input>
                   </div>
                 </template>
               </el-table-column>
@@ -532,70 +288,38 @@
                 <template slot="header" slot-scope="scope">
                   <div>
                     <span>出售{{ currencyFontRgx(currencyGlobal) }}金額</span>
-                    <span
-                      v-show="
-                        addDataConsign.sold == 4 && getIsHeadConsigns() == 0
-                      "
-                      style="color: red;"
-                      >*</span
-                    >
+                    <span v-show="
+                      addDataConsign.sold == 4 && getIsHeadConsigns() == 0
+                    " style="color: red;">*</span>
                   </div>
                 </template>
                 <template slot-scope="scope">
                   <div>
-                    <el-input
-                      type="text"
-                      placeholder="请输入"
-                      v-model="scope.row.saleTotalHkPrice"
-                      clearable
-                      @change="getNumber(scope.row)"
-                    ></el-input>
+                    <el-input type="text" placeholder="请输入" v-model="scope.row.saleTotalHkPrice" clearable
+                      @change="getNumber(scope.row)"></el-input>
                   </div>
                 </template>
               </el-table-column>
 
-              <el-table-column
-                align="center"
-                prop="saleTotalHkPrice"
-                v-if="getIsHeadConsigns()"
-              >
+              <el-table-column align="center" prop="saleTotalHkPrice" v-if="getIsHeadConsigns()">
                 <!-- eslint-disable-next-line -->
                 <template slot="header" slot-scope="scope">
                   <div>
-                    <span
-                      >出售{{ currencyFontRgx(getHeadCurrency()) }}金額</span
-                    >
-                    <span v-show="addDataConsign.sold == 4" style="color: red;"
-                      >*</span
-                    >
+                    <span>出售{{ currencyFontRgx(getHeadCurrency()) }}金額</span>
+                    <span v-show="addDataConsign.sold == 4" style="color: red;">*</span>
                   </div>
                 </template>
                 <template slot-scope="scope">
                   <div>
-                    <el-input
-                      type="text"
-                      placeholder="请输入"
-                      v-model="scope.row.headSellMoney"
-                      clearable
-                    ></el-input>
+                    <el-input type="text" placeholder="请输入" v-model="scope.row.headSellMoney" clearable></el-input>
                   </div>
                 </template>
               </el-table-column>
 
-              <el-table-column
-                width="250px"
-                align="center"
-                prop="note"
-                label="備註"
-              >
+              <el-table-column width="250px" align="center" prop="note" label="備註">
                 <template slot-scope="scope">
                   <div>
-                    <el-input
-                      type="textarea"
-                      placeholder="请输入"
-                      v-model="scope.row.note"
-                      clearable
-                    ></el-input>
+                    <el-input type="textarea" placeholder="请输入" v-model="scope.row.note" clearable></el-input>
                   </div>
                 </template>
               </el-table-column>
@@ -607,57 +331,34 @@
             </div>
           </div>
           <div style="margin: 20px 40px 20px 0;text-align: right;">
-            <el-button
-              type="primary"
-              style="width: 100px;"
-              v-preventClick
-              @click="submitSales('addSalesTicketForm')"
-              >提 交</el-button
-            >
+            <el-button type="primary" style="width: 100px;" v-preventClick @click="submitSales('addSalesTicketForm')">提
+              交</el-button>
           </div>
         </div>
       </div>
       <div v-if="pageSel == 4" class="back-style">
         <div style="display: flex;justify-content:space-between;">
-          <div
-            style="width: 60px;display: flex;justify-content:space-between;cursor: pointer;"
-            @click="goback"
-          >
+          <div style="width: 60px;display: flex;justify-content:space-between;cursor: pointer;" @click="goback">
             <img src="../../assets/imgs/goback.png" style="height: 21px;" />
             <p style="margin: 0;">返回</p>
           </div>
           <div>
-            <el-button type="primary" v-preventClick @click="submitExcel"
-              >保存憑證</el-button
-            >
-            <el-button type="primary" v-preventClick @click="downloadExcel"
-              >下載憑證</el-button
-            >
+            <el-button type="primary" v-preventClick @click="submitExcel">保存憑證</el-button>
+            <el-button type="primary" v-preventClick @click="downloadExcel">下載憑證</el-button>
             <!-- '#printArea'   printData-->
             <el-button type="primary" v-print="printData">打印憑證</el-button>
-            <el-dialog
-              width="400px"
-              title="選擇下載格式"
-              :visible.sync="dialogDownloadVisible"
-            >
+            <el-dialog width="400px" title="選擇下載格式" :visible.sync="dialogDownloadVisible">
               <div id="selectType">
                 <el-form>
                   <el-form-item label="">
-                    <el-radio-group
-                      v-model="downloadType"
-                      @change="downloadSureExcel"
-                    >
+                    <el-radio-group v-model="downloadType" @change="downloadSureExcel">
                       <el-radio :label="1">
-                        <img
-                          src="../../assets/imgs/certificate/excel.png"
-                          style="width: 80px;height: 80px;object-fit: cover;"
-                        />
+                        <img src="../../assets/imgs/certificate/excel.png"
+                          style="width: 80px;height: 80px;object-fit: cover;" />
                       </el-radio>
                       <el-radio :label="2">
-                        <img
-                          src="../../assets/imgs/certificate/pdf.png"
-                          style="width: 80px;height: 80px;object-fit: cover;"
-                        />
+                        <img src="../../assets/imgs/certificate/pdf.png"
+                          style="width: 80px;height: 80px;object-fit: cover;" />
                       </el-radio>
                     </el-radio-group>
                   </el-form-item>
@@ -666,223 +367,142 @@
             </el-dialog>
           </div>
         </div>
-        <div
-          style="margin: 30px;padding-bottom: 50px;"
-          ref="reconciliationWrapper"
-          id="printArea"
-        >
+        <div style="margin: 30px;padding-bottom: 50px;" ref="reconciliationWrapper" id="printArea">
           <div>
             <img src="../../assets/imgs/certificate/title.png" />
           </div>
           <div style="width: 395px;">
-            <input
-              type="text"
-              v-model="certificateData.electronicBill.companyName"
-              placeholder="請輸入公司名稱"
-            />
+            <input type="text" v-model="certificateData.electronicBill.companyName" placeholder="請輸入公司名稱" />
           </div>
           <div style="width: 395px;">
-            <input
-              type="text"
-              v-model="certificateData.electronicBill.companyAddr"
-              placeholder="請輸入公司地址"
-            />
+            <input type="text" v-model="certificateData.electronicBill.companyAddr" placeholder="請輸入公司地址" />
           </div>
-          <div
-            style="margin-top: 20px;
-                  text-align: center;
-                  font-size: 24px;
-                  font-weight: bold;"
-          >
+          <div style="margin-top: 20px;
+                    text-align: center;
+                    font-size: 24px;
+                    font-weight: bold;">
             Invoice
           </div>
-          <div
-            style="margin-top: 20px;
-                  text-align: left;
-                  font-size: 16px;
-                  font-weight: bold;"
-          >
+          <div style="margin-top: 20px;
+                    text-align: left;
+                    font-size: 16px;
+                    font-weight: bold;">
             To：{{ certificateData.customer }}
           </div>
           <div style="text-align: right;">
             <div style="display: flex;justify-content: flex-end;">
-              <div
-                style="width: 150px;
-                    margin-right: 5px;
-                    margin-bottom: 5px;
-                    text-align: right;
-                    font-size: 15px;"
-              >
+              <div style="width: 150px;
+                      margin-right: 5px;
+                      margin-bottom: 5px;
+                      text-align: right;
+                      font-size: 15px;">
                 Invoice No.:
               </div>
-              <div
-                style="width: 100px;
-                    text-align: left;
-                    font-size: 15px;"
-              >
+              <div style="width: 100px;
+                      text-align: left;
+                      font-size: 15px;">
                 {{ certificateData.bill }}
               </div>
             </div>
             <div style="display: flex;justify-content: flex-end;">
-              <div
-                style="width: 150px;
-                    margin-right: 5px;
-                    margin-bottom: 5px;
-                    text-align: right;
-                    font-size: 15px;"
-              >
+              <div style="width: 150px;
+                      margin-right: 5px;
+                      margin-bottom: 5px;
+                      text-align: right;
+                      font-size: 15px;">
                 Invoice Date:
               </div>
-              <div
-                style="width: 100px;
-                    text-align: left;
-                    font-size: 15px;"
-              >
+              <div style="width: 100px;
+                      text-align: left;
+                      font-size: 15px;">
                 {{ certificateData.soldTime }}
               </div>
             </div>
-            <div
-              style="display: flex;justify-content: flex-end;align-items: center;"
-            >
-              <div
-                style="width: 150px;
-                    margin-right: 5px;
-                    margin-bottom: 5px;
-                    text-align: right;
-                    font-size: 15px;"
-              >
+            <div style="display: flex;justify-content: flex-end;align-items: center;">
+              <div style="width: 150px;
+                      margin-right: 5px;
+                      margin-bottom: 5px;
+                      text-align: right;
+                      font-size: 15px;">
                 Payment Terms:
               </div>
-              <div
-                style="width: 100px;
-                    text-align: left;
-                    font-size: 15px;"
-              >
-                <input
-                  type="text"
-                  v-model="certificateData.electronicBill.paymentTerms"
-                />
+              <div style="width: 100px;
+                      text-align: left;
+                      font-size: 15px;">
+                <input type="text" v-model="certificateData.electronicBill.paymentTerms" />
               </div>
             </div>
             <div style="display: flex;justify-content: flex-end;">
-              <div
-                style="width: 150px;
-                    margin-right: 5px;
-                    margin-bottom: 5px;
-                    text-align: right;
-                    font-size: 15px;"
-              >
+              <div style="width: 150px;
+                      margin-right: 5px;
+                      margin-bottom: 5px;
+                      text-align: right;
+                      font-size: 15px;">
                 Currency:
               </div>
-              <div
-                style="width: 100px;
-                    text-align: left;
-                    font-size: 15px;"
-              >
+              <div style="width: 100px;
+                      text-align: left;
+                      font-size: 15px;">
                 {{ certificateData.currency }}
               </div>
             </div>
           </div>
-          <table
-            style="width: 100%;margin: 20px 0;border-spacing: 0;border-collapse: collapse;"
-            border
-          >
+          <table style="width: 100%;margin: 20px 0;border-spacing: 0;border-collapse: collapse;" border>
             <tr style="width: 100%;">
-              <th
-                style="width: 10%;padding: 10px;text-align: center;background-color: #ccc;color: #fff;"
-              >
+              <th style="width: 10%;padding: 10px;text-align: center;background-color: #ccc;color: #fff;">
                 Brand
               </th>
-              <th
-                style="width: 10%;padding: 10px;text-align: center;background-color: #ccc;color: #fff;"
-              >
+              <th style="width: 10%;padding: 10px;text-align: center;background-color: #ccc;color: #fff;">
                 Images
               </th>
-              <th
-                style="width: 10%;padding: 10px;text-align: center;background-color: #ccc;color: #fff;"
-              >
+              <th style="width: 10%;padding: 10px;text-align: center;background-color: #ccc;color: #fff;">
                 Product No.
               </th>
-              <th
-                style="width: 10%;padding: 10px;text-align: center;background-color: #ccc;color: #fff;"
-              >
+              <th style="width: 10%;padding: 10px;text-align: center;background-color: #ccc;color: #fff;">
                 Model
               </th>
-              <th
-                style="width: 10%;padding: 10px;text-align: center;background-color: #ccc;color: #fff;"
-              >
+              <th style="width: 10%;padding: 10px;text-align: center;background-color: #ccc;color: #fff;">
                 Size
               </th>
-              <th
-                style="width: 10%;padding: 10px;text-align: center;background-color: #ccc;color: #fff;"
-              >
+              <th style="width: 10%;padding: 10px;text-align: center;background-color: #ccc;color: #fff;">
                 Color
               </th>
-              <th
-                style="width: 10%;padding: 10px;text-align: center;background-color: #ccc;color: #fff;"
-              >
+              <th style="width: 10%;padding: 10px;text-align: center;background-color: #ccc;color: #fff;">
                 Leather
               </th>
-              <th
-                style="width: 10%;padding: 10px;text-align: center;background-color: #ccc;color: #fff;"
-              >
+              <th style="width: 10%;padding: 10px;text-align: center;background-color: #ccc;color: #fff;">
                 Qty
               </th>
-              <th
-                style="width: 10%;padding: 10px;text-align: center;background-color: #ccc;color: #fff;"
-              >
+              <th style="width: 10%;padding: 10px;text-align: center;background-color: #ccc;color: #fff;">
                 AMOUNT
               </th>
             </tr>
-            <tr
-              style="width: 100%;"
-              v-for="item in certificateData.stockDetailList"
-              :key="item.id"
-            >
-              <td
-                style="width: 10%;padding: 10px;text-align: center;font-size: 14px;"
-              >
+            <tr style="width: 100%;" v-for="item in certificateData.stockDetailList" :key="item.id">
+              <td style="width: 10%;padding: 10px;text-align: center;font-size: 14px;">
                 Hermes
               </td>
               <td style="width: 10%;padding: 10px;text-align: center;">
-                <img
-                  style="width: 100px; height: 100px"
-                  :src="item.pics.split('|')[0]"
-                />
+                <img style="width: 100px; height: 100px" :src="item.pics.split('|')[0]" />
               </td>
-              <td
-                style="width: 10%;padding: 10px;text-align: center;font-size: 14px;"
-              >
+              <td style="width: 10%;padding: 10px;text-align: center;font-size: 14px;">
                 {{ item.productCode }}
               </td>
-              <td
-                style="width: 10%;padding: 10px;text-align: center;font-size: 14px;"
-              >
+              <td style="width: 10%;padding: 10px;text-align: center;font-size: 14px;">
                 {{ item.model }}
               </td>
-              <td
-                style="width: 10%;padding: 10px;text-align: center;font-size: 14px;"
-              >
+              <td style="width: 10%;padding: 10px;text-align: center;font-size: 14px;">
                 {{ item.size ? item.size : "-" }}
               </td>
-              <td
-                style="width: 10%;padding: 10px;text-align: center;font-size: 14px;"
-              >
+              <td style="width: 10%;padding: 10px;text-align: center;font-size: 14px;">
                 {{ item.color ? item.color : "-" }}
               </td>
-              <td
-                style="width: 10%;padding: 10px;text-align: center;font-size: 14px;"
-              >
+              <td style="width: 10%;padding: 10px;text-align: center;font-size: 14px;">
                 {{ item.leather ? item.leather : "-" }}
               </td>
-              <td
-                style="width: 10%;padding: 10px;text-align: center;font-size: 14px;"
-              >
+              <td style="width: 10%;padding: 10px;text-align: center;font-size: 14px;">
                 1
               </td>
-              <td
-                style="width: 10%;padding: 10px;text-align: center;font-size: 14px;"
-              >
+              <td style="width: 10%;padding: 10px;text-align: center;font-size: 14px;">
                 {{ formatNumberRgx(item.priceTran) }}
               </td>
             </tr>
@@ -890,130 +510,85 @@
 
           <div style="text-align: right;">
             <div style="display: flex;justify-content: flex-end;">
-              <div
-                style="width: 150px;
-                    margin-right: 5px;
-                    margin-bottom: 5px;
-                    text-align: right;
-                    font-size: 15px;"
-              >
+              <div style="width: 150px;
+                      margin-right: 5px;
+                      margin-bottom: 5px;
+                      text-align: right;
+                      font-size: 15px;">
                 Subtotal:
               </div>
-              <div
-                style="width: 100px;
-                    text-align: left;
-                    font-size: 15px;"
-              >
+              <div style="width: 100px;
+                      text-align: left;
+                      font-size: 15px;">
                 {{ formatNumberRgx(certificateData.subtotal) }}
               </div>
             </div>
             <div style="display: flex;justify-content: flex-end;">
-              <div
-                style="width: 150px;
-                    margin-right: 5px;
-                    margin-bottom: 5px;
-                    text-align: right;
-                    font-size: 15px;"
-              >
+              <div style="width: 150px;
+                      margin-right: 5px;
+                      margin-bottom: 5px;
+                      text-align: right;
+                      font-size: 15px;">
                 Shipping Cost:
               </div>
-              <div
-                style="width: 100px;
-                    text-align: left;
-                    font-size: 15px;"
-              >
+              <div style="width: 100px;
+                      text-align: left;
+                      font-size: 15px;">
                 {{ formatNumberRgx(certificateData.shippingCost) }}
               </div>
             </div>
             <div style="display: flex;justify-content: flex-end;">
-              <div
-                style="width: 150px;
-                    margin-right: 5px;
-                    margin-bottom: 5px;
-                    text-align: right;
-                    font-size: 15px;"
-              >
+              <div style="width: 150px;
+                      margin-right: 5px;
+                      margin-bottom: 5px;
+                      text-align: right;
+                      font-size: 15px;">
                 Total in {{ currencyGlobal }}:
               </div>
-              <div
-                style="width: 100px;
-                    text-align: left;
-                    font-size: 15px;"
-              >
+              <div style="width: 100px;
+                      text-align: left;
+                      font-size: 15px;">
                 {{ formatNumberRgx(certificateData.totalInHkd) }}
               </div>
             </div>
           </div>
-          <div
-            style="margin-top: 30px;display: flex;justify-content: space-between;align-items: center;"
-          >
+          <div style="margin-top: 30px;display: flex;justify-content: space-between;align-items: center;">
             <el-form label-width="235px">
               <el-form-item>
                 <span slot="label">
-                  <span style="font-size: 14px;color: #000;"
-                    >Bank account name (收款人):</span
-                  >
+                  <span style="font-size: 14px;color: #000;">Bank account name (收款人):</span>
                 </span>
-                <input
-                  style="width: 460px;"
-                  type="text"
-                  v-model="certificateData.electronicBill.bankAccountName"
-                />
+                <input style="width: 460px;" type="text" v-model="certificateData.electronicBill.bankAccountName" />
               </el-form-item>
               <el-form-item>
                 <span slot="label">
-                  <span style="font-size: 14px;color: #000;"
-                    >Bank Name (銀行名稱):</span
-                  >
+                  <span style="font-size: 14px;color: #000;">Bank Name (銀行名稱):</span>
                 </span>
-                <input
-                  type="text"
-                  v-model="certificateData.electronicBill.bankName"
-                />
+                <input type="text" v-model="certificateData.electronicBill.bankName" />
               </el-form-item>
               <el-form-item>
                 <span slot="label">
-                  <span style="font-size: 14px;color: #000;"
-                    >Bank Code (銀行代碼):</span
-                  >
+                  <span style="font-size: 14px;color: #000;">Bank Code (銀行代碼):</span>
                 </span>
-                <input
-                  type="text"
-                  v-model="certificateData.electronicBill.bankCode"
-                />
+                <input type="text" v-model="certificateData.electronicBill.bankCode" />
               </el-form-item>
               <el-form-item>
                 <span slot="label">
-                  <span style="font-size: 14px;color: #000;"
-                    >Bank account Number (收款賬號):</span
-                  >
+                  <span style="font-size: 14px;color: #000;">Bank account Number (收款賬號):</span>
                 </span>
-                <input
-                  type="text"
-                  v-model="certificateData.electronicBill.bankAccountNumber"
-                />
+                <input type="text" v-model="certificateData.electronicBill.bankAccountNumber" />
               </el-form-item>
               <el-form-item>
                 <span slot="label">
-                  <span style="font-size: 14px;color: #000;"
-                    >Swift code (銀行國際代碼):</span
-                  >
+                  <span style="font-size: 14px;color: #000;">Swift code (銀行國際代碼):</span>
                 </span>
-                <input
-                  type="text"
-                  v-model="certificateData.electronicBill.swiftCode"
-                />
+                <input type="text" v-model="certificateData.electronicBill.swiftCode" />
               </el-form-item>
               <el-form-item>
                 <span slot="label">
-                  <span style="font-size: 14px;color: #000;"
-                    >Bank Address (銀行地址):</span
-                  >
+                  <span style="font-size: 14px;color: #000;">Bank Address (銀行地址):</span>
                 </span>
-                <input
-                  type="text"
-                  v-model="certificateData.electronicBill.bankAddr"
-                />
+                <input type="text" v-model="certificateData.electronicBill.bankAddr" />
               </el-form-item>
             </el-form>
             <div style="width: 250px;text-align: center;">
@@ -1024,11 +599,9 @@
               <div style="text-align: right;">Stamp</div>
             </div>
           </div>
-          <div
-            style="margin-top: 20px;
-                  font-weight: bold;
-                  font-size: 14px;"
-          >
+          <div style="margin-top: 20px;
+                    font-weight: bold;
+                    font-size: 14px;">
             此單所列貨物均為香港交貨價，如需攜帶出香港請貴客自行向所到地海關申報，並承擔有關費用，本公司概不負責!
           </div>
         </div>
@@ -1038,7 +611,7 @@
 </template>
 
 <script>
-import detailsVue from "../common/details.vue";
+import detailsVue from "@/components/details.vue";
 export default {
   components: { detailsVue },
   data() {
@@ -1314,8 +887,8 @@ export default {
       this.$axios
         .post(
           this.$store.state.baseCompanyUrl +
-            "/sell/sellOrderRevoke?bill=" +
-            this.deleteBill
+          "/sell/sellOrderRevoke?bill=" +
+          this.deleteBill
         )
         .then(res => {
           console.log(res);
@@ -1346,8 +919,8 @@ export default {
       this.$axios
         .get(
           this.$store.state.baseCompanyUrl +
-            "/sell/salesCredentials?bill=" +
-            this.updateBill
+          "/sell/salesCredentials?bill=" +
+          this.updateBill
         )
         .then(res => {
           console.log("銷售憑證");
@@ -1371,7 +944,7 @@ export default {
     blobToArrayBuffer(blob, callback) {
       let reader = new FileReader();
       reader.readAsArrayBuffer(blob);
-      reader.onload = function() {
+      reader.onload = function () {
         return callback(this.result);
       };
     },
@@ -1420,10 +993,10 @@ export default {
       this.$axios
         .get(
           this.$store.state.baseCompanyUrl +
-            "/sell/electronicBillingExport?id=" +
-            this.certificateData.electronicBill.id +
-            "&type=" +
-            this.downloadType,
+          "/sell/electronicBillingExport?id=" +
+          this.certificateData.electronicBill.id +
+          "&type=" +
+          this.downloadType,
           {
             responseType: "blob"
           }
@@ -1808,7 +1381,7 @@ export default {
     // 大图
     bigImg(pics) {
       if (pics) {
-        let list = pics.split("|").filter(function(s) {
+        let list = pics.split("|").filter(function (s) {
           return s && s.trim();
         });
 
@@ -1936,6 +1509,7 @@ body {
       font-size: 16px;
     }
   }
+
   .certificate-title {
     margin-top: 20px;
     text-align: center;

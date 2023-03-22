@@ -3,7 +3,7 @@
     <!-- 分公司可以查看總公司商品，但是庫存地沒法顯示，因為分公司只能顯示自己所管理的倉庫 -->
     <div style="width: 60px;margin-bottom: 20px;display: flex;justify-content:space-between;cursor: pointer;"
       @click="goback">
-      <img src="../../assets/imgs/goback.png" style="height: 21px;" />
+      <img src="../assets/imgs/goback.png" style="height: 21px;" />
       <p style="margin: 0;">返回</p>
     </div>
     <el-form ref="globalForm" label-width="110px">
@@ -45,7 +45,7 @@
           value-format="yyyy-MM-dd" format="yyyy-MM-dd">
         </el-date-picker>
       </el-form-item>
-      <el-form-item label="入库时间" required v-if="sold == 1 || sold == 2 || sold == 3 || sold == 8">
+      <el-form-item label="入库时间" required v-if="sold == 1 || sold == 2 || sold == 3 || sold == 8 || sold == 9">
         <el-date-picker style="width:50%;" v-model="createTime" type="date" placeholder="请选择日期时间"
           value-format="yyyy-MM-dd" format="yyyy-MM-dd"
           :disabled="sold == 3 || sold == 8 ? true : false"></el-date-picker>
@@ -65,54 +65,11 @@
     </el-form>
     <el-tabs v-model="activeName">
       <el-tab-pane label="图片及参数" name="first">
-        <div style="text-align:left;margin-bottom:10px;">
-          <div style="margin-bottom:15px;">
-            <span style="color: #f56c6c;">*</span><span style="font-size:15px;">商品展示图：(最多上传9张图片)</span>
-          </div>
-          <div style="display:flex;">
-            <div class="upload-imgs">
-              <div class="add">
-                <div id="previewImg">
-                  <form enctype="multipart/form-data" style="width:100px;height:100px;">
-                    <input @change="inputChange1($event)" type="file" name="upload-images" accept="image/*"
-                      class="inputUpload" multiple />
-                    <i class="el-icon-plus addIcon"></i>
-                  </form>
-                </div>
-              </div>
-              <div style="display:flex;flex-wrap:wrap;position:relative;" id="delImg">
-                <div v-for="(item, index) of imgSrc" :key="index" style="margin-left:10px;position:relative;">
-                  <span class="spanStyle" @click="delImage(item, index)">x</span>
-                  <img :src="item" width="100px" height="100px" style="border-radius:5px;object-fit:cover;" />
-                </div>
-              </div>
-            </div>
-          </div>
+        <div>
+          <upload :isAdd="false" :imgNum="9" :imgs="imgSrc" @uploadImgsRes="eightImgs"></upload>
         </div>
-        <div style="text-align:left;margin-bottom:10px;">
-          <div style="margin-bottom:15px;">
-            <span style="font-size:15px;">内部图：(最多上传30张图片)</span>
-            <span style="cursor: pointer;color: #409EFF;font-size:15px;" @click="showImgSel">查看图片</span>
-          </div>
-          <div style="display:flex;" v-if="showImg">
-            <div class="upload-imgs">
-              <div class="add">
-                <div id="previewImg">
-                  <form enctype="multipart/form-data" style="width:100px;height:100px;">
-                    <input @change="inputChange2($event)" type="file" name="upload-images" accept="image/*"
-                      class="inputUpload" multiple />
-                    <i class="el-icon-plus addIcon"></i>
-                  </form>
-                </div>
-              </div>
-              <div style="display:flex;flex-wrap: wrap;position:relative;" id="delImg2">
-                <div v-for="(item, index) of imgSrc2" :key="index" style="margin-left:10px;position:relative;">
-                  <span class="spanStyle" @click="delImage2(item, index)">x</span>
-                  <img :src="item" width="100px" height="100px" style="border-radius:5px;object-fit:cover;" />
-                </div>
-              </div>
-            </div>
-          </div>
+        <div>
+          <upload :isAdd="false" :imgNum="30" :imgs="imgSrc2" @uploadImgsRes="thirtyImgs"></upload>
         </div>
         <el-form ref="form" label-width="80px">
           <el-form-item label="款式" required>
@@ -197,13 +154,25 @@
             <el-input style="width:50%;" type="text" placeholder="请输入总成本" v-model="cost" clearable :controls="false"
               @change="numCheckout"></el-input>
           </el-form-item>
-          <el-form-item :label="'同行价(' + currencyGlobal + ')'">
-            <el-input :controls="false" style="width:50%;" placeholder="请输入同行价" v-model="pricePeer" clearable
-              @change="numCheckout"></el-input>
+          <el-form-item label="同行价">
+            <div style="width: 50%;display: flex;">
+              <el-input :controls="false" style="flex: 1;" placeholder="请输入同行价" v-model="pricePeer" clearable
+                @change="numCheckout"></el-input>
+              <el-select v-model="peerCurrencyId" placeholder="请选择同行价币种" clearable>
+                <el-option v-for="item in currencyIds" :key="item.value" :label="item.label" :value="item.value">
+                </el-option>
+              </el-select>
+            </div>
           </el-form-item>
-          <el-form-item :label="'散客价(' + currencyGlobal + ')'">
-            <el-input :controls="false" style="width:50%;" placeholder="请输入散客价" v-model="priceIndi" clearable
-              @change="numCheckout"></el-input>
+          <el-form-item label="散客价">
+            <div style="width: 50%;display: flex;">
+              <el-input :controls="false" style="flex: 1;" placeholder="请输入散客价" v-model="priceIndi" clearable
+                @change="numCheckout"></el-input>
+              <el-select v-model="indiCurrencyId" placeholder="请选择散客价币种" clearable>
+                <el-option v-for="item in currencyIds" :key="item.value" :label="item.label" :value="item.value">
+                </el-option>
+              </el-select>
+            </div>
           </el-form-item>
           <el-form-item label="购入记录" v-show="buyPaymentList.length > 0">
             <el-table :data="buyPaymentList" style="width: 100%;">
@@ -536,13 +505,16 @@
       </el-tab-pane>
     </el-tabs>
 
-    <el-button type="primary" v-preventClick @click="basicInfoUpdateSure" class="update-sure-button">确 定
-    </el-button>
+    <div style="position: fixed;right: 40px;bottom: 60px;">
+      <el-button type="primary" style="width: 160px;" v-preventClick @click="basicInfoUpdateSure">提 交</el-button>
+    </div>
   </div>
 </template>
 
 <script>
+import upload from '@/components/upload.vue';
 export default {
+  components: { upload },
   data() {
     return {
       baseUrl: this.$store.state.baseUrl,
@@ -551,8 +523,6 @@ export default {
 
       imgSrc: [],
       imgSrc2: [],
-      imgurls: [],
-      imgurls2: [],
 
       productCode: "", // 货号
       estimateTime: "", // 预计到达时间
@@ -566,7 +536,9 @@ export default {
       currencyId: "", //价格币种
       cost: "", //成本价
       pricePeer: "", //同行价
-      priceIndi: "", //散客价
+      peerCurrencyId: '',
+      priceIndi: '', //散客价
+      indiCurrencyId: '',
       source: "", //买手
       stockLocId: "", //库存地
       model: "", //款式
@@ -671,50 +643,16 @@ export default {
         {
           label: "客人取回",
           value: "5"
-        }
+        },
+        {
+          label: "客人寄卖",
+          value: "9"
+        },
       ],
       dialogStateVisible: false,
       updateStateId: null,
       userId: null,
       userList: [],
-      stateList2: [
-        {
-          label: "全部",
-          value: ""
-        },
-        {
-          label: "采购中",
-          value: "0"
-        },
-        {
-          label: "存货",
-          value: "1"
-        },
-        {
-          label: "客人预留",
-          value: "2"
-        },
-        {
-          label: "已出售",
-          value: "3"
-        },
-        {
-          label: "购入退货",
-          value: "6"
-        },
-        {
-          label: "已寄卖",
-          value: "8"
-        },
-        {
-          label: "遗失",
-          value: "7"
-        },
-        {
-          label: "客人取回",
-          value: "5"
-        }
-      ],
 
       bill: "",
       isRequire: 0,
@@ -745,7 +683,7 @@ export default {
       sellerList: [],
       customerTypeList: [],
       customerType: "",
-      numIsEquality: false
+      numIsEquality: false,
     };
   },
   props: ["updatesId"],
@@ -818,8 +756,6 @@ export default {
     // 获取产品信息
     getDetails() {
       this.showImg = false;
-      this.$store.state.imgUrl = "";
-      this.$store.state.imgUrl2 = "";
       this.isInput = 1;
       this.isSelect = 1;
       this.$axios
@@ -829,15 +765,12 @@ export default {
           console.log(res);
           let data = res.data;
 
-          this.$store.state.imgUrl = data.pics;
-          this.$store.state.imgUrl2 = data.privateImg;
-
           let p = data.pics.split("|").filter(el => {
             return el != "";
           });
           this.imgSrc = [];
           this.imgSrc2 = [];
-          for (let i = 0; i < p.length - 1; i++) {
+          for (let i = 0; i < p.length; i++) {
             this.imgSrc.push(p[i]);
           }
 
@@ -845,7 +778,7 @@ export default {
             let q = data.privateImg.split("|").filter(el => {
               return el != "";
             });
-            for (let i = 0; i < q.length - 1; i++) {
+            for (let i = 0; i < q.length; i++) {
               this.imgSrc2.push(q[i]);
             }
           }
@@ -856,6 +789,8 @@ export default {
           this.cost = data.cost == 0 ? "" : data.cost;
           this.pricePeer = data.pricePeer == 0 ? "" : data.pricePeer;
           this.priceIndi = data.priceIndi == 0 ? "" : data.priceIndi;
+          this.peerCurrencyId = data.peerCurrencyId + '';
+          this.indiCurrencyId = data.indiCurrencyId + '';
           this.source = data.source;
           for (const item of this.stockLocs) {
             if (
@@ -1012,7 +947,7 @@ export default {
         }
       }
       // console.log(this.sold);
-      if (this.sold == 1 || this.sold == 2 || this.sold == 3) {
+      if (this.sold == 1 || this.sold == 2 || this.sold == 3 || this.sold == 9) {
         if (this.createTime == "" || this.createTime == null) {
           this.$message.error({
             message: "请选择入库时间",
@@ -1177,7 +1112,7 @@ export default {
       }
 
       if (
-        this.$store.state.imgUrl == "" ||
+        this.imgSrc.length == 0 ||
         this.productCode == "" ||
         this.stockLocId == "" ||
         this.model == ""
@@ -1405,14 +1340,16 @@ export default {
       this.$axios
         .put(this.baseUrl + "/update", {
           id: this.updateId,
-          pics: this.$store.state.imgUrl,
-          privateImg: this.$store.state.imgUrl2,
+          pics: this.imgSrc.join('|'),
+          privateImg: this.imgSrc2.join('|'),
           productCode: this.productCode,
           createAccount: this.createAccount,
           currencyId: this.currencyId,
           cost: this.cost,
           pricePeer: this.pricePeer,
+          peerCurrencyId: this.peerCurrencyId,
           priceIndi: this.priceIndi,
+          indiCurrencyId: this.indiCurrencyId,
           source: this.source,
           stockLocId: this.stockLocId.warehouseId,
           companyId: this.stockLocId.companyId,
@@ -1705,390 +1642,16 @@ export default {
       });
     },
 
-    // 删除图片
-    delImage(item, index) {
-      this.$store.state.imgUrl = "";
-      console.log("-----" + item);
-      console.log(index);
-      let delImg = document.getElementById("delImg");
-      let child = delImg.children;
-      console.log(child);
-      for (let i = 0; i < child.length; i++) {
-        this.delList.push(child[i]);
-      }
-      console.log(this.delList);
-      this.delList.splice(index, 1);
-      this.imgSrc.splice(index, 1);
-      console.log(this.imgSrc);
-      let b = item + "|";
-      console.log(b);
-      for (let src of this.imgSrc) {
-        this.$store.state.imgUrl += src + "|";
-      }
-      console.log(this.$store.state.imgUrl);
+    // 图片
+    eightImgs(val) {
+      console.log(val);
+      this.imgSrc = val
     },
-    // 上传图片
-    inputChange1(e) {
-      let file = e.target.files;
-      let that = this;
-      let check = file[0];
-      console.log(check);
-      if (check == undefined) {
-        return;
-      } else {
-        if (file.length > 9) {
-          this.$message.error({
-            message: "最多上传9张图片，请重新选择",
-            showClose: true,
-            duration: 2000
-          });
-        } else {
-          this.loading = this.$loading({
-            lock: true,
-            text: "图片上传中...",
-            spinner: "el-icon-loading",
-            background: "rgba(0, 0, 0, 0.5)"
-          });
+    thirtyImgs(val) {
+      console.log(val);
+      this.imgSrc2 = val
+    },
 
-          for (let item of file) {
-            if (item.size / 1024 > 2050) {
-              // 文件大于2M，进行压缩上传
-              this.photoCompress(
-                item,
-                {
-                  // 调用压缩图片方法
-                  quality: 0.7
-                },
-                function (base64Codes) {
-                  // console.log("压缩后：" + base.length / 1024 + " " + base);
-                  let bl = that.base64UrlToBlob(base64Codes);
-                  // file.append('file', bl, 'file_' + Date.parse(new Date()) + '.jpg') // 文件对象
-                  that.uploadLice(bl); // 请求图片上传接口
-                }
-              );
-            } else {
-              // 小于等于2M 原图上传
-              this.uploadLice(item);
-            }
-          }
-        }
-      }
-    },
-    // base64 转 Blob 格式 和file格式
-    base64UrlToBlob(urlData) {
-      let arr = urlData.split(","),
-        mime = arr[0].match(/:(.*?);/)[1], // 去掉url的头，并转化为byte
-        bstr = new Buffer.from(arr[1], "base64").toString("binary"), // 处理异常,将ascii码小于0的转换为大于0
-        n = bstr.length,
-        u8arr = new Uint8Array(n);
-      while (n--) {
-        u8arr[n] = bstr.charCodeAt(n);
-      }
-      // 转blob
-      // return new Blob([u8arr], {type: mime})
-      let filename = Date.parse(new Date()) + ".jpg";
-      // 转file
-      return new File([u8arr], filename, {
-        type: mime
-      });
-    },
-    photoCompress(file, obj, callback) {
-      let that = this;
-      let ready = new FileReader();
-      /* 开始读取指定File对象中的内容. 读取操作完成时,返回一个URL格式的字符串. */
-      ready.readAsDataURL(file);
-      ready.onload = function () {
-        let re = this.result;
-        that.canvasDataURL(re, obj, callback); // 开始压缩
-      };
-    },
-    canvasDataURL(path, obj, callback) {
-      let img = new Image();
-      img.src = path;
-      img.onload = function () {
-        let that = this; // 指到img
-        // 默认按比例压缩
-        let w = that.width,
-          h = that.height,
-          scale = w / h;
-        w = obj.width || w;
-        h = obj.height || w / scale;
-        let quality = 0.7; // 默认图片质量为0.7
-        // 生成canvas
-        let canvas = document.createElement("canvas");
-        let ctx = canvas.getContext("2d");
-
-        // 创建属性节点
-        let anw = document.createAttribute("width");
-        anw.nodeValue = w;
-        let anh = document.createAttribute("height");
-        anh.nodeValue = h;
-        canvas.setAttributeNode(anw);
-        canvas.setAttributeNode(anh);
-        // 铺底色
-        ctx.fillStyle = "#fff";
-        ctx.fillRect(0, 0, w, h);
-        ctx.drawImage(that, 0, 0, w, h);
-
-        // 图像质量
-        if (obj.quality && obj.quality >= 1 && obj.quality < 0) {
-          quality = obj.quality;
-        }
-        // quality值越小，所绘制出的图像越模糊
-        let base64 = canvas.toDataURL("image/jpeg", quality);
-        // 回调函数返回base64的值
-        callback(base64);
-      };
-    },
-    //  返回file文件，调用接口执行上传
-    uploadLice(file) {
-      console.log(file);
-      let formdata1 = new FormData(); //创建form对象
-      formdata1.append("upload-images", file); //通过append向form对象添加数据
-      this.uploadImg(formdata1);
-    },
-    uploadImg(formdata1) {
-      console.log("查看上传数据");
-      console.log(formdata1);
-      if (this.imgSrc.length > 8) {
-        this.$message.error({
-          message: "最多上传9张图片",
-          showClose: true,
-          duration: 2000
-        });
-        this.loading.close();
-      } else {
-        this.$axios
-          .post(this.baseUrl + "/upload", formdata1)
-          .then(res => {
-            if (res.status == 200) {
-              this.$message.success({
-                message: "图片上传成功",
-                showClose: true,
-                duration: 2000
-              });
-            }
-            console.log(res);
-            this.imgurls = res.data.split("|").filter(el => {
-              return el != "";
-            });
-            console.log(this.imgurls);
-            let preview1 = document.getElementById("preview1");
-            console.log(this.$store.state.imgUrl);
-            for (let i = 0; i < this.imgurls.length - 1; i++) {
-              console.log(this.baseUrl + "/file/" + this.imgurls[i]);
-              this.$store.state.imgUrl +=
-                this.baseUrl + "/file/" + this.imgurls[i] + " | ";
-              let a = this.baseUrl + "/file/" + this.imgurls[i];
-              this.imgSrc.push(a);
-              console.log(this.$store.state.imgUrl);
-            }
-            this.loading.close();
-          })
-          .catch(err => {
-            this.loading.close();
-            console.log(err);
-            this.$message.error({
-              message: err.data.status,
-              showClose: true,
-              duration: 2000
-            });
-          });
-      }
-    },
-    // 删除内部图片
-    delImage2(item, index) {
-      this.$store.state.imgUrl2 = "";
-      console.log("-----" + item);
-      console.log(index);
-      let delImg = document.getElementById("delImg2");
-      let child = delImg.children;
-      console.log(child);
-      for (let i = 0; i < child.length; i++) {
-        this.delList2.push(child[i]);
-      }
-      console.log(this.delList2);
-      this.delList2.splice(index, 1);
-      this.imgSrc2.splice(index, 1);
-      console.log(this.imgSrc2);
-      let b = item + "|";
-      console.log(b);
-      for (let src of this.imgSrc2) {
-        this.$store.state.imgUrl2 += src + "|";
-      }
-      console.log(this.$store.state.imgUrl2);
-    },
-    // 上传图片
-    inputChange2(e) {
-      let file = e.target.files;
-      let that = this;
-      let check = file[0];
-      console.log(check);
-      if (check == undefined) {
-        return;
-      } else {
-        if (file.length > 30) {
-          this.$message.error({
-            message: "最多上传30张图片，请重新选择",
-            showClose: true,
-            duration: 2000
-          });
-        } else {
-          this.loading = this.$loading({
-            lock: true,
-            text: "图片上传中...",
-            spinner: "el-icon-loading",
-            background: "rgba(0, 0, 0, 0.5)"
-          });
-
-          for (let item of file) {
-            if (item.size / 1024 > 2050) {
-              // 文件大于2M，进行压缩上传
-              this.photoCompress2(
-                item,
-                {
-                  // 调用压缩图片方法
-                  quality: 0.7
-                },
-                function (base64Codes) {
-                  // console.log("压缩后：" + base.length / 1024 + " " + base);
-                  let bl = that.base64UrlToBlob2(base64Codes);
-                  // file.append('file', bl, 'file_' + Date.parse(new Date()) + '.jpg') // 文件对象
-                  that.uploadLice2(bl); // 请求图片上传接口
-                }
-              );
-            } else {
-              // 小于等于2M 原图上传
-              this.uploadLice2(item);
-            }
-          }
-        }
-      }
-    },
-    // base64 转 Blob 格式 和file格式
-    base64UrlToBlob2(urlData) {
-      let arr = urlData.split(","),
-        mime = arr[0].match(/:(.*?);/)[1], // 去掉url的头，并转化为byte
-        bstr = new Buffer.from(arr[1], "base64").toString("binary"), // 处理异常,将ascii码小于0的转换为大于0
-        n = bstr.length,
-        u8arr = new Uint8Array(n);
-      while (n--) {
-        u8arr[n] = bstr.charCodeAt(n);
-      }
-      // 转blob
-      // return new Blob([u8arr], {type: mime})
-      let filename = Date.parse(new Date()) + ".jpg";
-      // 转file
-      return new File([u8arr], filename, {
-        type: mime
-      });
-    },
-    photoCompress2(file, obj, callback) {
-      let that = this;
-      let ready = new FileReader();
-      /* 开始读取指定File对象中的内容. 读取操作完成时,返回一个URL格式的字符串. */
-      ready.readAsDataURL(file);
-      ready.onload = function () {
-        let re = this.result;
-        that.canvasDataURL2(re, obj, callback); // 开始压缩
-      };
-    },
-    canvasDataURL2(path, obj, callback) {
-      let img = new Image();
-      img.src = path;
-      img.onload = function () {
-        let that = this; // 指到img
-        // 默认按比例压缩
-        let w = that.width,
-          h = that.height,
-          scale = w / h;
-        w = obj.width || w;
-        h = obj.height || w / scale;
-        let quality = 0.7; // 默认图片质量为0.7
-        // 生成canvas
-        let canvas = document.createElement("canvas");
-        let ctx = canvas.getContext("2d");
-
-        // 创建属性节点
-        let anw = document.createAttribute("width");
-        anw.nodeValue = w;
-        let anh = document.createAttribute("height");
-        anh.nodeValue = h;
-        canvas.setAttributeNode(anw);
-        canvas.setAttributeNode(anh);
-        // 铺底色
-        ctx.fillStyle = "#fff";
-        ctx.fillRect(0, 0, w, h);
-        ctx.drawImage(that, 0, 0, w, h);
-
-        // 图像质量
-        if (obj.quality && obj.quality >= 1 && obj.quality < 0) {
-          quality = obj.quality;
-        }
-        // quality值越小，所绘制出的图像越模糊
-        let base64 = canvas.toDataURL("image/jpeg", quality);
-        // 回调函数返回base64的值
-        callback(base64);
-      };
-    },
-    //  返回file文件，调用接口执行上传
-    uploadLice2(file) {
-      console.log(file);
-      let formdata1 = new FormData(); //创建form对象
-      formdata1.append("upload-images", file); //通过append向form对象添加数据
-      this.uploadImg2(formdata1);
-    },
-    uploadImg2(formdata1) {
-      console.log(formdata1);
-      formdata1.append("state", 0);
-      formdata1.append("type", 0);
-      console.log("11111");
-      if (this.imgSrc2.length > 29) {
-        this.$message.error({
-          message: "最多上传30张图片",
-          showClose: true,
-          duration: 2000
-        });
-        this.loading.close();
-      } else {
-        this.$axios
-          .post(this.baseUrl + "/upload", formdata1)
-          .then(res => {
-            if (res.status == 200) {
-              this.$message.success({
-                message: "图片上传成功",
-                showClose: true,
-                duration: 2000
-              });
-            }
-            console.log(res);
-            this.imgurls2 = res.data.split("|").filter(el => {
-              return el != "";
-            });
-            console.log(this.imgurls2);
-            let preview1 = document.getElementById("preview1");
-            console.log(this.$store.state.imgUrl2);
-            for (let i = 0; i < this.imgurls2.length - 1; i++) {
-              console.log(this.baseUrl + "/file/" + this.imgurls2[i]);
-              this.$store.state.imgUrl2 +=
-                this.baseUrl + "/file/" + this.imgurls2[i] + " | ";
-              let a = this.baseUrl + "/file/" + this.imgurls2[i];
-              this.imgSrc2.push(a);
-              console.log(this.$store.state.imgUrl2);
-            }
-            this.loading.close();
-          })
-          .catch(err => {
-            this.loading.close();
-            console.log(err);
-            this.$message.error({
-              message: err.data.status,
-              showClose: true,
-              duration: 2000
-            });
-          });
-      }
-    },
     // 獲取接收公司及倉庫列表
     getCompanyAndWarehouseList() {
       this.$axios
@@ -2126,6 +1689,7 @@ export default {
     margin-bottom: 10px;
     position: relative;
     display: flex;
+    flex-wrap: wrap;
 
     .add {
       // width: 100px;
