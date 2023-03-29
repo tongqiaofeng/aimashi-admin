@@ -18,6 +18,13 @@
                 </el-option>
               </el-select>
             </el-form-item>
+            <el-form-item label="是否为客人寄卖">
+              <el-select v-model="isCustomerConsigns">
+                <el-option label="全部" value="null"> </el-option>
+                <el-option label="客人寄卖" value="1"></el-option>
+                <el-option label="非客人寄卖" value="0"></el-option>
+              </el-select>
+            </el-form-item>
             <el-form-item label="">
               <el-input clearable style="width: 600px;" placeholder="输入款式，尺寸，材质，色号，色系，客户，货号可搜索，如：H000001、000001、1"
                 v-model="searchKey" @focus="radioChange"></el-input>
@@ -95,6 +102,11 @@
                   <el-option v-for="item in soldList2" :key="item.value" :label="item.label" :value="item.value">
                   </el-option>
                 </el-select>
+              </el-form-item>
+              <el-form-item label="是否为客人寄卖" required>
+                <el-switch v-model="isCustomerConsignsState" active-color="#13ce66" inactive-color="#ff4949"
+                  active-value="1" inactive-value="0">
+                </el-switch>
               </el-form-item>
               <el-form-item label="账单号" :required="sold == 3 ? false : true">
                 <el-input v-model="bill"></el-input>
@@ -290,8 +302,9 @@ export default {
         {
           label: "已出库",
           value: "4"
-        }
+        },
       ],
+      isCustomerConsigns: 'null',
       soldList2: [
         {
           label: "未出库",
@@ -356,7 +369,9 @@ export default {
       sellerList: [],
       customerTypeList: [],
       customerType: "",
-      numIsEquality: false
+      numIsEquality: false,
+
+      isCustomerConsignsState: '0'
     };
   },
   created() {
@@ -522,6 +537,8 @@ export default {
         this.sellerId = item.sellerId;
         this.customerType = item.customerType;
 
+        this.isCustomerConsignsState = item.isCustomerConsigns + '';
+
         this.dialogStateVisible = true;
       }
     },
@@ -647,7 +664,8 @@ export default {
           headSellMoney: this.headSellMoney,
           isReceiveCheck: this.isReceiveCheck == false ? 0 : 1,
           sellerId: this.sellerId,
-          customerType: this.customerType
+          customerType: this.customerType,
+          isCustomerConsigns: this.isCustomerConsignsState
         })
         .then(res => {
           console.log(res);
@@ -713,7 +731,8 @@ export default {
               ? this.stockLocId[0]
               : null
             : null,
-          sold: this.soldSel
+          sold: this.soldSel,
+          isCustomerConsigns: this.isCustomerConsigns
         })
         .then(res => {
           console.log("已出售商品");

@@ -19,6 +19,13 @@
                 </el-option>
               </el-select>
             </el-form-item>
+            <el-form-item label="是否为客人寄卖">
+              <el-select v-model="isCustomerConsignsFilter">
+                <el-option label="全部" value="null"> </el-option>
+                <el-option label="客人寄卖" value="1"></el-option>
+                <el-option label="非客人寄卖" value="0"></el-option>
+              </el-select>
+            </el-form-item>
             <el-form-item label="">
               <el-input clearable style="width: 600px;" v-model="searchKey"
                 placeholder="输入商品款式、尺寸、材质、色号、色系、客户、货号可搜索,如：H000001、000001、1" @focus="radioChange"></el-input>
@@ -30,6 +37,70 @@
         </div>
         <el-table :data="onSaleProducts" style="width: 100%" border>
           <el-table-column align="center" prop="productCode" label="货号">
+            <template slot-scope="scope">
+              <div>
+                <el-popover placement="right" trigger="click">
+                  <div class="popover-container">
+                    <div class="popover-img">
+                      <img v-show="popoverImg01" :src="popoverImg01" />
+                    </div>
+                    <div class="popover-img">
+                      <img v-show="popoverImg02" :src="popoverImg02" />
+                    </div>
+                    <div class="popover-main">
+                      <div class="every" style="align-items: flex-end;">
+                        <span class="title">货号：</span>
+                        <span class="content">{{ proShowMsg.productCode }}</span>
+                      </div>
+                      <div class="every">
+                        <span class="title">款式：</span>
+                        <span class="content">{{ proShowMsg.model }}</span>
+                      </div>
+                      <div class="every">
+                        <span class="title">大小：</span>
+                        <span class="content">{{ proShowMsg.size ? proShowMsg.size : '--' }}</span>
+                      </div>
+                      <div class="every">
+                        <span class="title">金属：</span>
+                        <span class="content" style="font-weight: normal;">{{ proShowMsg.metal ? proShowMsg.metal : '--'
+                        }}</span>
+                      </div>
+                      <div class="every">
+                        <span class="title">皮质：</span>
+                        <span class="content">{{ proShowMsg.leather ? proShowMsg.leather : '--' }}</span>
+                      </div>
+                      <div class="every">
+                        <span class="title">颜色：</span>
+                        <span class="content">{{ proShowMsg.color ? proShowMsg.color : '--' }}</span>
+                      </div>
+                      <div class="every">
+                        <span class="title">色号：</span>
+                        <span class="content">{{ proShowMsg.colorId ? proShowMsg.colorId : '--' }}</span>
+                      </div>
+                      <div class="every">
+                        <span class="title">刻印：</span>
+                        <span class="content">{{ proShowMsg.letter ? proShowMsg.letter.split('')[0] : '--' }}</span>
+                      </div>
+                      <div class="every">
+                        <span class="title">成本价：</span>
+                        <div class="content">
+                          <div>{{ proShowMsg.buyAllPrice ? proShowMsg.foreignCurrency + ' ' +
+                            formatNumberRgx(proShowMsg.buyAllPrice) : '--' }}</div>
+                          <div>{{ proShowMsg.cost ? proShowMsg.currency + ' ' + formatNumberRgx(proShowMsg.cost) : '--' }}
+                          </div>
+                        </div>
+                      </div>
+                      <div class="state">
+                        存货地：{{ stockReg(scope.row.stockLocId) }}
+                      </div>
+                    </div>
+                  </div>
+                  <el-button type="text" slot="reference" @click="showProMsg(scope.row)">{{ scope.row.productCode
+                  }}</el-button>
+                </el-popover>
+
+              </div>
+            </template>
           </el-table-column>
           <el-table-column align="center" prop="pic" label="展示图">
             <template slot-scope="scope">
@@ -66,12 +137,35 @@
                 {{
                   scope.row.cost == 0
                   ? "-"
-                  : formatNumberRgx(scope.row.cost) + " " + scope.row.currency
+                  : formatNumberRgx(scope.row.cost)
                 }}
               </div>
             </template>
           </el-table-column>
-          <el-table-column width="180px" align="center" label="时间">
+          <el-table-column align="center" prop="pricePeer" label="同行价">
+            <template slot-scope="scope">
+              <div>
+                {{
+                  scope.row.pricePeer == 0
+                  ? "-"
+                  : scope.row.peerCurrency + ' ' + formatNumberRgx(scope.row.pricePeer)
+                }}
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column align="center" prop="priceIndi" label="散客价">
+            <template slot-scope="scope">
+              <div>
+                {{
+                  scope.row.priceIndi == 0
+                  ? "-"
+                  : scope.row.peerCurrency + ' ' + formatNumberRgx(scope.row.priceIndi)
+                }}
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column align="center" prop="createTime" label="入库日期"></el-table-column>
+          <!-- <el-table-column width="180px" align="center" label="时间">
             <template slot-scope="scope">
               <div>
                 <p style="margin-top: 0;" v-if="
@@ -108,14 +202,14 @@
                 </p>
               </div>
             </template>
-          </el-table-column>
-          <el-table-column align="center" prop="createTime" label="在库时长">
+          </el-table-column> -->
+          <!-- <el-table-column align="center" prop="createTime" label="在库时长">
             <template slot-scope="scope">
               <div>
                 {{ timeLong(scope.row.createTime) }}
               </div>
             </template>
-          </el-table-column>
+          </el-table-column> -->
           <el-table-column align="center" prop="stockLocId" label="库存点">
             <template slot-scope="scope">
               <div>
@@ -212,6 +306,11 @@
                   </el-option>
                 </el-select>
               </el-form-item>
+              <el-form-item label="是否为客人寄卖" required>
+                <el-switch v-model="isCustomerConsigns" active-color="#13ce66" inactive-color="#ff4949" active-value="1"
+                  inactive-value="0">
+                </el-switch>
+              </el-form-item>
               <el-form-item label="预计到达时间" v-if="sold == 0">
                 <el-date-picker type="date" placeholder="请选择日期时间" v-model="estimateTime" style="width:100%;"
                   value-format="yyyy-MM-dd" format="yyyy-MM-dd">
@@ -267,15 +366,10 @@
                 </div>
               </el-form-item>
 
-              <el-form-item :label="
-                sold == 8
-                  ? '寄卖' + currencyFontRgx(currencyGlobal) + '金额'
-                  : '出售' + currencyFontRgx(currencyGlobal) + '金额'
-              " :required="
-  isHeadConsigns == 0 && (isStock == 1 || sold == 8)
-    ? true
-    : false
-" v-if="sold == 3 || sold == 8">
+              <el-form-item
+                :label="sold == 8 ? '寄卖' + currencyFontRgx(currencyGlobal) + '金额' : '出售' + currencyFontRgx(currencyGlobal) + '金额'"
+                :required="isHeadConsigns == 0 && (isStock == 1 || sold == 8) ? true : false"
+                v-if="sold == 3 || sold == 8">
                 <div style="display: flex;">
                   <el-input style="flex: 1;" v-model="saleTotalHkPrice" :placeholder="
                     sold == 8
@@ -452,6 +546,7 @@ export default {
       centerDialogVisible: false,
 
       stockLoc2: [],
+      isCustomerConsigns: '0',
       estimateTime: "", // 预计到达时间
       createTime: "", //入库时间
       sellCurrencyId: "", // 出售外币金额币种
@@ -529,10 +624,6 @@ export default {
           value: "5"
         },
         {
-          label: "客人寄卖",
-          value: "9"
-        },
-        {
           label: "遗失",
           value: "7"
         }
@@ -573,14 +664,11 @@ export default {
           value: "5"
         },
         {
-          label: "客人寄卖",
-          value: "9"
-        },
-        {
           label: "遗失",
           value: "7"
         }
       ],
+      isCustomerConsignsFilter: 'null',
       soldSel: "1",
       noteDialogVisible: false,
       bill: "",
@@ -610,7 +698,11 @@ export default {
       sellerList: [],
       customerTypeList: [],
       customerType: "",
-      numIsEquality: false
+      numIsEquality: false,
+
+      proShowMsg: {},
+      popoverImg01: '',
+      popoverImg02: ''
     };
   },
   created() {
@@ -622,6 +714,24 @@ export default {
     this.getSellerAndCustomerType();
   },
   methods: {
+    showProMsg(item) {
+      console.log(item);
+      this.popoverImg01 = '';
+      this.popoverImg02 = '';
+
+      let imgs = item.pics.split('|').filter(item => {
+        return item && item.trim()
+      })
+      if (imgs.length > 0) {
+        this.popoverImg01 = imgs[0];
+
+        if (imgs.length > 1) {
+          this.popoverImg02 = imgs[1];
+        }
+      }
+
+      this.proShowMsg = item;
+    },
     soldChange() {
       if (this.sold == 8) {
         this.customerType = "公司";
@@ -842,6 +952,7 @@ export default {
 
         this.bill = item.bill;
         this.estimateTime = item.estimateTime;
+        this.isCustomerConsigns = item.isCustomerConsigns + '';
         this.createTime = item.createTime;
         this.priceTran = item.priceTran;
         this.customer = item.customer;
@@ -1055,6 +1166,7 @@ export default {
           bill: this.bill,
           createTime: this.sold == 1 || this.sold == 9 ? this.createTime : "",
           estimateTime: this.estimateTime,
+          isCustomerConsigns: this.isCustomerConsigns,
           priceTran: this.priceTran,
           customer: this.customer,
           soldTime: this.soldTime,
@@ -1188,7 +1300,8 @@ export default {
               ? this.stockLoc2[0]
               : null
             : null,
-          sold: this.soldSel
+          sold: this.soldSel,
+          isCustomerConsigns: this.isCustomerConsignsFilter
         })
         .then(res => {
           console.log("模糊搜索數據");
@@ -1277,20 +1390,47 @@ export default {
   background-color: #fff;
   border-radius: 6px;
 }
-</style>
-<style lang="scss">
-// .disableFirstLevel {
-//   .el-cascader-panel:first-child .el-radio,
-//   .el-cascader-panel:nth-child(2) .el-radio {
-//     display: none !important;
-//   }
 
-//   .el-cascader-menu:nth-child(3) .el-radio {
-//     display: block !important;
-//   }
+.popover-container {
+  padding: 10px 0 10px;
+  display: flex;
+  align-items: center;
+  font-size: 18px;
 
-//   .el-cascader-node.is-selectable.in-active-path {
-//     color: #409eff;
-//   }
-// }
+  .popover-img {
+    width: 280px;
+    height: 380px;
+    margin-right: 20px;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .popover-main {
+    padding: 10px 20px 20px;
+    border: 1px solid #000;
+
+    .every {
+      margin-top: 10px;
+      display: flex;
+
+      .title {
+        color: #101010;
+      }
+
+      .content {
+        font-weight: 600;
+        color: #101010;
+      }
+    }
+
+    .state {
+      margin-top: 10px;
+      color: #647AA3;
+    }
+  }
+}
 </style>

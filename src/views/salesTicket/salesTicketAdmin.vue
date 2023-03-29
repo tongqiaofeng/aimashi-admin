@@ -189,7 +189,9 @@
           </div>
         </div>
       </div>
-      <div v-else>
+      <div v-else style="padding: 20px;
+        background-color: #fff;
+        border-radius: 6px;">
         <details-vue :updatesId="updateId" @goback="gobackAdd" @updateSuccess="updateSuccess"></details-vue>
       </div>
     </div>

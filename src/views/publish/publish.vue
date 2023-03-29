@@ -1,7 +1,7 @@
 <template>
   <div style="margin-top: -20px;overflow: hidden;" id="publishContainer">
     <div class="publish-container">
-      <el-form ref="globalForm" label-width="110px">
+      <el-form ref="globalForm" label-width="121px">
         <el-form-item label="货号" required>
           <el-form-item>
             <el-input style="width:50%;" type="text" placeholder="请输入货号" v-model="productCode" @change="productCodeChange"
@@ -26,6 +26,11 @@
               </el-option>
             </el-select>
           </el-form-item>
+        </el-form-item>
+        <el-form-item label="是否为客人寄卖" required>
+          <el-switch v-model="isCustomerConsigns" active-color="#13ce66" inactive-color="#ff4949" active-value="1"
+            inactive-value="0">
+          </el-switch>
         </el-form-item>
         <el-form-item label="预计到达时间" v-if="sold == 0">
           <el-date-picker type="date" placeholder="请选择日期时间" v-model="estimateTime" style="width:50%;"
@@ -103,26 +108,30 @@
             <el-form-item label="买手">
               <el-input style="width:50%;" placeholder="请输入买手" v-model="source" clearable></el-input>
             </el-form-item>
-            <el-form-item label="采购外币金额">
+            <el-form-item label="采购金额">
               <div style="width: 50%;display: flex;">
-                <el-input style="flex: 1;" type="text" placeholder="请输入采购外币金额" v-model="buyAllPrice" clearable
-                  :controls="false" @change="isPurchaseHKD"></el-input>
-                <el-select v-model="currencyId" placeholder="请选择采购价币种" clearable @change="isPurchaseHKD">
+                <el-input style="flex: 1;" type="text" placeholder="请输入采购金额" v-model="buyAllPrice" clearable
+                  :controls="false" @input="isPurchaseHKD"></el-input>
+                <el-select v-model="currencyId" placeholder="请选择采购币种" clearable @change="isPurchaseHKD">
                   <el-option v-for="item in currencyIds" :key="item.value" :label="item.label" :value="item.value">
                   </el-option>
                 </el-select>
               </div>
+            </el-form-item>
+            <el-form-item :label="'外币转' + currencyFontRgx(currencyGlobal) + '汇率'">
+              <el-input type="text" style="width:50%;" placeholder="请输入汇率" v-model="foreignToSettleRate"
+                @input="isPurchaseHKD" clearable></el-input>
             </el-form-item>
             <el-form-item label="是否付款完成">
               <el-switch v-model="isPayCheck"></el-switch>
             </el-form-item>
             <el-form-item :label="'入库价(' + currencyGlobal + ')'">
               <el-input style="width:50%;" type="text" placeholder="请输入入库价" v-model="totalHkPrice" clearable
-                :controls="false" @change="costCalculate"></el-input>
+                :controls="false" @input="costCalculate"></el-input>
             </el-form-item>
             <el-form-item :label="'其他费用(' + currencyGlobal + ')'">
               <el-input style="width:50%;" type="text" placeholder="请输入物流金额" v-model="logHkPrice" clearable
-                :controls="false" @change="costCalculate"></el-input>
+                :controls="false" @input="costCalculate"></el-input>
             </el-form-item>
             <el-form-item :label="'总成本(' + currencyGlobal + ')'">
               <el-input style="width:50%;" placeholder="请输入总成本" v-model="cost" clearable :controls="false"
@@ -132,7 +141,7 @@
               <div style="width: 50%;display: flex;">
                 <el-input :controls="false" style="flex: 1;" placeholder="请输入同行价" v-model="pricePeer" clearable
                   @change="numCheckout"></el-input>
-                <el-select v-model="peerCurrencyId" placeholder="请选择同行价币种" clearable>
+                <el-select v-model="peerCurrencyId" placeholder="请选择币种" clearable>
                   <el-option v-for="item in currencyIds" :key="item.value" :label="item.label" :value="item.value">
                   </el-option>
                 </el-select>
@@ -142,7 +151,7 @@
               <div style="width: 50%;display: flex;">
                 <el-input :controls="false" style="flex: 1;" placeholder="请输入散客价" v-model="priceIndi" clearable
                   @change="numCheckout"></el-input>
-                <el-select v-model="indiCurrencyId" placeholder="请选择散客价币种" clearable>
+                <el-select v-model="peerCurrencyId" placeholder="请选择币种" clearable>
                   <el-option v-for="item in currencyIds" :key="item.value" :label="item.label" :value="item.value">
                   </el-option>
                 </el-select>
@@ -492,6 +501,7 @@ export default {
       productCode: "", // 货号
       estimateTime: "", // 预计到达时间
       createTime: "", //入库时间
+      isCustomerConsigns: '0',
 
       isPayCheck: false,
       isReceiveCheck: false,
@@ -500,7 +510,6 @@ export default {
       pricePeer: undefined, //同行价
       peerCurrencyId: '',
       priceIndi: undefined, //散客价
-      indiCurrencyId: '',
       source: "", //买手
       stockLoc: "", //库存地
       model: "", //款式
@@ -568,10 +577,6 @@ export default {
           value: "1"
         },
         {
-          label: "客人寄卖",
-          value: "9"
-        },
-        {
           label: "客人预留",
           value: "2"
         },
@@ -595,6 +600,7 @@ export default {
       saleTotalHkPrice: "",
 
       buyAllPrice: undefined,
+      foreignToSettleRate: '',
       totalHkPrice: undefined,
       logHkPrice: undefined,
 
@@ -831,12 +837,29 @@ export default {
 
     // 采购为港币
     isPurchaseHKD() {
+      console.log(this.currencyId);
       this.buyAllPrice = this.getIntegerNum(this.buyAllPrice);
       if (this.currencyId == 2) {
         this.totalHkPrice = this.buyAllPrice;
       } else {
-        this.totalHkPrice = undefined;
+        if (this.foreignToSettleRate && this.buyAllPrice) {
+          if (this.currencyId == 1) {
+            if (this.foreignToSettleRate >= 1) {
+              this.totalHkPrice = (this.buyAllPrice * this.foreignToSettleRate).toFixed(0);
+            } else {
+              this.totalHkPrice = (this.buyAllPrice / this.foreignToSettleRate).toFixed(0);
+            }
+          } else {
+            this.totalHkPrice = (this.buyAllPrice * this.foreignToSettleRate).toFixed(0);
+          }
+        } else {
+          this.totalHkPrice = undefined;
+        }
+
       }
+
+      this.cost = 0;
+      this.cost = Number(this.totalHkPrice ? this.totalHkPrice : 0) + Number(this.logHkPrice ? this.logHkPrice : 0);
     },
     // 出售为港币
     isSellHKD() {
@@ -846,13 +869,7 @@ export default {
         this.saleTotalHkPrice = undefined;
       }
     },
-    // 币种显示
-    currencyShow(item) {
-      for (let i = 0; i < this.currencyIds.length; ++i) {
-        if (item == this.currencyIds[i].value) return this.currencyIds[i].label;
-      }
-      return "";
-    },
+
     // 提交
     data1() {
       if (this.sold == null) {
@@ -1181,7 +1198,7 @@ export default {
         pricePeer: this.pricePeer,
         peerCurrencyId: this.peerCurrencyId,
         priceIndi: this.priceIndi,
-        indiCurrencyId: this.indiCurrencyId,
+        indiCurrencyId: this.peerCurrencyId,
         source: this.source,
         stockLocId: this.stockLoc.warehouseId,
         companyId: this.stockLoc.companyId,
@@ -1198,6 +1215,7 @@ export default {
         note: this.note,
         saleStat: "出售中",
         buyAllPrice: this.buyAllPrice,
+        foreignToSettleRate: this.foreignToSettleRate,
         totalHkPrice: this.totalHkPrice,
         logHkPrice: this.logHkPrice,
         saleLogHkPrice: this.saleLogHkPrice,
@@ -1205,7 +1223,8 @@ export default {
         isPayCheck: this.isPayCheck == false ? 0 : 1,
         isReceiveCheck: this.isReceiveCheck == false ? 0 : 1,
         sellerId: this.sellerId,
-        customerType: this.customerType
+        customerType: this.customerType,
+        isCustomerConsigns: this.isCustomerConsigns
       };
 
       this.cost = undefined;
@@ -1243,11 +1262,12 @@ export default {
               this.pricePeer = undefined;
               this.priceIndi = undefined;
               this.buyAllPrice = undefined;
+              this.foreignToSettleRate = "";
               this.totalHkPrice = undefined;
               this.logHkPrice = undefined;
             });
             this.peerCurrencyId = '';
-            this.indiCurrencyId = '';
+            this.isCustomerConsigns = '0';
 
             this.source = "";
             this.stockLoc = "";
@@ -1289,9 +1309,11 @@ export default {
     },
     // 计算总成本
     costCalculate() {
+      console.log('---------');
       this.totalHkPrice = this.getIntegerNum(this.totalHkPrice);
       this.logHkPrice = this.getIntegerNum(this.logHkPrice);
-      this.cost = Number(this.totalHkPrice) + Number(this.logHkPrice);
+      this.cost = 0;
+      this.cost = Number(this.totalHkPrice ? this.totalHkPrice : 0) + Number(this.logHkPrice ? this.logHkPrice : 0);
     },
     // 數字格式
     numCheckout() {

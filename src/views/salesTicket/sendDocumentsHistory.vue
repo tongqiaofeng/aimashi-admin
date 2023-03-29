@@ -151,13 +151,18 @@
                       :close-on-press-escape="false" :close-on-click-modal="false" :modal-append-to-body="true"
                       :append-to-body="true">
                       <div>
-                        <el-form label-width="110px">
+                        <el-form label-width="121px">
                           <el-form-item label="庫存狀態" required>
                             <el-select v-model="updateSellMsg.sold" placeholder="請選擇" style="width:100%;">
                               <el-option v-for="item in stateUpdateList" :key="item.value" :label="item.label"
                                 :value="item.value">
                               </el-option>
                             </el-select>
+                          </el-form-item>
+                          <el-form-item label="是否為客人寄賣" required>
+                            <el-switch v-model="updateSellMsg.isCustomerConsigns" active-color="#13ce66"
+                              inactive-color="#ff4949" active-value="1" inactive-value="0">
+                            </el-switch>
                           </el-form-item>
                           <el-form-item label="入庫時間" required>
                             <el-form-item>
@@ -189,7 +194,7 @@
           </div>
         </div>
       </div>
-      <div v-if="pageSel == 1">
+      <div v-if="pageSel == 1" class="back-style">
         <details-vue :updatesId="updateId" @goback="gobackAdd" @updateSuccess="updateSuccess"></details-vue>
       </div>
       <div v-show="pageSel === 2" class="back-style">
@@ -364,71 +369,71 @@
             <input type="text" v-model="certificateData.electronicBill.companyAddr" placeholder="請輸入公司地址" />
           </div>
           <div style="margin-top: 20px;
-                    text-align: center;
-                    font-size: 24px;
-                    font-weight: bold;">
+                          text-align: center;
+                          font-size: 24px;
+                          font-weight: bold;">
             Invoice
           </div>
           <div style="margin-top: 20px;
-                    text-align: left;
-                    font-size: 16px;
-                    font-weight: bold;">
+                          text-align: left;
+                          font-size: 16px;
+                          font-weight: bold;">
             To：{{ certificateData.customer }}
           </div>
           <div style="text-align: right;">
             <div style="display: flex;justify-content: flex-end;">
               <div style="width: 150px;
-                      margin-right: 5px;
-                      margin-bottom: 5px;
-                      text-align: right;
-                      font-size: 15px;">
+                            margin-right: 5px;
+                            margin-bottom: 5px;
+                            text-align: right;
+                            font-size: 15px;">
                 Invoice No.:
               </div>
               <div style="width: 100px;
-                      text-align: left;
-                      font-size: 15px;">
+                            text-align: left;
+                            font-size: 15px;">
                 {{ certificateData.bill }}
               </div>
             </div>
             <div style="display: flex;justify-content: flex-end;">
               <div style="width: 150px;
-                      margin-right: 5px;
-                      margin-bottom: 5px;
-                      text-align: right;
-                      font-size: 15px;">
+                            margin-right: 5px;
+                            margin-bottom: 5px;
+                            text-align: right;
+                            font-size: 15px;">
                 Invoice Date:
               </div>
               <div style="width: 100px;
-                      text-align: left;
-                      font-size: 15px;">
+                            text-align: left;
+                            font-size: 15px;">
                 {{ certificateData.soldTime }}
               </div>
             </div>
             <div style="display: flex;justify-content: flex-end;align-items: center;">
               <div style="width: 150px;
-                      margin-right: 5px;
-                      margin-bottom: 5px;
-                      text-align: right;
-                      font-size: 15px;">
+                            margin-right: 5px;
+                            margin-bottom: 5px;
+                            text-align: right;
+                            font-size: 15px;">
                 Payment Terms:
               </div>
               <div style="width: 100px;
-                      text-align: left;
-                      font-size: 15px;">
+                            text-align: left;
+                            font-size: 15px;">
                 <input type="text" v-model="certificateData.electronicBill.paymentTerms" />
               </div>
             </div>
             <div style="display: flex;justify-content: flex-end;">
               <div style="width: 150px;
-                      margin-right: 5px;
-                      margin-bottom: 5px;
-                      text-align: right;
-                      font-size: 15px;">
+                            margin-right: 5px;
+                            margin-bottom: 5px;
+                            text-align: right;
+                            font-size: 15px;">
                 Currency:
               </div>
               <div style="width: 100px;
-                      text-align: left;
-                      font-size: 15px;">
+                            text-align: left;
+                            font-size: 15px;">
                 {{ certificateData.currency }}
               </div>
             </div>
@@ -497,43 +502,43 @@
           <div style="text-align: right;">
             <div style="display: flex;justify-content: flex-end;">
               <div style="width: 150px;
-                      margin-right: 5px;
-                      margin-bottom: 5px;
-                      text-align: right;
-                      font-size: 15px;">
+                            margin-right: 5px;
+                            margin-bottom: 5px;
+                            text-align: right;
+                            font-size: 15px;">
                 Subtotal:
               </div>
               <div style="width: 100px;
-                      text-align: left;
-                      font-size: 15px;">
+                            text-align: left;
+                            font-size: 15px;">
                 {{ formatNumberRgx(certificateData.subtotal) }}
               </div>
             </div>
             <div style="display: flex;justify-content: flex-end;">
               <div style="width: 150px;
-                      margin-right: 5px;
-                      margin-bottom: 5px;
-                      text-align: right;
-                      font-size: 15px;">
+                            margin-right: 5px;
+                            margin-bottom: 5px;
+                            text-align: right;
+                            font-size: 15px;">
                 Shipping Cost:
               </div>
               <div style="width: 100px;
-                      text-align: left;
-                      font-size: 15px;">
+                            text-align: left;
+                            font-size: 15px;">
                 {{ formatNumberRgx(certificateData.shippingCost) }}
               </div>
             </div>
             <div style="display: flex;justify-content: flex-end;">
               <div style="width: 150px;
-                      margin-right: 5px;
-                      margin-bottom: 5px;
-                      text-align: right;
-                      font-size: 15px;">
+                            margin-right: 5px;
+                            margin-bottom: 5px;
+                            text-align: right;
+                            font-size: 15px;">
                 Total in {{ currencyGlobal }}:
               </div>
               <div style="width: 100px;
-                      text-align: left;
-                      font-size: 15px;">
+                            text-align: left;
+                            font-size: 15px;">
                 {{ formatNumberRgx(certificateData.totalInHkd) }}
               </div>
             </div>
@@ -586,8 +591,8 @@
             </div>
           </div>
           <div style="margin-top: 20px;
-                    font-weight: bold;
-                    font-size: 14px;">
+                          font-weight: bold;
+                          font-size: 14px;">
             此單所列貨物均為香港交貨價，如需攜帶出香港請貴客自行向所到地海關申報，並承擔有關費用，本公司概不負責!
           </div>
         </div>
@@ -1114,18 +1119,14 @@ export default {
       console.log(row);
       this.updateSellMsg = row;
       this.updateSellMsg.sold = "1";
+      this.updateSellMsg.isCustomerConsigns = this.updateSellMsg.isCustomerConsigns + ''
       this.dialogStateVisible = true;
     },
     // 確定取回
     salesReturnSure() {
       if (this.updateSellMsg.createTime && this.updateSellMsg.sold) {
         this.$axios
-          .put(this.baseUrl + "/stateSave", {
-            id: this.updateSellMsg.id,
-            sold: this.updateSellMsg.sold,
-            createTime: this.updateSellMsg.createTime,
-            note: this.updateSellMsg.note
-          })
+          .put(this.baseUrl + "/stateSave", this.updateSellMsg)
           .then(res => {
             console.log(res);
             if (res.status == 200) {

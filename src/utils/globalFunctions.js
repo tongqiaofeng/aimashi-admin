@@ -31,10 +31,6 @@ export default function(Vue) {
     {
       label: "客人取回",
       value: "5"
-    },
-    {
-      label: "客人寄卖",
-      value: "9"
     }
   ];
   Vue.prototype.soldStateRgx = function(item) {
@@ -212,8 +208,8 @@ export default function(Vue) {
   // 大图
   Vue.prototype.bigImg = function(pics) {
     // console.log(pics);
-    if (pics != "" && pics != null) {
-      let list = pics.split("|").filter(function(s) {
+    if (pics) {
+      let list = pics.split("|").filter(s => {
         return s && s.trim();
       });
 

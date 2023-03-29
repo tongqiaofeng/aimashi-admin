@@ -48,21 +48,21 @@ export default {
   },
   watch: {
     imgs: {
-      handler: function (newVal, oldVal) {
+      handler: function (newVal) {
         console.log("上传图片组件");
-        console.log(newVal);
-        console.log(oldVal);
-        console.log(typeof newVal);
 
         if (newVal) {
-          if (newVal.indexOf("|") == -1) {
+          if (newVal.indexOf("|") === -1) {
             this.imgurls = newVal;
           } else {
-            this.imgurls = newVal.split("|");
+            this.imgurls = newVal.split("|").filter(item => {
+              return item && item.trim()
+            });
           }
         } else {
           this.imgurls = []
         }
+        console.log(this.imgurls);
       },
       immediate: true,
     },
